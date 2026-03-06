@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,62 +45,48 @@ const Dashboard = () => {
 
   const activeGoals = goals.filter((g) => g.status === "active");
   const completedGoals = goals.filter((g) => g.status === "completed");
-  const goalProgress = goals.length > 0 ? Math.round((completedGoals.length / goals.length) * 100) : 0;
 
-  // Estimated calories from latest diet
   const latestDiet = dietPlans[0];
   const estimatedCalories = latestDiet
     ? (latestDiet.plan_data as any[])?.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0) || 0
     : 0;
 
   const weightChartData = bodyRecords.length > 0
-    ? bodyRecords.map((r, i) => ({
-        semana: `S${i + 1}`,
-        peso: Number(r.weight),
-      }))
+    ? bodyRecords.map((r, i) => ({ semana: `S${i + 1}`, peso: Number(r.weight) }))
     : [];
 
+  // Checklist items
+  const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
+  const hasWorkout = workoutPlans.length > 0;
+  const hasDiet = dietPlans.length > 0;
+  const hasBodyRecord = bodyRecords.length > 0;
+  const hasGoal = goals.length > 0;
+
+  const checklist = [
+    { label: "Complete seu perfil", done: profileComplete, path: "/perfil" },
+    { label: "Crie seu primeiro treino", done: hasWorkout, path: "/treino" },
+    { label: "Gere sua primeira dieta", done: hasDiet, path: "/dieta" },
+    { label: "Registre seu peso inicial", done: hasBodyRecord, path: "/acompanhamento" },
+    { label: "Crie uma meta fitness", done: hasGoal, path: "/metas" },
+  ];
+  const checklistDone = checklist.filter((c) => c.done).length;
+  const checklistTotal = checklist.length;
+  const checklistProgress = Math.round((checklistDone / checklistTotal) * 100);
+  const showChecklist = checklistDone < checklistTotal;
+
+  // User progress indicator
+  const progressItems = [
+    { label: "Perfil", active: profileComplete },
+    { label: "Treino", active: hasWorkout },
+    { label: "Dieta", active: hasDiet },
+    { label: "Meta", active: hasGoal },
+  ];
+
   const stats = [
-    { 
-      label: "Peso Atual", 
-      value: currentWeight ? `${currentWeight}` : "—", 
-      suffix: "kg",
-      change: weightChange !== 0 ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)}kg` : null,
-      changeColor: weightChange <= 0 ? "text-primary" : "text-destructive",
-      icon: Scale, 
-      iconBg: "from-chart-2/20 to-chart-2/5",
-      iconColor: "text-chart-2"
-    },
-    { 
-      label: "Treinos Salvos", 
-      value: String(workoutPlans.length), 
-      suffix: "",
-      change: null,
-      changeColor: "",
-      icon: Dumbbell, 
-      iconBg: "from-primary/20 to-primary/5",
-      iconColor: "text-primary"
-    },
-    { 
-      label: "Metas Ativas", 
-      value: String(activeGoals.length), 
-      suffix: "",
-      change: completedGoals.length > 0 ? `${completedGoals.length} concluída(s)` : null,
-      changeColor: "text-primary",
-      icon: Target, 
-      iconBg: "from-chart-4/20 to-chart-4/5",
-      iconColor: "text-chart-4"
-    },
-    { 
-      label: "Calorias/dia", 
-      value: estimatedCalories > 0 ? String(estimatedCalories) : "—", 
-      suffix: estimatedCalories > 0 ? "kcal" : "",
-      change: null,
-      changeColor: "",
-      icon: Flame, 
-      iconBg: "from-chart-3/20 to-chart-3/5",
-      iconColor: "text-chart-3"
-    },
+    { label: "Peso Atual", value: currentWeight ? `${currentWeight}` : "—", suffix: "kg", change: weightChange !== 0 ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)}kg` : null, changeColor: weightChange <= 0 ? "text-primary" : "text-destructive", icon: Scale, iconBg: "from-chart-2/20 to-chart-2/5", iconColor: "text-chart-2" },
+    { label: "Treinos Salvos", value: String(workoutPlans.length), suffix: "", change: null, changeColor: "", icon: Dumbbell, iconBg: "from-primary/20 to-primary/5", iconColor: "text-primary" },
+    { label: "Metas Ativas", value: String(activeGoals.length), suffix: "", change: completedGoals.length > 0 ? `${completedGoals.length} concluída(s)` : null, changeColor: "text-primary", icon: Target, iconBg: "from-chart-4/20 to-chart-4/5", iconColor: "text-chart-4" },
+    { label: "Calorias/dia", value: estimatedCalories > 0 ? String(estimatedCalories) : "—", suffix: estimatedCalories > 0 ? "kcal" : "", change: null, changeColor: "", icon: Flame, iconBg: "from-chart-3/20 to-chart-3/5", iconColor: "text-chart-3" },
   ];
 
   const quickActions = [
@@ -122,6 +108,49 @@ const Dashboard = () => {
         <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
 
+      {/* User Progress Indicator */}
+      <div className="glass-card p-4 lg:p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
+          <span className="text-xs font-medium text-primary">{progressItems.filter(p => p.active).length}/{progressItems.length} ativos</span>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {progressItems.map((item) => (
+            <div key={item.label} className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all ${item.active ? "bg-primary/8 border border-primary/15" : "bg-secondary/30 border border-border/30"}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.active ? "bg-primary/15" : "bg-secondary/50"}`}>
+                {item.active ? <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> : <Circle className="w-3.5 h-3.5 text-muted-foreground" />}
+              </div>
+              <span className={`text-[10px] font-medium ${item.active ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Onboarding Checklist */}
+      {showChecklist && (
+        <div className="glass-card p-5 lg:p-6 glow-border">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-display font-semibold text-base">Primeiros Passos</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{checklistDone} de {checklistTotal} concluídos</p>
+            </div>
+            <span className="text-sm font-bold text-primary">{checklistProgress}%</span>
+          </div>
+          <div className="progress-bar !h-2 mb-4">
+            <div className="progress-fill" style={{ width: `${checklistProgress}%` }} />
+          </div>
+          <div className="space-y-2">
+            {checklist.map((item) => (
+              <button key={item.label} onClick={() => !item.done && navigate(item.path)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${item.done ? "bg-primary/5 border border-primary/10" : "bg-secondary/30 border border-border/30 hover:bg-secondary/50 hover:border-primary/15 cursor-pointer"}`}>
+                {item.done ? <CheckCircle2 className="w-4.5 h-4.5 text-primary shrink-0" /> : <Circle className="w-4.5 h-4.5 text-muted-foreground shrink-0" />}
+                <span className={`text-sm font-medium ${item.done ? "text-primary line-through opacity-70" : "text-foreground"}`}>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {stats.map((stat) => (
@@ -130,9 +159,7 @@ const Dashboard = () => {
               <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${stat.iconBg} flex items-center justify-center`}>
                 <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
               </div>
-              {stat.change && (
-                <span className={`text-[11px] font-medium ${stat.changeColor}`}>{stat.change}</span>
-              )}
+              {stat.change && <span className={`text-[11px] font-medium ${stat.changeColor}`}>{stat.change}</span>}
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl lg:text-3xl font-display font-bold text-foreground">{stat.value}</span>
@@ -230,7 +257,7 @@ const Dashboard = () => {
       </div>
 
       {/* Empty state */}
-      {!hasData && (
+      {!hasData && !showChecklist && (
         <div className="empty-state">
           <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
                style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.08))' }}>
