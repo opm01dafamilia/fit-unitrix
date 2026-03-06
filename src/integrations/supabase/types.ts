@@ -14,7 +14,195 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      body_tracking: {
+        Row: {
+          arm: number | null
+          body_fat: number | null
+          chest: number | null
+          created_at: string
+          hip: number | null
+          id: string
+          leg: number | null
+          user_id: string
+          waist: number | null
+          weight: number
+        }
+        Insert: {
+          arm?: number | null
+          body_fat?: number | null
+          chest?: number | null
+          created_at?: string
+          hip?: number | null
+          id?: string
+          leg?: number | null
+          user_id: string
+          waist?: number | null
+          weight: number
+        }
+        Update: {
+          arm?: number | null
+          body_fat?: number | null
+          chest?: number | null
+          created_at?: string
+          hip?: number | null
+          id?: string
+          leg?: number | null
+          user_id?: string
+          waist?: number | null
+          weight?: number
+        }
+        Relationships: []
+      }
+      diet_plans: {
+        Row: {
+          activity_level: string
+          created_at: string
+          height: number
+          id: string
+          objective: string
+          plan_data: Json
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          activity_level: string
+          created_at?: string
+          height: number
+          id?: string
+          objective: string
+          plan_data: Json
+          user_id: string
+          weight: number
+        }
+        Update: {
+          activity_level?: string
+          created_at?: string
+          height?: number
+          id?: string
+          objective?: string
+          plan_data?: Json
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      fitness_goals: {
+        Row: {
+          created_at: string
+          current_value: number
+          goal_type: string | null
+          id: string
+          status: string
+          target_date: string | null
+          target_value: number
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          goal_type?: string | null
+          id?: string
+          status?: string
+          target_date?: string | null
+          target_value: number
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          goal_type?: string | null
+          id?: string
+          status?: string
+          target_date?: string | null
+          target_value?: number
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          created_at: string
+          full_name: string | null
+          gender: string | null
+          height: number | null
+          id: string
+          objective: string | null
+          onboarding_completed: boolean
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          full_name?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          objective?: string | null
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string
+          full_name?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          objective?: string | null
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      workout_plans: {
+        Row: {
+          created_at: string
+          days_per_week: number
+          experience_level: string
+          id: string
+          objective: string
+          plan_data: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_per_week: number
+          experience_level: string
+          id?: string
+          objective: string
+          plan_data: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_per_week?: number
+          experience_level?: string
+          id?: string
+          objective?: string
+          plan_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
