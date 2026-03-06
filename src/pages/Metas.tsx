@@ -1,68 +1,93 @@
-import { useState } from "react";
-import { Target, Plus, Trophy, TrendingUp, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-type Meta = {
-  id: number;
-  titulo: string;
-  tipo: string;
-  valorAtual: number;
-  valorMeta: number;
-  unidade: string;
-  concluida: boolean;
-};
-
-const initialMetas: Meta[] = [
-  { id: 1, titulo: "Perder 10kg", tipo: "peso", valorAtual: 80.8, valorMeta: 75, unidade: "kg", concluida: false },
-  { id: 2, titulo: "Treinar 5x/semana", tipo: "treino", valorAtual: 5, valorMeta: 5, unidade: "dias", concluida: true },
-  { id: 3, titulo: "Correr 5km", tipo: "condicionamento", valorAtual: 3.5, valorMeta: 5, unidade: "km", concluida: false },
-  { id: 4, titulo: "Supino 100kg", tipo: "forca", valorAtual: 85, valorMeta: 100, unidade: "kg", concluida: false },
-  { id: 5, titulo: "Reduzir cintura para 82cm", tipo: "medida", valorAtual: 86, valorMeta: 82, unidade: "cm", concluida: false },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 const Metas = () => {
-  const [metas, setMetas] = useState<Meta[]>(initialMetas);
+  const { user } = useAuth();
+  const [metas, setMetas] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState("");
   const [valorAtual, setValorAtual] = useState("");
   const [valorMeta, setValorMeta] = useState("");
   const [unidade, setUnidade] = useState("");
+  const [targetDate, setTargetDate] = useState("");
 
-  const handleAdd = () => {
-    if (!titulo || !valorAtual || !valorMeta) return;
-    setMetas([...metas, {
-      id: Date.now(),
-      titulo,
-      tipo: tipo || "outro",
-      valorAtual: Number(valorAtual),
-      valorMeta: Number(valorMeta),
-      unidade: unidade || "",
-      concluida: false,
-    }]);
-    setTitulo(""); setTipo(""); setValorAtual(""); setValorMeta(""); setUnidade("");
-    setShowForm(false);
+  const fetchMetas = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("fitness_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    setMetas(data || []);
   };
 
-  const getProgress = (m: Meta) => {
-    if (m.concluida) return 100;
-    // For weight loss type goals where lower is better
-    if (m.tipo === "peso" || m.tipo === "medida") {
-      const total = m.valorAtual > m.valorMeta 
-        ? ((initialMetas.find(im => im.id === m.id)?.valorAtual || m.valorAtual) - m.valorMeta) 
-        : (m.valorMeta - (initialMetas.find(im => im.id === m.id)?.valorAtual || m.valorAtual));
-      const current = m.valorAtual > m.valorMeta 
-        ? ((initialMetas.find(im => im.id === m.id)?.valorAtual || m.valorAtual) - m.valorAtual)
-        : (m.valorAtual - (initialMetas.find(im => im.id === m.id)?.valorAtual || m.valorAtual));
-      return Math.min(100, Math.max(0, (current / total) * 100));
+  useEffect(() => { fetchMetas(); }, [user]);
+
+  const resetForm = () => {
+    setTitulo(""); setTipo(""); setValorAtual(""); setValorMeta(""); setUnidade(""); setTargetDate("");
+    setEditingId(null); setShowForm(false);
+  };
+
+  const handleSave = async () => {
+    if (!titulo || !valorAtual || !valorMeta || !user) return;
+    const payload = {
+      user_id: user.id,
+      title: titulo,
+      goal_type: tipo || "outro",
+      current_value: Number(valorAtual),
+      target_value: Number(valorMeta),
+      unit: unidade || null,
+      target_date: targetDate || null,
+      status: "active" as string,
+    };
+
+    if (editingId) {
+      const { error } = await supabase.from("fitness_goals").update(payload).eq("id", editingId);
+      if (error) toast.error("Erro ao atualizar");
+      else toast.success("Meta atualizada!");
+    } else {
+      const { error } = await supabase.from("fitness_goals").insert(payload);
+      if (error) toast.error("Erro ao criar meta");
+      else toast.success("Meta criada!");
     }
-    return Math.min(100, (m.valorAtual / m.valorMeta) * 100);
+    resetForm();
+    fetchMetas();
   };
 
-  const concluidas = metas.filter(m => m.concluida || getProgress(m) >= 100).length;
-  const emAndamento = metas.length - concluidas;
+  const handleEdit = (meta: any) => {
+    setEditingId(meta.id);
+    setTitulo(meta.title);
+    setTipo(meta.goal_type || "");
+    setValorAtual(String(meta.current_value));
+    setValorMeta(String(meta.target_value));
+    setUnidade(meta.unit || "");
+    setTargetDate(meta.target_date || "");
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    await supabase.from("fitness_goals").delete().eq("id", id);
+    toast.success("Meta excluída");
+    fetchMetas();
+  };
+
+  const handleToggleComplete = async (meta: any) => {
+    const newStatus = meta.status === "completed" ? "active" : "completed";
+    await supabase.from("fitness_goals").update({ status: newStatus }).eq("id", meta.id);
+    fetchMetas();
+  };
+
+  const getProgress = (m: any) => {
+    if (m.status === "completed") return 100;
+    return Math.min(100, Math.max(0, (m.current_value / m.target_value) * 100));
+  };
+
+  const concluidas = metas.filter(m => m.status === "completed").length;
+  const emAndamento = metas.filter(m => m.status === "active").length;
 
   return (
     <div className="space-y-8 animate-slide-up">
@@ -71,7 +96,7 @@ const Metas = () => {
           <h1 className="text-3xl font-display font-bold">Metas Fitness</h1>
           <p className="text-muted-foreground mt-1">Defina e acompanhe seus objetivos</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => { resetForm(); setShowForm(!showForm); }}>
           <Plus className="w-4 h-4 mr-2" /> Nova Meta
         </Button>
       </div>
@@ -95,12 +120,17 @@ const Metas = () => {
         </div>
       </div>
 
-      {/* Add Form */}
+      {/* Add/Edit Form */}
       {showForm && (
         <div className="glass-card p-6 glow-border">
-          <h3 className="font-display font-semibold mb-4">Nova Meta</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-            <div className="sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold">{editingId ? "Editar Meta" : "Nova Meta"}</h3>
+            <button onClick={resetForm} className="text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div>
               <label className="text-sm text-muted-foreground mb-2 block">Título</label>
               <Input placeholder="Ex: Perder 5kg" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
             </div>
@@ -129,8 +159,14 @@ const Metas = () => {
               <label className="text-sm text-muted-foreground mb-2 block">Unidade</label>
               <Input placeholder="kg" value={unidade} onChange={(e) => setUnidade(e.target.value)} />
             </div>
+            <div>
+              <label className="text-sm text-muted-foreground mb-2 block">Data Alvo</label>
+              <Input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+            </div>
           </div>
-          <Button onClick={handleAdd} disabled={!titulo || !valorAtual || !valorMeta}>Criar Meta</Button>
+          <Button onClick={handleSave} disabled={!titulo || !valorAtual || !valorMeta}>
+            {editingId ? "Atualizar Meta" : "Criar Meta"}
+          </Button>
         </div>
       )}
 
@@ -138,28 +174,41 @@ const Metas = () => {
       <div className="space-y-4">
         {metas.map((meta) => {
           const progress = getProgress(meta);
-          const isDone = meta.concluida || progress >= 100;
+          const isDone = meta.status === "completed";
           return (
             <div key={meta.id} className={`glass-card p-5 ${isDone ? 'glow-border' : ''}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  {isDone ? (
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
-                  ) : (
-                    <Target className="w-5 h-5 text-muted-foreground" />
-                  )}
+                  <button onClick={() => handleToggleComplete(meta)}>
+                    {isDone ? (
+                      <CheckCircle2 className="w-5 h-5 text-primary" />
+                    ) : (
+                      <Target className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </button>
                   <div>
-                    <p className={`font-semibold ${isDone ? 'text-primary' : ''}`}>{meta.titulo}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{meta.tipo}</p>
+                    <p className={`font-semibold ${isDone ? 'text-primary' : ''}`}>{meta.title}</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {meta.goal_type}
+                      {meta.target_date && ` • até ${new Date(meta.target_date).toLocaleDateString("pt-BR")}`}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium">
-                    {meta.valorAtual} <span className="text-muted-foreground">/ {meta.valorMeta} {meta.unidade}</span>
-                  </p>
-                  <p className={`text-xs font-medium ${isDone ? 'text-primary' : 'text-muted-foreground'}`}>
-                    {Math.round(progress)}%
-                  </p>
+                <div className="flex items-center gap-2">
+                  <div className="text-right mr-2">
+                    <p className="text-sm font-medium">
+                      {meta.current_value} <span className="text-muted-foreground">/ {meta.target_value} {meta.unit || ""}</span>
+                    </p>
+                    <p className={`text-xs font-medium ${isDone ? 'text-primary' : 'text-muted-foreground'}`}>
+                      {Math.round(progress)}%
+                    </p>
+                  </div>
+                  <button onClick={() => handleEdit(meta)} className="text-muted-foreground hover:text-foreground p-1">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(meta.id)} className="text-muted-foreground hover:text-destructive p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               <div className="progress-bar">
@@ -169,6 +218,13 @@ const Metas = () => {
           );
         })}
       </div>
+
+      {metas.length === 0 && !showForm && (
+        <div className="glass-card p-8 text-center">
+          <Target className="w-10 h-10 text-primary mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">Nenhuma meta definida. Crie sua primeira meta fitness!</p>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
-  Activity, Target, Menu, X, Flame
+  Activity, Target, Menu, Flame, LogOut, User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -15,6 +16,7 @@ const navItems = [
 
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { profile, signOut } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -64,10 +66,27 @@ const AppLayout = () => {
           ))}
         </nav>
 
-        <div className="p-4 mx-3 mb-4 rounded-xl bg-secondary border border-border">
-          <p className="text-xs text-muted-foreground mb-1">Streak atual</p>
-          <p className="stat-value text-primary text-2xl">12 dias 🔥</p>
+        {/* User info */}
+        <div className="p-4 mx-3 mb-2 rounded-xl bg-secondary border border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <User className="w-4 h-4 text-primary" />
+            <p className="text-sm font-medium truncate">{profile?.full_name || "Usuário"}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {profile?.objective === "emagrecer" ? "Emagrecimento" : 
+             profile?.objective === "massa" ? "Ganho de Massa" : 
+             profile?.objective === "condicionamento" ? "Condicionamento" : 
+             profile?.objective === "manter" ? "Manutenção" : "—"}
+          </p>
         </div>
+
+        <button
+          onClick={signOut}
+          className="flex items-center gap-2 px-7 py-4 text-sm text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border"
+        >
+          <LogOut className="w-4 h-4" />
+          Sair
+        </button>
       </aside>
 
       {/* Main */}
