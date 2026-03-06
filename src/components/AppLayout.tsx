@@ -2,16 +2,20 @@ import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
-  Activity, Target, Menu, Flame, LogOut, User, X
+  Activity, Target, Menu, Flame, LogOut, User, X, 
+  History, Settings
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/treino", icon: Dumbbell, label: "Treino" },
+  { to: "/treino", icon: Dumbbell, label: "Treinos" },
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/acompanhamento", icon: Activity, label: "Corpo" },
   { to: "/metas", icon: Target, label: "Metas" },
+  { to: "/historico", icon: History, label: "Histórico" },
+  { to: "/perfil", icon: User, label: "Perfil" },
+  { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
 
 const AppLayout = () => {
