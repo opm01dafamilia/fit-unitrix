@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Flame } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/components/ui/sonner";
 
 const workoutPlans: Record<string, { dia: string; grupo: string; exercicios: { nome: string; series: string; reps: string; desc: string }[] }[]> = {
   "emagrecer": [
@@ -81,17 +84,59 @@ const workoutPlans: Record<string, { dia: string; grupo: string; exercicios: { n
 };
 
 const Treino = () => {
+  const { user } = useAuth();
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
   const [dias, setDias] = useState("");
   const [showPlan, setShowPlan] = useState(false);
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
+  const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [viewingSaved, setViewingSaved] = useState<any | null>(null);
 
   const plan = objetivo ? workoutPlans[objetivo] || [] : [];
 
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
+      .then(({ data }) => setSavedPlans(data || []));
+  }, [user]);
+
   const handleGenerate = () => {
     if (objetivo) setShowPlan(true);
+    setViewingSaved(null);
   };
+
+  const handleSave = async () => {
+    if (!user || !objetivo) return;
+    const { error } = await supabase.from("workout_plans").insert({
+      user_id: user.id,
+      objective: objetivo,
+      experience_level: nivel || "iniciante",
+      days_per_week: Number(dias) || 4,
+      plan_data: plan,
+    });
+    if (error) {
+      toast.error("Erro ao salvar plano");
+    } else {
+      toast.success("Plano salvo!");
+      const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+      setSavedPlans(data || []);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("workout_plans").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir");
+    } else {
+      setSavedPlans(savedPlans.filter((p) => p.id !== id));
+      if (viewingSaved?.id === id) setViewingSaved(null);
+      toast.success("Plano excluído");
+    }
+  };
+
+  const displayPlan = viewingSaved ? (viewingSaved.plan_data as any[]) : plan;
+  const showDisplay = showPlan || viewingSaved;
 
   return (
     <div className="space-y-8 animate-slide-up">
@@ -143,11 +188,39 @@ const Treino = () => {
         </Button>
       </div>
 
-      {/* Plan */}
-      {showPlan && plan.length > 0 && (
+      {/* Saved Plans */}
+      {savedPlans.length > 0 && (
+        <div className="glass-card p-6">
+          <h3 className="font-display font-semibold mb-4">Planos Salvos</h3>
+          <div className="space-y-2">
+            {savedPlans.map((sp) => (
+              <div key={sp.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer ${viewingSaved?.id === sp.id ? "bg-primary/10 border border-primary/20" : "bg-secondary/50 hover:bg-secondary"}`}
+                onClick={() => { setViewingSaved(sp); setShowPlan(false); setExpandedDay(0); }}>
+                <div>
+                  <p className="text-sm font-medium capitalize">{sp.objective} — {sp.experience_level}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")} • {sp.days_per_week} dias/sem</p>
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(sp.id); }} className="text-muted-foreground hover:text-destructive p-1">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Plan Display */}
+      {showDisplay && displayPlan.length > 0 && (
         <div className="space-y-4">
-          <h2 className="font-display font-semibold text-xl">Seu Plano Semanal</h2>
-          {plan.map((day, i) => (
+          <div className="flex items-center justify-between">
+            <h2 className="font-display font-semibold text-xl">
+              {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
+            </h2>
+            {!viewingSaved && showPlan && (
+              <Button variant="outline" onClick={handleSave}>Salvar Plano</Button>
+            )}
+          </div>
+          {displayPlan.map((day: any, i: number) => (
             <div key={i} className="glass-card overflow-hidden">
               <button
                 onClick={() => setExpandedDay(expandedDay === i ? null : i)}
@@ -171,7 +244,7 @@ const Treino = () => {
               </button>
               {expandedDay === i && (
                 <div className="px-5 pb-5 space-y-3 border-t border-border">
-                  {day.exercicios.map((ex, j) => (
+                  {day.exercicios.map((ex: any, j: number) => (
                     <div key={j} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg bg-secondary/30 mt-3">
                       <div className="flex-1">
                         <p className="font-medium text-sm">{ex.nome}</p>
