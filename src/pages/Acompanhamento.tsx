@@ -1,28 +1,34 @@
 import { useState, useEffect } from "react";
-import { Scale, Ruler, Plus, TrendingDown, Trash2 } from "lucide-react";
+import { Scale, Ruler, Plus, TrendingDown, TrendingUp, Trash2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 
 const tooltipStyle = {
-  background: 'hsl(220 18% 10%)',
-  border: '1px solid hsl(220 14% 18%)',
-  borderRadius: '8px',
-  color: 'hsl(0 0% 95%)',
+  background: 'hsl(225 16% 9%)',
+  border: '1px solid hsl(225 12% 16%)',
+  borderRadius: '10px',
+  color: 'hsl(210 20% 96%)',
+  fontSize: '12px',
+  padding: '8px 12px',
 };
+
+type ViewMode = "all" | "week" | "month";
 
 const Acompanhamento = () => {
   const { user } = useAuth();
   const [records, setRecords] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("all");
   const [newPeso, setNewPeso] = useState("");
   const [newBodyFat, setNewBodyFat] = useState("");
   const [newCintura, setNewCintura] = useState("");
   const [newBraco, setNewBraco] = useState("");
   const [newPerna, setNewPerna] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fetchRecords = async () => {
     if (!user) return;
@@ -32,8 +38,16 @@ const Acompanhamento = () => {
 
   useEffect(() => { fetchRecords(); }, [user]);
 
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!newPeso || Number(newPeso) <= 0) e.peso = "Peso deve ser maior que 0";
+    if (newBodyFat && (Number(newBodyFat) < 1 || Number(newBodyFat) > 60)) e.bodyFat = "% gordura entre 1-60";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
   const handleAdd = async () => {
-    if (!newPeso || !user) return;
+    if (!validate() || !user) return;
     const { error } = await supabase.from("body_tracking").insert({
       user_id: user.id,
       weight: Number(newPeso),
@@ -44,9 +58,9 @@ const Acompanhamento = () => {
     });
     if (error) toast.error("Erro ao salvar");
     else {
-      toast.success("Registro salvo!");
+      toast.success("Registro salvo com sucesso!");
       setNewPeso(""); setNewBodyFat(""); setNewCintura(""); setNewBraco(""); setNewPerna("");
-      setShowForm(false);
+      setShowForm(false); setErrors({});
       fetchRecords();
     }
   };
@@ -57,9 +71,26 @@ const Acompanhamento = () => {
     fetchRecords();
   };
 
-  const chartData = records.map((r, i) => ({
+  // Filter records by view mode
+  const filteredRecords = records.filter((r) => {
+    if (viewMode === "all") return true;
+    const d = new Date(r.created_at);
+    const now = new Date();
+    if (viewMode === "week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return d >= weekAgo;
+    }
+    if (viewMode === "month") {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return d >= monthAgo;
+    }
+    return true;
+  });
+
+  const chartData = filteredRecords.map((r) => ({
     data: new Date(r.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
     peso: Number(r.weight),
+    gordura: r.body_fat ? Number(r.body_fat) : undefined,
     cintura: r.waist ? Number(r.waist) : undefined,
     braco: r.arm ? Number(r.arm) : undefined,
     perna: r.leg ? Number(r.leg) : undefined,
@@ -69,126 +100,160 @@ const Acompanhamento = () => {
   const pesoAtual = records.length > 0 ? Number(records[records.length - 1].weight) : 0;
   const diff = pesoAtual - pesoInicial;
   const lastRecord = records[records.length - 1];
+  const prevRecord = records.length > 1 ? records[records.length - 2] : null;
+  const recentChange = prevRecord ? pesoAtual - Number(prevRecord.weight) : 0;
+
+  const statCards = [
+    { label: "Peso Atual", value: pesoAtual || "—", unit: "kg", icon: Scale, color: "text-primary", bg: "from-primary/15 to-primary/5", change: recentChange !== 0 ? `${recentChange > 0 ? '+' : ''}${recentChange.toFixed(1)}kg` : null, changeColor: recentChange <= 0 ? "text-primary" : "text-destructive" },
+    { label: "Variação Total", value: records.length > 1 ? `${diff > 0 ? '+' : ''}${diff.toFixed(1)}` : '—', unit: "kg", icon: diff <= 0 ? TrendingDown : TrendingUp, color: diff <= 0 ? "text-primary" : "text-destructive", bg: diff <= 0 ? "from-primary/15 to-primary/5" : "from-destructive/15 to-destructive/5", change: null, changeColor: "" },
+    { label: "% Gordura", value: lastRecord?.body_fat || '—', unit: lastRecord?.body_fat ? "%" : "", icon: Scale, color: "text-chart-3", bg: "from-chart-3/15 to-chart-3/5", change: null, changeColor: "" },
+    { label: "Registros", value: String(records.length), unit: "", icon: Calendar, color: "text-chart-2", bg: "from-chart-2/15 to-chart-2/5", change: null, changeColor: "" },
+  ];
 
   return (
-    <div className="space-y-8 animate-slide-up">
+    <div className="space-y-7 animate-slide-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold">Acompanhamento Físico</h1>
-          <p className="text-muted-foreground mt-1">Registre e acompanhe sua evolução</p>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Acompanhamento Físico</h1>
+          <p className="text-muted-foreground text-sm mt-1">Registre e acompanhe sua evolução corporal</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => setShowForm(!showForm)} size="sm">
           <Plus className="w-4 h-4 mr-2" /> Novo Registro
         </Button>
       </div>
 
       {showForm && (
-        <div className="glass-card p-6 glow-border">
-          <h3 className="font-display font-semibold mb-4">Adicionar Registro</h3>
+        <div className="glass-card p-5 lg:p-6 glow-border">
+          <h3 className="font-display font-semibold text-sm mb-4">Adicionar Registro</h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Peso (kg) *</label>
-              <Input type="number" step="0.1" placeholder="80.0" value={newPeso} onChange={(e) => setNewPeso(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Peso (kg) *</label>
+              <Input type="number" step="0.1" placeholder="80.0" value={newPeso} onChange={(e) => { setNewPeso(e.target.value); setErrors(er => ({ ...er, peso: "" })); }} className="bg-secondary/50 border-border/50" />
+              {errors.peso && <p className="text-[11px] text-destructive mt-1">{errors.peso}</p>}
             </div>
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">% Gordura</label>
-              <Input type="number" step="0.1" placeholder="15" value={newBodyFat} onChange={(e) => setNewBodyFat(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">% Gordura</label>
+              <Input type="number" step="0.1" placeholder="15" value={newBodyFat} onChange={(e) => { setNewBodyFat(e.target.value); setErrors(er => ({ ...er, bodyFat: "" })); }} className="bg-secondary/50 border-border/50" />
+              {errors.bodyFat && <p className="text-[11px] text-destructive mt-1">{errors.bodyFat}</p>}
             </div>
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Cintura (cm)</label>
-              <Input type="number" step="0.5" placeholder="86" value={newCintura} onChange={(e) => setNewCintura(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Cintura (cm)</label>
+              <Input type="number" step="0.5" placeholder="86" value={newCintura} onChange={(e) => setNewCintura(e.target.value)} className="bg-secondary/50 border-border/50" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Braço (cm)</label>
-              <Input type="number" step="0.5" placeholder="36" value={newBraco} onChange={(e) => setNewBraco(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Braço (cm)</label>
+              <Input type="number" step="0.5" placeholder="36" value={newBraco} onChange={(e) => setNewBraco(e.target.value)} className="bg-secondary/50 border-border/50" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Perna (cm)</label>
-              <Input type="number" step="0.5" placeholder="56" value={newPerna} onChange={(e) => setNewPerna(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Perna (cm)</label>
+              <Input type="number" step="0.5" placeholder="56" value={newPerna} onChange={(e) => setNewPerna(e.target.value)} className="bg-secondary/50 border-border/50" />
             </div>
           </div>
-          <Button onClick={handleAdd} disabled={!newPeso}>Salvar Registro</Button>
+          <Button onClick={handleAdd} disabled={!newPeso} size="sm">Salvar Registro</Button>
         </div>
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Scale className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Peso Atual</span>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {statCards.map((stat) => (
+          <div key={stat.label} className="metric-card p-4">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stat.bg} flex items-center justify-center`}>
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              </div>
+              {stat.change && <span className={`text-[11px] font-medium ${stat.changeColor}`}>{stat.change}</span>}
+            </div>
+            <p className="text-xl lg:text-2xl font-display font-bold">{stat.value} <span className="text-xs text-muted-foreground font-medium">{stat.unit}</span></p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</p>
           </div>
-          <p className="stat-value">{pesoAtual || "—"} <span className="text-sm text-muted-foreground">kg</span></p>
-        </div>
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingDown className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted-foreground">Variação</span>
-          </div>
-          <p className={`stat-value ${diff <= 0 ? 'text-primary' : 'text-destructive'}`}>
-            {records.length > 1 ? `${diff > 0 ? '+' : ''}${diff.toFixed(1)}` : '—'} <span className="text-sm text-muted-foreground">kg</span>
-          </p>
-        </div>
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Ruler className="w-4 h-4 text-chart-2" />
-            <span className="text-xs text-muted-foreground">Cintura</span>
-          </div>
-          <p className="stat-value">{lastRecord?.waist || '—'} <span className="text-sm text-muted-foreground">cm</span></p>
-        </div>
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <Ruler className="w-4 h-4 text-chart-4" />
-            <span className="text-xs text-muted-foreground">Braço</span>
-          </div>
-          <p className="stat-value">{lastRecord?.arm || '—'} <span className="text-sm text-muted-foreground">cm</span></p>
-        </div>
+        ))}
       </div>
+
+      {/* View Mode Tabs */}
+      {records.length > 0 && (
+        <div className="flex gap-1 p-1 rounded-lg bg-secondary/50 w-fit">
+          {([["all", "Tudo"], ["week", "Semana"], ["month", "Mês"]] as [ViewMode, string][]).map(([key, label]) => (
+            <button key={key} onClick={() => setViewMode(key)}
+              className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-all ${viewMode === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Weight Chart */}
       {chartData.length > 1 && (
-        <div className="glass-card p-6">
-          <h3 className="font-display font-semibold mb-6">Evolução de Peso</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" />
-              <XAxis dataKey="data" stroke="hsl(220 10% 55%)" fontSize={12} />
-              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 55%)" fontSize={12} />
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base mb-5">Evolução de Peso</h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(152 69% 46%)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(152 69% 46%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
+              <XAxis dataKey="data" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="peso" stroke="hsl(142 71% 45%)" strokeWidth={2} dot={{ fill: 'hsl(142 71% 45%)', r: 4 }} />
-            </LineChart>
+              <Area type="monotone" dataKey="peso" stroke="hsl(152 69% 46%)" fill="url(#weightAreaGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(152 69% 46%)', r: 3, strokeWidth: 0 }} />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
 
       {/* Measurements Chart */}
       {chartData.filter(r => r.cintura).length > 1 && (
-        <div className="glass-card p-6">
-          <h3 className="font-display font-semibold mb-6">Evolução de Medidas</h3>
-          <ResponsiveContainer width="100%" height={280}>
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base mb-5">Evolução de Medidas</h3>
+          <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData.filter(r => r.cintura)}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" />
-              <XAxis dataKey="data" stroke="hsl(220 10% 55%)" fontSize={12} />
-              <YAxis stroke="hsl(220 10% 55%)" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
+              <XAxis dataKey="data" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="cintura" name="Cintura" stroke="hsl(199 89% 48%)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="braco" name="Braço" stroke="hsl(280 65% 60%)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="perna" name="Perna" stroke="hsl(45 93% 47%)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="cintura" name="Cintura" stroke="hsl(199 89% 48%)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} />
+              <Line type="monotone" dataKey="braco" name="Braço" stroke="hsl(280 65% 60%)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} />
+              <Line type="monotone" dataKey="perna" name="Perna" stroke="hsl(45 93% 47%)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
 
+      {/* Body Fat Chart */}
+      {chartData.filter(r => r.gordura).length > 1 && (
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base mb-5">% Gordura Corporal</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={chartData.filter(r => r.gordura)}>
+              <defs>
+                <linearGradient id="fatGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(45 93% 47%)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(45 93% 47%)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
+              <XAxis dataKey="data" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Area type="monotone" dataKey="gordura" name="% Gordura" stroke="hsl(45 93% 47%)" fill="url(#fatGrad)" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
       {/* History Table */}
-      {records.length > 0 && (
-        <div className="glass-card p-6">
-          <h3 className="font-display font-semibold mb-4">Histórico</h3>
+      {filteredRecords.length > 0 && (
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base mb-4">Histórico</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-xs text-muted-foreground border-b border-border">
+                <tr className="text-[11px] text-muted-foreground border-b border-border/50">
                   <th className="text-left pb-3 font-medium">Data</th>
                   <th className="text-right pb-3 font-medium">Peso</th>
+                  <th className="text-right pb-3 font-medium">% Gord.</th>
                   <th className="text-right pb-3 font-medium">Cintura</th>
                   <th className="text-right pb-3 font-medium">Braço</th>
                   <th className="text-right pb-3 font-medium">Perna</th>
@@ -196,15 +261,16 @@ const Acompanhamento = () => {
                 </tr>
               </thead>
               <tbody>
-                {[...records].reverse().map((r) => (
-                  <tr key={r.id} className="border-b border-border/50 last:border-0">
-                    <td className="py-3">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
-                    <td className="py-3 text-right">{r.weight} kg</td>
-                    <td className="py-3 text-right text-muted-foreground">{r.waist ? `${r.waist} cm` : '—'}</td>
-                    <td className="py-3 text-right text-muted-foreground">{r.arm ? `${r.arm} cm` : '—'}</td>
-                    <td className="py-3 text-right text-muted-foreground">{r.leg ? `${r.leg} cm` : '—'}</td>
-                    <td className="py-3 text-right">
-                      <button onClick={() => handleDelete(r.id)} className="text-muted-foreground hover:text-destructive">
+                {[...filteredRecords].reverse().map((r) => (
+                  <tr key={r.id} className="border-b border-border/30 last:border-0">
+                    <td className="py-2.5 text-[13px]">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
+                    <td className="py-2.5 text-right text-[13px] font-medium">{r.weight} kg</td>
+                    <td className="py-2.5 text-right text-[13px] text-muted-foreground">{r.body_fat ? `${r.body_fat}%` : '—'}</td>
+                    <td className="py-2.5 text-right text-[13px] text-muted-foreground">{r.waist ? `${r.waist} cm` : '—'}</td>
+                    <td className="py-2.5 text-right text-[13px] text-muted-foreground">{r.arm ? `${r.arm} cm` : '—'}</td>
+                    <td className="py-2.5 text-right text-[13px] text-muted-foreground">{r.leg ? `${r.leg} cm` : '—'}</td>
+                    <td className="py-2.5 text-right">
+                      <button onClick={() => handleDelete(r.id)} className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-destructive/10 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </td>
@@ -217,9 +283,10 @@ const Acompanhamento = () => {
       )}
 
       {records.length === 0 && !showForm && (
-        <div className="glass-card p-8 text-center">
-          <Scale className="w-10 h-10 text-primary mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">Nenhum registro ainda. Adicione seu primeiro registro corporal!</p>
+        <div className="empty-state">
+          <Scale className="w-10 h-10 text-primary mx-auto mb-3 opacity-60" />
+          <h3 className="font-display font-semibold mb-1">Nenhum registro ainda</h3>
+          <p className="text-muted-foreground text-sm">Adicione seu primeiro registro corporal para acompanhar sua evolução.</p>
         </div>
       )}
     </div>

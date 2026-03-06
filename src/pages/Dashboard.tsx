@@ -1,38 +1,56 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, Flame, Dumbbell, Scale, Target } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+const tooltipStyle = {
+  background: 'hsl(225 16% 9%)',
+  border: '1px solid hsl(225 12% 16%)',
+  borderRadius: '10px',
+  color: 'hsl(210 20% 96%)',
+  fontSize: '12px',
+  padding: '8px 12px',
+};
 
 const Dashboard = () => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [bodyRecords, setBodyRecords] = useState<any[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
+  const [dietPlans, setDietPlans] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [bodyRes, goalsRes, workoutRes] = await Promise.all([
+      const [bodyRes, goalsRes, workoutRes, dietRes] = await Promise.all([
         supabase.from("body_tracking").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
         supabase.from("fitness_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
+        supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
       ]);
       setBodyRecords(bodyRes.data || []);
       setGoals(goalsRes.data || []);
       setWorkoutPlans(workoutRes.data || []);
+      setDietPlans(dietRes.data || []);
     };
     fetchData();
   }, [user]);
 
   const currentWeight = bodyRecords.length > 0 ? bodyRecords[bodyRecords.length - 1].weight : profile?.weight || 0;
-  const firstWeight = bodyRecords.length > 0 ? bodyRecords[0].weight : profile?.weight || 0;
-  const weightDiff = currentWeight - firstWeight;
+  const previousWeight = bodyRecords.length > 1 ? bodyRecords[bodyRecords.length - 2].weight : profile?.weight || currentWeight;
+  const weightChange = currentWeight - previousWeight;
 
   const activeGoals = goals.filter((g) => g.status === "active");
   const completedGoals = goals.filter((g) => g.status === "completed");
-  const goalProgress = goals.length > 0
-    ? Math.round((completedGoals.length / goals.length) * 100)
+  const goalProgress = goals.length > 0 ? Math.round((completedGoals.length / goals.length) * 100) : 0;
+
+  // Estimated calories from latest diet
+  const latestDiet = dietPlans[0];
+  const estimatedCalories = latestDiet
+    ? (latestDiet.plan_data as any[])?.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0) || 0
     : 0;
 
   const weightChartData = bodyRecords.length > 0
@@ -40,103 +58,184 @@ const Dashboard = () => {
         semana: `S${i + 1}`,
         peso: Number(r.weight),
       }))
-    : [{ semana: "Atual", peso: Number(profile?.weight || 0) }];
+    : [];
 
   const stats = [
-    { label: "Peso Atual", value: currentWeight ? String(currentWeight) : "—", icon: Scale, suffix: "kg", color: "text-chart-2" },
-    { label: "Treinos Salvos", value: String(workoutPlans.length), icon: Dumbbell, suffix: "", color: "text-primary" },
-    { label: "Metas Ativas", value: String(activeGoals.length), icon: Target, suffix: "", color: "text-chart-4" },
-    { label: "Meta Atingida", value: String(goalProgress), icon: Flame, suffix: "%", color: "text-chart-3" },
+    { 
+      label: "Peso Atual", 
+      value: currentWeight ? `${currentWeight}` : "—", 
+      suffix: "kg",
+      change: weightChange !== 0 ? `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)}kg` : null,
+      changeColor: weightChange <= 0 ? "text-primary" : "text-destructive",
+      icon: Scale, 
+      iconBg: "from-chart-2/20 to-chart-2/5",
+      iconColor: "text-chart-2"
+    },
+    { 
+      label: "Treinos Salvos", 
+      value: String(workoutPlans.length), 
+      suffix: "",
+      change: null,
+      changeColor: "",
+      icon: Dumbbell, 
+      iconBg: "from-primary/20 to-primary/5",
+      iconColor: "text-primary"
+    },
+    { 
+      label: "Metas Ativas", 
+      value: String(activeGoals.length), 
+      suffix: "",
+      change: completedGoals.length > 0 ? `${completedGoals.length} concluída(s)` : null,
+      changeColor: "text-primary",
+      icon: Target, 
+      iconBg: "from-chart-4/20 to-chart-4/5",
+      iconColor: "text-chart-4"
+    },
+    { 
+      label: "Calorias/dia", 
+      value: estimatedCalories > 0 ? String(estimatedCalories) : "—", 
+      suffix: estimatedCalories > 0 ? "kcal" : "",
+      change: null,
+      changeColor: "",
+      icon: Flame, 
+      iconBg: "from-chart-3/20 to-chart-3/5",
+      iconColor: "text-chart-3"
+    },
   ];
 
+  const quickActions = [
+    { label: "Novo Treino", icon: Dumbbell, path: "/treino", color: "text-primary" },
+    { label: "Plano Alimentar", icon: UtensilsCrossed, path: "/dieta", color: "text-chart-3" },
+    { label: "Registrar Peso", icon: Activity, path: "/acompanhamento", color: "text-chart-2" },
+    { label: "Nova Meta", icon: Target, path: "/metas", color: "text-chart-4" },
+  ];
+
+  const hasData = bodyRecords.length > 0 || goals.length > 0 || workoutPlans.length > 0;
+
   return (
-    <div className="space-y-8 animate-slide-up">
+    <div className="space-y-7 animate-slide-up">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-display font-bold">
+        <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">
           Olá, {profile?.full_name?.split(" ")[0] || "Usuário"} 👋
         </h1>
-        <p className="text-muted-foreground mt-1">Visão geral do seu progresso fitness</p>
+        <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="glass-card p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <stat.icon className={`w-4 h-4 ${stat.color}`} />
-              <span className="text-xs text-muted-foreground">{stat.label}</span>
+          <div key={stat.label} className="metric-card p-4 lg:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${stat.iconBg} flex items-center justify-center`}>
+                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+              </div>
+              {stat.change && (
+                <span className={`text-[11px] font-medium ${stat.changeColor}`}>{stat.change}</span>
+              )}
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="stat-value text-foreground">{stat.value}</span>
-              <span className="text-sm text-muted-foreground">{stat.suffix}</span>
+              <span className="text-2xl lg:text-3xl font-display font-bold text-foreground">{stat.value}</span>
+              {stat.suffix && <span className="text-xs text-muted-foreground font-medium">{stat.suffix}</span>}
             </div>
+            <p className="text-[11px] text-muted-foreground mt-1 font-medium">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Weight Chart */}
       {weightChartData.length > 1 && (
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="glass-card p-5 lg:p-6">
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="font-display font-semibold">Evolução de Peso</h3>
-              <p className="text-xs text-muted-foreground mt-1">{bodyRecords.length} registros</p>
+              <h3 className="font-display font-semibold text-base">Evolução de Peso</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{bodyRecords.length} registros</p>
             </div>
             {bodyRecords.length > 1 && (
-              <div className={`flex items-center gap-1 text-sm ${weightDiff <= 0 ? "text-primary" : "text-destructive"}`}>
-                <TrendingUp className="w-4 h-4" />
-                <span>{weightDiff > 0 ? "+" : ""}{weightDiff.toFixed(1)}kg</span>
+              <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg ${weightChange <= 0 ? "text-primary bg-primary/10" : "text-destructive bg-destructive/10"}`}>
+                {weightChange <= 0 ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
+                <span>{weightChange > 0 ? "+" : ""}{weightChange.toFixed(1)}kg</span>
               </div>
             )}
           </div>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={weightChartData}>
               <defs>
-                <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(142 71% 45%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(142 71% 45%)" stopOpacity={0} />
+                <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(152 69% 46%)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(152 69% 46%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 14% 18%)" />
-              <XAxis dataKey="semana" stroke="hsl(220 10% 55%)" fontSize={12} />
-              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 55%)" fontSize={12} />
-              <Tooltip contentStyle={{ background: 'hsl(220 18% 10%)', border: '1px solid hsl(220 14% 18%)', borderRadius: '8px', color: 'hsl(0 0% 95%)' }} />
-              <Area type="monotone" dataKey="peso" stroke="hsl(142 71% 45%)" fill="url(#weightGradient)" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
+              <XAxis dataKey="semana" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Area type="monotone" dataKey="peso" stroke="hsl(152 69% 46%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(152 69% 46%)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(225 16% 9%)' }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       )}
 
-      {/* Active Goals */}
-      {activeGoals.length > 0 && (
-        <div className="glass-card p-6">
-          <h3 className="font-display font-semibold mb-4">Metas Ativas</h3>
-          <div className="space-y-3">
-            {activeGoals.slice(0, 4).map((goal) => {
-              const progress = Math.min(100, (goal.current_value / goal.target_value) * 100);
-              return (
-                <div key={goal.id} className="flex items-center justify-between p-4 rounded-lg bg-secondary/50">
-                  <div className="flex items-center gap-3">
-                    <Target className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium">{goal.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {goal.current_value} / {goal.target_value} {goal.unit || ""}
-                      </p>
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Active Goals */}
+        {activeGoals.length > 0 && (
+          <div className="glass-card p-5 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-semibold text-base">Metas Ativas</h3>
+              <button onClick={() => navigate("/metas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+                Ver todas <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {activeGoals.slice(0, 3).map((goal) => {
+                const progress = Math.min(100, (goal.current_value / goal.target_value) * 100);
+                return (
+                  <div key={goal.id} className="p-3.5 rounded-xl bg-secondary/40 border border-border/30">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Target className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">{goal.title}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-primary">{Math.round(progress)}%</span>
                     </div>
+                    <div className="progress-bar !h-1.5">
+                      <div className="progress-fill" style={{ width: `${progress}%` }} />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      {goal.current_value} / {goal.target_value} {goal.unit || ""}
+                    </p>
                   </div>
-                  <span className="text-sm font-medium text-primary">{Math.round(progress)}%</span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions */}
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base mb-4">Ações Rápidas</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action) => (
+              <button
+                key={action.label}
+                onClick={() => navigate(action.path)}
+                className="flex flex-col items-center gap-2.5 p-4 rounded-xl bg-secondary/40 border border-border/30 hover:border-primary/20 hover:bg-secondary/60 transition-all duration-200 group"
+              >
+                <action.icon className={`w-5 h-5 ${action.color} group-hover:scale-110 transition-transform`} />
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{action.label}</span>
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Empty state */}
-      {bodyRecords.length === 0 && goals.length === 0 && workoutPlans.length === 0 && (
-        <div className="glass-card p-8 text-center">
-          <Flame className="w-12 h-12 text-primary mx-auto mb-4" />
+      {!hasData && (
+        <div className="empty-state">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+               style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.08))' }}>
+            <Flame className="w-7 h-7 text-primary" />
+          </div>
           <h3 className="font-display font-semibold text-lg mb-2">Comece sua jornada!</h3>
           <p className="text-muted-foreground text-sm max-w-md mx-auto">
             Explore os módulos de Treino, Dieta, Acompanhamento e Metas para começar a registrar seu progresso.

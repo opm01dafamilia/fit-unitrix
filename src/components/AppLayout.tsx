@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
-  Activity, Target, Menu, Flame, LogOut, User
+  Activity, Target, Menu, Flame, LogOut, User, X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,34 +18,48 @@ const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut } = useAuth();
 
+  const objectiveLabel = profile?.objective === "emagrecer" ? "Emagrecimento" : 
+    profile?.objective === "massa" ? "Ganho de Massa" : 
+    profile?.objective === "condicionamento" ? "Condicionamento" : 
+    profile?.objective === "manter" ? "Manutenção" : "—";
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:sticky top-0 left-0 z-50 h-screen w-64 
+        fixed lg:sticky top-0 left-0 z-50 h-screen w-[272px]
         bg-sidebar border-r border-sidebar-border
-        flex flex-col transition-transform duration-300
+        flex flex-col transition-transform duration-300 ease-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
-        <div className="flex items-center gap-3 px-6 py-6 border-b border-sidebar-border">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Flame className="w-5 h-5 text-primary-foreground" />
+        {/* Brand */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-sidebar-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" 
+                 style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
+              <Flame className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">FitPulse</h1>
+              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest">Pro Fitness</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-display text-lg font-bold text-foreground">FitPulse</h1>
-            <p className="text-xs text-muted-foreground">Fitness Tracker</p>
-          </div>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-5 space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu</p>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -53,55 +67,60 @@ const AppLayout = () => {
               end={item.to === "/"}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
                 ${isActive 
-                  ? "bg-primary/10 text-primary glow-border" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
                 }`
               }
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-[18px] h-[18px]" />
               {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* User info */}
-        <div className="p-4 mx-3 mb-2 rounded-xl bg-secondary border border-border">
-          <div className="flex items-center gap-2 mb-1">
-            <User className="w-4 h-4 text-primary" />
-            <p className="text-sm font-medium truncate">{profile?.full_name || "Usuário"}</p>
+        {/* User Card */}
+        <div className="mx-4 mb-3">
+          <div className="p-3.5 rounded-xl bg-secondary/60 border border-border/50">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                   style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.1))' }}>
+                <User className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">{profile?.full_name || "Usuário"}</p>
+                <p className="text-[11px] text-muted-foreground">{objectiveLabel}</p>
+              </div>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {profile?.objective === "emagrecer" ? "Emagrecimento" : 
-             profile?.objective === "massa" ? "Ganho de Massa" : 
-             profile?.objective === "condicionamento" ? "Condicionamento" : 
-             profile?.objective === "manter" ? "Manutenção" : "—"}
-          </p>
         </div>
 
         <button
           onClick={signOut}
-          className="flex items-center gap-2 px-7 py-4 text-sm text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border"
+          className="flex items-center gap-2.5 px-7 py-4 text-[13px] text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border"
         >
           <LogOut className="w-4 h-4" />
           Sair
         </button>
       </aside>
 
-      {/* Main */}
+      {/* Main Content */}
       <main className="flex-1 min-h-screen">
-        <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-xl border-b border-border lg:hidden">
-          <button onClick={() => setSidebarOpen(true)} className="text-foreground">
-            <Menu className="w-6 h-6" />
+        <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3.5 bg-background/70 backdrop-blur-xl border-b border-border/50 lg:hidden">
+          <button onClick={() => setSidebarOpen(true)} className="text-foreground p-1">
+            <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-primary" />
-            <span className="font-display font-bold">FitPulse</span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                 style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
+              <Flame className="w-3.5 h-3.5 text-primary-foreground" />
+            </div>
+            <span className="font-display font-bold text-sm">FitPulse</span>
           </div>
-          <div className="w-6" />
+          <div className="w-7" />
         </header>
-        <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="p-5 lg:p-8 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>
