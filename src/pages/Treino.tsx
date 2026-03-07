@@ -208,9 +208,14 @@ const Treino = () => {
       {showDisplay && displayPlan.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display font-semibold text-lg">
-              {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
-            </h2>
+            <div>
+              <h2 className="font-display font-semibold text-lg">
+                {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Foco: {viewingSaved ? (viewingSaved.body_focus === "superior" ? "Corpo Superior" : viewingSaved.body_focus === "inferior" ? "Corpo Inferior" : "Corpo Completo") : (foco === "superior" ? "Corpo Superior" : foco === "inferior" ? "Corpo Inferior" : "Corpo Completo")}
+              </p>
+            </div>
             {!viewingSaved && showPlan && (
               <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
