@@ -1,0 +1,1 @@
+ALTER TABLE public.workout_plans ADD COLUMN body_focus text DEFAULT 'completo';
