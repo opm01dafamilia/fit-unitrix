@@ -191,7 +191,7 @@ const Treino = () => {
                     <Dumbbell className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium capitalize">{sp.objective} — {sp.experience_level}</p>
+                    <p className="text-sm font-medium capitalize">{sp.objective} — {sp.experience_level} • {sp.body_focus === "superior" ? "Superior" : sp.body_focus === "inferior" ? "Inferior" : "Completo"}</p>
                     <p className="text-[11px] text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")} • {sp.days_per_week} dias/sem</p>
                   </div>
                 </div>
