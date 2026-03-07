@@ -16,6 +16,7 @@ const Treino = () => {
   const [nivel, setNivel] = useState("");
   const [dias, setDias] = useState("");
   const [foco, setFoco] = useState<BodyFocus>("completo");
+  const [showPlan, setShowPlan] = useState(false);
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [viewingSaved, setViewingSaved] = useState<any | null>(null);
