@@ -175,6 +175,7 @@ export type Database = {
       }
       workout_plans: {
         Row: {
+          body_focus: string | null
           created_at: string
           days_per_week: number
           experience_level: string
@@ -184,6 +185,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          body_focus?: string | null
           created_at?: string
           days_per_week: number
           experience_level: string
@@ -193,6 +195,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          body_focus?: string | null
           created_at?: string
           days_per_week?: number
           experience_level?: string

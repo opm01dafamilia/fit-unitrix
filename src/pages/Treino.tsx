@@ -5,14 +5,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateWorkoutPlan } from "@/lib/workoutGenerator";
+import { generateWorkoutPlan, BodyFocus } from "@/lib/workoutGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const Treino = () => {
   const { user, profile } = useAuth();
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
   const [dias, setDias] = useState("");
+  const [foco, setFoco] = useState<BodyFocus>("completo");
   const [showPlan, setShowPlan] = useState(false);
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
@@ -48,7 +51,8 @@ const Treino = () => {
         const plan = generateWorkoutPlan(
           objetivo as "emagrecer" | "massa" | "condicionamento",
           nivel as "iniciante" | "intermediario" | "avancado",
-          Number(dias)
+          Number(dias),
+          foco
         );
         setGeneratedPlan(plan);
         setShowPlan(true);
@@ -72,8 +76,9 @@ const Treino = () => {
         objective: objetivo,
         experience_level: nivel,
         days_per_week: Number(dias),
+        body_focus: foco,
         plan_data: generatedPlan,
-      });
+      } as any);
       if (error) throw error;
       toast.success("Plano salvo!");
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
@@ -146,7 +151,24 @@ const Treino = () => {
             </Select>
           </div>
         </div>
-        <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-3 block">Foco do Treino</label>
+          <RadioGroup value={foco} onValueChange={(v) => setFoco(v as BodyFocus)} className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="completo" id="foco-completo" />
+              <Label htmlFor="foco-completo" className="text-sm cursor-pointer">Corpo Completo</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="superior" id="foco-superior" />
+              <Label htmlFor="foco-superior" className="text-sm cursor-pointer">Corpo Superior</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="inferior" id="foco-inferior" />
+              <Label htmlFor="foco-inferior" className="text-sm cursor-pointer">Corpo Inferior</Label>
+            </div>
+          </RadioGroup>
+        </div>
+        <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto mt-1">
           {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
           {generating ? "Gerando..." : "Gerar Plano de Treino"}
         </Button>
@@ -169,7 +191,7 @@ const Treino = () => {
                     <Dumbbell className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium capitalize">{sp.objective} — {sp.experience_level}</p>
+                    <p className="text-sm font-medium capitalize">{sp.objective} — {sp.experience_level} • {sp.body_focus === "superior" ? "Superior" : sp.body_focus === "inferior" ? "Inferior" : "Completo"}</p>
                     <p className="text-[11px] text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")} • {sp.days_per_week} dias/sem</p>
                   </div>
                 </div>
@@ -186,9 +208,14 @@ const Treino = () => {
       {showDisplay && displayPlan.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-display font-semibold text-lg">
-              {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
-            </h2>
+            <div>
+              <h2 className="font-display font-semibold text-lg">
+                {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Foco: {viewingSaved ? (viewingSaved.body_focus === "superior" ? "Corpo Superior" : viewingSaved.body_focus === "inferior" ? "Corpo Inferior" : "Corpo Completo") : (foco === "superior" ? "Corpo Superior" : foco === "inferior" ? "Corpo Inferior" : "Corpo Completo")}
+              </p>
+            </div>
             {!viewingSaved && showPlan && (
               <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
