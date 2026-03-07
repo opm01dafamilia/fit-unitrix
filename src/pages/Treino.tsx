@@ -15,7 +15,7 @@ const Treino = () => {
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
   const [dias, setDias] = useState("");
-  const [showPlan, setShowPlan] = useState(false);
+  const [foco, setFoco] = useState<BodyFocus>("completo");
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [viewingSaved, setViewingSaved] = useState<any | null>(null);
@@ -50,7 +50,8 @@ const Treino = () => {
         const plan = generateWorkoutPlan(
           objetivo as "emagrecer" | "massa" | "condicionamento",
           nivel as "iniciante" | "intermediario" | "avancado",
-          Number(dias)
+          Number(dias),
+          foco
         );
         setGeneratedPlan(plan);
         setShowPlan(true);
@@ -74,8 +75,9 @@ const Treino = () => {
         objective: objetivo,
         experience_level: nivel,
         days_per_week: Number(dias),
+        body_focus: foco,
         plan_data: generatedPlan,
-      });
+      } as any);
       if (error) throw error;
       toast.success("Plano salvo!");
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
