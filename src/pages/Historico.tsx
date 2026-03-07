@@ -33,8 +33,9 @@ const Historico = () => {
     try {
       const from = currentPage * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
+      const tableName = tableMap[currentTab] as "body_tracking" | "workout_plans" | "diet_plans" | "fitness_goals";
       const { data: rows, error, count } = await supabase
-        .from(tableMap[currentTab])
+        .from(tableName)
         .select("*", { count: "exact" })
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
