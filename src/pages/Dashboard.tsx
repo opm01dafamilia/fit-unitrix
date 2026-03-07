@@ -230,7 +230,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className={`grid ${activeGoals.length > 0 ? "lg:grid-cols-2" : ""} gap-4`}>
         {/* Active Goals */}
         {activeGoals.length > 0 && (
           <div className="glass-card p-5 lg:p-6">
@@ -268,7 +268,7 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <div className="glass-card p-5 lg:p-6">
           <h3 className="font-display font-semibold text-base mb-4">Ações Rápidas</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className={`grid ${activeGoals.length > 0 ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4"} gap-3`}>
             {quickActions.map((action) => (
               <button
                 key={action.label}
@@ -282,6 +282,31 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Recent Activity */}
+      {workoutPlans.length > 0 && (
+        <div className="glass-card p-5 lg:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold text-base">Atividade Recente</h3>
+            <button onClick={() => navigate("/historico")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+              Ver histórico <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {workoutPlans.slice(0, 3).map((wp) => (
+              <div key={wp.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/20">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Dumbbell className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium capitalize truncate">{wp.objective} — {wp.experience_level}</p>
+                  <p className="text-[11px] text-muted-foreground">{new Date(wp.created_at).toLocaleDateString("pt-BR")} • {wp.days_per_week} dias/sem</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Empty state */}
       {!hasData && !showChecklist && (
