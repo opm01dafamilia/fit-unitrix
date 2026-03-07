@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Scale, Ruler, Plus, TrendingDown, TrendingUp, Trash2, Calendar } from "lucide-react";
+import { Scale, Ruler, Plus, TrendingDown, TrendingUp, Trash2, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -29,61 +30,76 @@ const Acompanhamento = () => {
   const [newBraco, setNewBraco] = useState("");
   const [newPerna, setNewPerna] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const fetchRecords = async () => {
     if (!user) return;
-    const { data } = await supabase.from("body_tracking").select("*").eq("user_id", user.id).order("created_at", { ascending: true });
-    setRecords(data || []);
+    try {
+      const { data, error } = await supabase.from("body_tracking").select("*").eq("user_id", user.id).order("created_at", { ascending: true });
+      if (error) throw error;
+      setRecords(data || []);
+    } catch {
+      toast.error("Erro ao carregar registros");
+    } finally {
+      setLoadingRecords(false);
+    }
   };
 
   useEffect(() => { fetchRecords(); }, [user]);
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!newPeso || Number(newPeso) <= 0) e.peso = "Peso deve ser maior que 0";
+    if (!newPeso || Number(newPeso) <= 20 || Number(newPeso) > 300) e.peso = "Peso deve ser entre 20 e 300 kg";
     if (newBodyFat && (Number(newBodyFat) < 1 || Number(newBodyFat) > 60)) e.bodyFat = "% gordura entre 1-60";
+    if (newCintura && (Number(newCintura) <= 0 || Number(newCintura) > 200)) e.cintura = "Medida inválida";
+    if (newBraco && (Number(newBraco) <= 0 || Number(newBraco) > 100)) e.braco = "Medida inválida";
+    if (newPerna && (Number(newPerna) <= 0 || Number(newPerna) > 150)) e.perna = "Medida inválida";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleAdd = async () => {
     if (!validate() || !user) return;
-    const { error } = await supabase.from("body_tracking").insert({
-      user_id: user.id,
-      weight: Number(newPeso),
-      body_fat: newBodyFat ? Number(newBodyFat) : null,
-      waist: newCintura ? Number(newCintura) : null,
-      arm: newBraco ? Number(newBraco) : null,
-      leg: newPerna ? Number(newPerna) : null,
-    });
-    if (error) toast.error("Erro ao salvar");
-    else {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("body_tracking").insert({
+        user_id: user.id,
+        weight: Number(newPeso),
+        body_fat: newBodyFat ? Number(newBodyFat) : null,
+        waist: newCintura ? Number(newCintura) : null,
+        arm: newBraco ? Number(newBraco) : null,
+        leg: newPerna ? Number(newPerna) : null,
+      });
+      if (error) throw error;
       toast.success("Registro salvo com sucesso!");
       setNewPeso(""); setNewBodyFat(""); setNewCintura(""); setNewBraco(""); setNewPerna("");
       setShowForm(false); setErrors({});
       fetchRecords();
+    } catch {
+      toast.error("Não foi possível salvar o registro. Tente novamente.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("body_tracking").delete().eq("id", id);
-    toast.success("Registro excluído");
-    fetchRecords();
+    try {
+      const { error } = await supabase.from("body_tracking").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Registro excluído");
+      fetchRecords();
+    } catch {
+      toast.error("Erro ao excluir registro");
+    }
   };
 
-  // Filter records by view mode
   const filteredRecords = records.filter((r) => {
     if (viewMode === "all") return true;
     const d = new Date(r.created_at);
     const now = new Date();
-    if (viewMode === "week") {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return d >= weekAgo;
-    }
-    if (viewMode === "month") {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return d >= monthAgo;
-    }
+    if (viewMode === "week") return d >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    if (viewMode === "month") return d >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     return true;
   });
 
@@ -109,6 +125,21 @@ const Acompanhamento = () => {
     { label: "% Gordura", value: lastRecord?.body_fat || '—', unit: lastRecord?.body_fat ? "%" : "", icon: Scale, color: "text-chart-3", bg: "from-chart-3/15 to-chart-3/5", change: null, changeColor: "" },
     { label: "Registros", value: String(records.length), unit: "", icon: Calendar, color: "text-chart-2", bg: "from-chart-2/15 to-chart-2/5", change: null, changeColor: "" },
   ];
+
+  if (loadingRecords) {
+    return (
+      <div className="space-y-7 animate-slide-up">
+        <div>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7 animate-slide-up">
@@ -138,18 +169,24 @@ const Acompanhamento = () => {
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Cintura (cm)</label>
-              <Input type="number" step="0.5" placeholder="86" value={newCintura} onChange={(e) => setNewCintura(e.target.value)} className="bg-secondary/50 border-border/50" />
+              <Input type="number" step="0.5" placeholder="86" value={newCintura} onChange={(e) => { setNewCintura(e.target.value); setErrors(er => ({ ...er, cintura: "" })); }} className="bg-secondary/50 border-border/50" />
+              {errors.cintura && <p className="text-[11px] text-destructive mt-1">{errors.cintura}</p>}
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Braço (cm)</label>
-              <Input type="number" step="0.5" placeholder="36" value={newBraco} onChange={(e) => setNewBraco(e.target.value)} className="bg-secondary/50 border-border/50" />
+              <Input type="number" step="0.5" placeholder="36" value={newBraco} onChange={(e) => { setNewBraco(e.target.value); setErrors(er => ({ ...er, braco: "" })); }} className="bg-secondary/50 border-border/50" />
+              {errors.braco && <p className="text-[11px] text-destructive mt-1">{errors.braco}</p>}
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Perna (cm)</label>
-              <Input type="number" step="0.5" placeholder="56" value={newPerna} onChange={(e) => setNewPerna(e.target.value)} className="bg-secondary/50 border-border/50" />
+              <Input type="number" step="0.5" placeholder="56" value={newPerna} onChange={(e) => { setNewPerna(e.target.value); setErrors(er => ({ ...er, perna: "" })); }} className="bg-secondary/50 border-border/50" />
+              {errors.perna && <p className="text-[11px] text-destructive mt-1">{errors.perna}</p>}
             </div>
           </div>
-          <Button onClick={handleAdd} disabled={!newPeso} size="sm">Salvar Registro</Button>
+          <Button onClick={handleAdd} disabled={!newPeso || saving} size="sm">
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+            {saving ? "Salvando..." : "Salvar Registro"}
+          </Button>
         </div>
       )}
 

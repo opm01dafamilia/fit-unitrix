@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -21,20 +22,27 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
   const [dietPlans, setDietPlans] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [bodyRes, goalsRes, workoutRes, dietRes] = await Promise.all([
-        supabase.from("body_tracking").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
-        supabase.from("fitness_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-        supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
-        supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
-      ]);
-      setBodyRecords(bodyRes.data || []);
-      setGoals(goalsRes.data || []);
-      setWorkoutPlans(workoutRes.data || []);
-      setDietPlans(dietRes.data || []);
+      try {
+        const [bodyRes, goalsRes, workoutRes, dietRes] = await Promise.all([
+          supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
+          supabase.from("fitness_goals").select("id,title,current_value,target_value,unit,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
+          supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
+          supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+        ]);
+        setBodyRecords(bodyRes.data || []);
+        setGoals(goalsRes.data || []);
+        setWorkoutPlans(workoutRes.data || []);
+        setDietPlans(dietRes.data || []);
+      } catch {
+        // silently fail, data will show as empty
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [user]);
@@ -55,7 +63,6 @@ const Dashboard = () => {
     ? bodyRecords.map((r, i) => ({ semana: `S${i + 1}`, peso: Number(r.weight) }))
     : [];
 
-  // Checklist items
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
   const hasDiet = dietPlans.length > 0;
@@ -74,7 +81,6 @@ const Dashboard = () => {
   const checklistProgress = Math.round((checklistDone / checklistTotal) * 100);
   const showChecklist = checklistDone < checklistTotal;
 
-  // User progress indicator
   const progressItems = [
     { label: "Perfil", active: profileComplete },
     { label: "Treino", active: hasWorkout },
@@ -97,6 +103,27 @@ const Dashboard = () => {
   ];
 
   const hasData = bodyRecords.length > 0 || goals.length > 0 || workoutPlans.length > 0;
+
+  if (loading) {
+    return (
+      <div className="space-y-7 animate-slide-up">
+        <div>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="metric-card p-4 lg:p-5">
+              <Skeleton className="h-9 w-9 rounded-xl mb-3" />
+              <Skeleton className="h-8 w-20 mb-1" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7 animate-slide-up">
