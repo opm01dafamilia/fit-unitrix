@@ -155,7 +155,7 @@ const Acompanhamento = () => {
 
       {showForm && (
         <div className="glass-card p-5 lg:p-6 glow-border">
-          <h3 className="font-display font-semibold text-sm mb-4">Adicionar Registro</h3>
+          <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Adicionar Registro</h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Peso (kg) *</label>

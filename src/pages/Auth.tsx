@@ -123,7 +123,12 @@ const Auth = () => {
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Carregando..." : mode === "login" ? "Entrar" : mode === "signup" ? "Criar Conta" : "Enviar Email"}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                Carregando...
+              </span>
+            ) : mode === "login" ? "Entrar" : mode === "signup" ? "Criar Conta" : "Enviar Email"}
           </Button>
 
           {mode !== "forgot" && (
