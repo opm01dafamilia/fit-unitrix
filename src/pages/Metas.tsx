@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle } from "lucide-react";
+import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Metas = () => {
   const { user } = useAuth();
@@ -19,11 +20,20 @@ const Metas = () => {
   const [unidade, setUnidade] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingMetas, setLoadingMetas] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const fetchMetas = async () => {
     if (!user) return;
-    const { data } = await supabase.from("fitness_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-    setMetas(data || []);
+    try {
+      const { data, error } = await supabase.from("fitness_goals").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+      if (error) throw error;
+      setMetas(data || []);
+    } catch {
+      toast.error("Erro ao carregar metas");
+    } finally {
+      setLoadingMetas(false);
+    }
   };
 
   useEffect(() => { fetchMetas(); }, [user]);
@@ -36,8 +46,10 @@ const Metas = () => {
   const validate = () => {
     const e: Record<string, string> = {};
     if (!titulo.trim()) e.titulo = "Título obrigatório";
+    if (titulo.trim().length > 100) e.titulo = "Máximo 100 caracteres";
     if (!valorAtual || Number(valorAtual) < 0) e.valorAtual = "Valor inválido";
     if (!valorMeta || Number(valorMeta) <= 0) e.valorMeta = "Meta deve ser > 0";
+    if (Number(valorMeta) > 99999) e.valorMeta = "Valor muito alto";
     if (targetDate && new Date(targetDate) < new Date()) e.targetDate = "Data deve ser futura";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -45,13 +57,14 @@ const Metas = () => {
 
   const handleSave = async () => {
     if (!validate() || !user) return;
+    setSaving(true);
 
     const progress = Math.min(100, Math.max(0, (Number(valorAtual) / Number(valorMeta)) * 100));
     const autoStatus = progress >= 100 ? "completed" : "active";
 
     const payload = {
       user_id: user.id,
-      title: titulo,
+      title: titulo.trim(),
       goal_type: tipo || "outro",
       current_value: Number(valorAtual),
       target_value: Number(valorMeta),
@@ -60,17 +73,23 @@ const Metas = () => {
       status: autoStatus,
     };
 
-    if (editingId) {
-      const { error } = await supabase.from("fitness_goals").update(payload).eq("id", editingId);
-      if (error) toast.error("Erro ao atualizar");
-      else toast.success("Meta atualizada!");
-    } else {
-      const { error } = await supabase.from("fitness_goals").insert(payload);
-      if (error) toast.error("Erro ao criar meta");
-      else toast.success("Meta criada!");
+    try {
+      if (editingId) {
+        const { error } = await supabase.from("fitness_goals").update(payload).eq("id", editingId);
+        if (error) throw error;
+        toast.success("Meta atualizada!");
+      } else {
+        const { error } = await supabase.from("fitness_goals").insert(payload);
+        if (error) throw error;
+        toast.success("Meta criada!");
+      }
+      resetForm();
+      fetchMetas();
+    } catch {
+      toast.error("Não foi possível salvar a meta. Tente novamente.");
+    } finally {
+      setSaving(false);
     }
-    resetForm();
-    fetchMetas();
   };
 
   const handleEdit = (meta: any) => {
@@ -85,17 +104,27 @@ const Metas = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("fitness_goals").delete().eq("id", id);
-    toast.success("Meta excluída");
-    fetchMetas();
+    try {
+      const { error } = await supabase.from("fitness_goals").delete().eq("id", id);
+      if (error) throw error;
+      toast.success("Meta excluída");
+      fetchMetas();
+    } catch {
+      toast.error("Erro ao excluir meta");
+    }
   };
 
   const handleToggleComplete = async (meta: any) => {
-    const newStatus = meta.status === "completed" ? "active" : "completed";
-    const updates: any = { status: newStatus };
-    if (newStatus === "completed") updates.current_value = meta.target_value;
-    await supabase.from("fitness_goals").update(updates).eq("id", meta.id);
-    fetchMetas();
+    try {
+      const newStatus = meta.status === "completed" ? "active" : "completed";
+      const updates: any = { status: newStatus };
+      if (newStatus === "completed") updates.current_value = meta.target_value;
+      const { error } = await supabase.from("fitness_goals").update(updates).eq("id", meta.id);
+      if (error) throw error;
+      fetchMetas();
+    } catch {
+      toast.error("Erro ao atualizar meta");
+    }
   };
 
   const getProgress = (m: any) => {
@@ -119,6 +148,18 @@ const Metas = () => {
     { icon: Trophy, value: concluidas, label: "Concluídas", color: "text-chart-3", bg: "from-chart-3/15 to-chart-3/5" },
     { icon: AlertTriangle, value: atrasadas, label: "Atrasadas", color: "text-destructive", bg: "from-destructive/15 to-destructive/5" },
   ];
+
+  if (loadingMetas) {
+    return (
+      <div className="space-y-7 animate-slide-up">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+        </div>
+        {[1,2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7 animate-slide-up">
@@ -157,7 +198,7 @@ const Metas = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Título *</label>
-              <Input placeholder="Ex: Perder 5kg" value={titulo} onChange={(e) => { setTitulo(e.target.value); setErrors(er => ({ ...er, titulo: "" })); }} className="bg-secondary/50 border-border/50" />
+              <Input placeholder="Ex: Perder 5kg" value={titulo} onChange={(e) => { setTitulo(e.target.value); setErrors(er => ({ ...er, titulo: "" })); }} className="bg-secondary/50 border-border/50" maxLength={100} />
               {errors.titulo && <p className="text-[11px] text-destructive mt-1">{errors.titulo}</p>}
             </div>
             <div>
@@ -185,7 +226,7 @@ const Metas = () => {
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Unidade</label>
-              <Input placeholder="kg" value={unidade} onChange={(e) => setUnidade(e.target.value)} className="bg-secondary/50 border-border/50" />
+              <Input placeholder="kg" value={unidade} onChange={(e) => setUnidade(e.target.value)} className="bg-secondary/50 border-border/50" maxLength={20} />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Data Alvo</label>
@@ -193,8 +234,9 @@ const Metas = () => {
               {errors.targetDate && <p className="text-[11px] text-destructive mt-1">{errors.targetDate}</p>}
             </div>
           </div>
-          <Button onClick={handleSave} disabled={!titulo || !valorAtual || !valorMeta} size="sm">
-            {editingId ? "Atualizar Meta" : "Criar Meta"}
+          <Button onClick={handleSave} disabled={!titulo || !valorAtual || !valorMeta || saving} size="sm">
+            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+            {saving ? "Salvando..." : editingId ? "Atualizar Meta" : "Criar Meta"}
           </Button>
         </div>
       )}

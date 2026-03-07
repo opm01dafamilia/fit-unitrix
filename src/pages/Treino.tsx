@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateWorkoutPlan } from "@/lib/workoutGenerator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Treino = () => {
   const { user, profile } = useAuth();
@@ -18,16 +19,22 @@ const Treino = () => {
   const [viewingSaved, setViewingSaved] = useState<any | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<any[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Pre-fill from profile
   useEffect(() => {
     if (profile?.objective) setObjetivo(profile.objective === "manter" ? "condicionamento" : profile.objective);
   }, [profile]);
 
   useEffect(() => {
     if (!user) return;
+    setLoadingPlans(true);
     supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data }) => setSavedPlans(data || []));
+      .then(({ data, error }) => {
+        if (error) toast.error("Erro ao carregar planos salvos");
+        setSavedPlans(data || []);
+        setLoadingPlans(false);
+      });
   }, [user]);
 
   const handleGenerate = () => {
@@ -36,48 +43,57 @@ const Treino = () => {
       return;
     }
     setGenerating(true);
-    // Simulate a brief loading for UX
     setTimeout(() => {
-      const plan = generateWorkoutPlan(
-        objetivo as "emagrecer" | "massa" | "condicionamento",
-        nivel as "iniciante" | "intermediario" | "avancado",
-        Number(dias)
-      );
-      setGeneratedPlan(plan);
-      setShowPlan(true);
-      setViewingSaved(null);
-      setExpandedDay(0);
-      setGenerating(false);
-      toast.success("Plano gerado com sucesso!");
+      try {
+        const plan = generateWorkoutPlan(
+          objetivo as "emagrecer" | "massa" | "condicionamento",
+          nivel as "iniciante" | "intermediario" | "avancado",
+          Number(dias)
+        );
+        setGeneratedPlan(plan);
+        setShowPlan(true);
+        setViewingSaved(null);
+        setExpandedDay(0);
+        toast.success("Plano gerado com sucesso!");
+      } catch {
+        toast.error("Erro ao gerar plano. Tente novamente.");
+      } finally {
+        setGenerating(false);
+      }
     }, 800);
   };
 
   const handleSave = async () => {
     if (!user || generatedPlan.length === 0) return;
-    const { error } = await supabase.from("workout_plans").insert({
-      user_id: user.id,
-      objective: objetivo,
-      experience_level: nivel,
-      days_per_week: Number(dias),
-      plan_data: generatedPlan,
-    });
-    if (error) {
-      toast.error("Erro ao salvar plano");
-    } else {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("workout_plans").insert({
+        user_id: user.id,
+        objective: objetivo,
+        experience_level: nivel,
+        days_per_week: Number(dias),
+        plan_data: generatedPlan,
+      });
+      if (error) throw error;
       toast.success("Plano salvo!");
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
+    } catch {
+      toast.error("Não foi possível salvar o plano. Tente novamente.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("workout_plans").delete().eq("id", id);
-    if (error) {
-      toast.error("Erro ao excluir");
-    } else {
+    try {
+      const { error } = await supabase.from("workout_plans").delete().eq("id", id);
+      if (error) throw error;
       setSavedPlans(savedPlans.filter((p) => p.id !== id));
       if (viewingSaved?.id === id) setViewingSaved(null);
       toast.success("Plano excluído");
+    } catch {
+      toast.error("Erro ao excluir plano");
     }
   };
 
@@ -137,7 +153,11 @@ const Treino = () => {
       </div>
 
       {/* Saved Plans */}
-      {savedPlans.length > 0 && (
+      {loadingPlans ? (
+        <div className="glass-card p-5 lg:p-6 space-y-2">
+          {[1,2].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
+        </div>
+      ) : savedPlans.length > 0 && (
         <div className="glass-card p-5 lg:p-6">
           <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Planos Salvos</h3>
           <div className="space-y-2">
@@ -170,7 +190,10 @@ const Treino = () => {
               {viewingSaved ? "Plano Salvo" : "Seu Plano Semanal"}
             </h2>
             {!viewingSaved && showPlan && (
-              <Button variant="outline" size="sm" onClick={handleSave}>Salvar Plano</Button>
+              <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {saving ? "Salvando..." : "Salvar Plano"}
+              </Button>
             )}
           </div>
           {displayPlan.map((day: any, i: number) => (
@@ -225,7 +248,7 @@ const Treino = () => {
       )}
 
       {/* Empty state */}
-      {savedPlans.length === 0 && !showDisplay && (
+      {!loadingPlans && savedPlans.length === 0 && !showDisplay && (
         <div className="empty-state">
           <Dumbbell className="w-10 h-10 text-primary mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano de treino</h3>

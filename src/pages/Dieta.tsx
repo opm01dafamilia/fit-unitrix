@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan } from "@/lib/dietGenerator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
@@ -21,6 +22,8 @@ const Dieta = () => {
   const [viewingSaved, setViewingSaved] = useState<any | null>(null);
   const [generating, setGenerating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -33,15 +36,20 @@ const Dieta = () => {
 
   useEffect(() => {
     if (!user) return;
+    setLoadingPlans(true);
     supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data }) => setSavedPlans(data || []));
+      .then(({ data, error }) => {
+        if (error) toast.error("Erro ao carregar planos salvos");
+        setSavedPlans(data || []);
+        setLoadingPlans(false);
+      });
   }, [user]);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!objetivo) e.objetivo = "Selecione um objetivo";
-    if (!peso || Number(peso) <= 0) e.peso = "Peso inválido";
-    if (!altura || Number(altura) <= 0) e.altura = "Altura inválida";
+    if (!peso || Number(peso) <= 20 || Number(peso) > 300) e.peso = "Peso deve ser entre 20 e 300 kg";
+    if (!altura || Number(altura) <= 100 || Number(altura) > 250) e.altura = "Altura deve ser entre 100 e 250 cm";
     if (!atividade) e.atividade = "Selecione o nível";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -51,44 +59,59 @@ const Dieta = () => {
     if (!validate()) return;
     setGenerating(true);
     setTimeout(() => {
-      const result = generateDietPlan(
-        objetivo as any,
-        Number(peso),
-        Number(altura),
-        atividade,
-        profile?.age || undefined,
-        profile?.gender || undefined
-      );
-      setPlan(result.plan);
-      setViewingSaved(null);
-      setGenerating(false);
-      toast.success(`Plano gerado: ~${result.totalCalories} kcal/dia`);
+      try {
+        const result = generateDietPlan(
+          objetivo as any,
+          Number(peso),
+          Number(altura),
+          atividade,
+          profile?.age || undefined,
+          profile?.gender || undefined
+        );
+        setPlan(result.plan);
+        setViewingSaved(null);
+        toast.success(`Plano gerado: ~${result.totalCalories} kcal/dia`);
+      } catch {
+        toast.error("Erro ao gerar dieta. Tente novamente.");
+      } finally {
+        setGenerating(false);
+      }
     }, 800);
   };
 
   const handleSave = async () => {
     if (!user || !plan) return;
-    const { error } = await supabase.from("diet_plans").insert({
-      user_id: user.id,
-      objective: objetivo,
-      weight: Number(peso),
-      height: Number(altura) || 0,
-      activity_level: atividade || "moderado",
-      plan_data: plan,
-    });
-    if (error) toast.error("Erro ao salvar");
-    else {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("diet_plans").insert({
+        user_id: user.id,
+        objective: objetivo,
+        weight: Number(peso),
+        height: Number(altura) || 0,
+        activity_level: atividade || "moderado",
+        plan_data: plan,
+      });
+      if (error) throw error;
       toast.success("Plano salvo!");
       const { data } = await supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
+    } catch {
+      toast.error("Não foi possível salvar o plano. Tente novamente.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("diet_plans").delete().eq("id", id);
-    setSavedPlans(savedPlans.filter((p) => p.id !== id));
-    if (viewingSaved?.id === id) setViewingSaved(null);
-    toast.success("Plano excluído");
+    try {
+      const { error } = await supabase.from("diet_plans").delete().eq("id", id);
+      if (error) throw error;
+      setSavedPlans(savedPlans.filter((p) => p.id !== id));
+      if (viewingSaved?.id === id) setViewingSaved(null);
+      toast.success("Plano excluído");
+    } catch {
+      toast.error("Erro ao excluir plano");
+    }
   };
 
   const displayPlan = viewingSaved ? (viewingSaved.plan_data as MealPlan[]) : plan;
@@ -159,7 +182,11 @@ const Dieta = () => {
       </div>
 
       {/* Saved Plans */}
-      {savedPlans.length > 0 && (
+      {loadingPlans ? (
+        <div className="glass-card p-5 lg:p-6 space-y-2">
+          {[1,2].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
+        </div>
+      ) : savedPlans.length > 0 && (
         <div className="glass-card p-5 lg:p-6">
           <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Planos Salvos</h3>
           <div className="space-y-2">
@@ -188,7 +215,10 @@ const Dieta = () => {
         <>
           {!viewingSaved && plan && (
             <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={handleSave}>Salvar Plano</Button>
+              <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {saving ? "Salvando..." : "Salvar Plano"}
+              </Button>
             </div>
           )}
 
@@ -259,7 +289,7 @@ const Dieta = () => {
       )}
 
       {/* Empty state */}
-      {savedPlans.length === 0 && !displayPlan && (
+      {!loadingPlans && savedPlans.length === 0 && !displayPlan && (
         <div className="empty-state">
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
