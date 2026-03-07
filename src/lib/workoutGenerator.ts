@@ -179,6 +179,11 @@ const exerciseDB: Record<string, Record<string, Exercise[]>> = {
 
 type Objective = "emagrecer" | "massa" | "condicionamento";
 type Level = "iniciante" | "intermediario" | "avancado";
+export type BodyFocus = "superior" | "inferior" | "completo";
+
+const upperGroups = ["peito", "costas", "ombros", "biceps", "triceps"];
+const lowerGroups = ["pernas"];
+const coreAndCardio = ["abdomen", "hiit", "cardio"];
 
 const splitTemplates: Record<Objective, Record<number, string[][]>> = {
   emagrecer: {
@@ -201,15 +206,65 @@ const splitTemplates: Record<Objective, Record<number, string[][]>> = {
   },
 };
 
+// Focus-specific split overrides
+const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, string[][]>>> = {
+  superior: {
+    emagrecer: {
+      3: [["peito", "costas", "hiit"], ["ombros", "biceps", "hiit"], ["triceps", "peito", "cardio"]],
+      4: [["peito", "triceps", "hiit"], ["costas", "biceps"], ["ombros", "hiit"], ["peito", "costas", "cardio"]],
+      5: [["peito", "hiit"], ["costas"], ["ombros", "triceps"], ["biceps", "peito", "hiit"], ["costas", "ombros", "cardio"]],
+      6: [["peito", "hiit"], ["costas"], ["ombros"], ["biceps", "triceps", "hiit"], ["peito", "costas"], ["ombros", "cardio"]],
+    },
+    massa: {
+      3: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "peito"]],
+      4: [["peito", "triceps"], ["costas", "biceps"], ["ombros"], ["peito", "costas", "abdomen"]],
+      5: [["peito"], ["costas"], ["ombros"], ["biceps", "triceps"], ["peito", "costas", "abdomen"]],
+      6: [["peito"], ["costas"], ["ombros"], ["biceps", "triceps"], ["peito", "costas"], ["ombros", "abdomen"]],
+    },
+    condicionamento: {
+      3: [["hiit", "peito", "costas"], ["ombros", "biceps", "cardio"], ["hiit", "triceps", "abdomen"]],
+      4: [["hiit", "peito"], ["costas", "biceps", "cardio"], ["hiit", "ombros"], ["triceps", "abdomen", "cardio"]],
+      5: [["hiit", "peito"], ["costas"], ["ombros", "cardio"], ["hiit", "biceps", "triceps"], ["abdomen", "cardio"]],
+      6: [["hiit", "peito"], ["costas"], ["ombros", "hiit"], ["biceps", "cardio"], ["triceps", "abdomen"], ["peito", "cardio"]],
+    },
+  },
+  inferior: {
+    emagrecer: {
+      3: [["pernas", "hiit"], ["pernas", "abdomen", "cardio"], ["pernas", "hiit"]],
+      4: [["pernas", "hiit"], ["pernas", "abdomen"], ["pernas", "cardio"], ["pernas", "hiit"]],
+      5: [["pernas", "hiit"], ["pernas"], ["pernas", "abdomen", "cardio"], ["pernas", "hiit"], ["pernas", "cardio"]],
+      6: [["pernas", "hiit"], ["pernas"], ["pernas", "abdomen"], ["pernas", "hiit"], ["pernas", "cardio"], ["pernas"]],
+    },
+    massa: {
+      3: [["pernas"], ["pernas", "abdomen"], ["pernas"]],
+      4: [["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"]],
+      5: [["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"], ["pernas"]],
+      6: [["pernas"], ["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"], ["pernas"]],
+    },
+    condicionamento: {
+      3: [["pernas", "hiit"], ["pernas", "cardio"], ["pernas", "hiit", "abdomen"]],
+      4: [["pernas", "hiit"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen", "cardio"]],
+      5: [["pernas", "hiit"], ["pernas"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen", "cardio"]],
+      6: [["pernas", "hiit"], ["pernas"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen"], ["pernas", "cardio"]],
+    },
+  },
+  completo: {
+    emagrecer: splitTemplates.emagrecer,
+    massa: splitTemplates.massa,
+    condicionamento: splitTemplates.condicionamento,
+  },
+};
+
 const groupLabels: Record<string, string> = {
   peito: "Peito", costas: "Costas", pernas: "Pernas", ombros: "Ombros",
   biceps: "Bíceps", triceps: "Tríceps", abdomen: "Abdômen",
   hiit: "HIIT", cardio: "Cardio",
 };
 
-export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number): WorkoutDay[] {
+export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number, bodyFocus: BodyFocus = "completo"): WorkoutDay[] {
   const days = Math.max(3, Math.min(6, daysPerWeek));
-  const split = splitTemplates[objective]?.[days] || splitTemplates[objective][3];
+  const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
+  const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
   const config = levelConfig[level];
 
   return split.map((muscleGroups, i) => {
