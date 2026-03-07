@@ -151,7 +151,24 @@ const Treino = () => {
             </Select>
           </div>
         </div>
-        <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
+        <div>
+          <label className="text-xs font-medium text-muted-foreground mb-3 block">Foco do Treino</label>
+          <RadioGroup value={foco} onValueChange={(v) => setFoco(v as BodyFocus)} className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="completo" id="foco-completo" />
+              <Label htmlFor="foco-completo" className="text-sm cursor-pointer">Corpo Completo</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="superior" id="foco-superior" />
+              <Label htmlFor="foco-superior" className="text-sm cursor-pointer">Corpo Superior</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="inferior" id="foco-inferior" />
+              <Label htmlFor="foco-inferior" className="text-sm cursor-pointer">Corpo Inferior</Label>
+            </div>
+          </RadioGroup>
+        </div>
+        <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto mt-1">
           {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
           {generating ? "Gerando..." : "Gerar Plano de Treino"}
         </Button>
