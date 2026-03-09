@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3 } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateWorkoutPlan, BodyFocus } from "@/lib/workoutGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
@@ -52,6 +53,8 @@ const Treino = () => {
   // Calendar
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | null>(null);
+  // Weekly evolution
+  const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
 
   // Pre-fill from profile
   useEffect(() => {
@@ -81,6 +84,38 @@ const Treino = () => {
     };
     fetchAll();
   }, [user]);
+
+  // Fetch weekly evolution data
+  useEffect(() => {
+    if (!user || loadingSessions) return;
+    const fetchWeeklyEvolution = async () => {
+      const now = new Date();
+      const startOfThisWeek = new Date(now);
+      startOfThisWeek.setDate(now.getDate() - now.getDay());
+      startOfThisWeek.setHours(0, 0, 0, 0);
+      const startOfLastWeek = new Date(startOfThisWeek);
+      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+      const [thisWeekRes, lastWeekRes] = await Promise.all([
+        supabase.from("exercise_history").select("exercise_name, weight, reps, set_number, created_at")
+          .eq("user_id", user.id).gte("created_at", startOfThisWeek.toISOString()).order("created_at", { ascending: false }),
+        supabase.from("exercise_history").select("exercise_name, weight, reps, set_number, created_at")
+          .eq("user_id", user.id).gte("created_at", startOfLastWeek.toISOString()).lt("created_at", startOfThisWeek.toISOString()).order("created_at", { ascending: false }),
+      ]);
+
+      const sessionsThisWeek = sessions.filter(s => new Date(s.completed_at) >= startOfThisWeek).length;
+      const targetDays = activePlan?.days_per_week || 4;
+
+      const evolution = calculateWeeklyEvolution(
+        (thisWeekRes.data as any[]) || [],
+        (lastWeekRes.data as any[]) || [],
+        sessionsThisWeek,
+        targetDays
+      );
+      setWeeklyEvolution(evolution);
+    };
+    fetchWeeklyEvolution();
+  }, [user, loadingSessions, sessions]);
 
   // Streak calculation
   const streak = useMemo(() => {
@@ -246,6 +281,7 @@ const Treino = () => {
         plan={executingPlan}
         dayIndex={executingDayIndex}
         userId={user!.id}
+        experienceLevel={profile?.experience_level || "intermediario"}
         onFinish={async () => {
           // Refresh sessions
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
@@ -516,17 +552,50 @@ const Treino = () => {
             </div>
           </div>
 
-          {/* Avg exercises card */}
-          <div className="glass-card p-4 lg:p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                <TrendingUp className="w-4.5 h-4.5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Média de exercícios por sessão</p>
-                <p className="text-xs text-muted-foreground">{avgExercises} exercícios</p>
+          {/* Avg exercises + Weekly Evolution */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="glass-card p-4 lg:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+                  <TrendingUp className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Média por sessão</p>
+                  <p className="text-xs text-muted-foreground">{avgExercises} exercícios</p>
+                </div>
               </div>
             </div>
+
+            {/* Weekly Evolution Card */}
+            {weeklyEvolution && (
+              <div className="glass-card p-4 lg:p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
+                    <BarChart3 className="w-4.5 h-4.5 text-chart-2" />
+                  </div>
+                  <p className="text-sm font-medium">Evolução Semanal</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
+                    <span className="text-xs font-semibold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
+                  </div>
+                  {weeklyEvolution.avgWeightIncrease > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
+                      <span className="text-xs font-semibold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Consistência</span>
+                    <span className="text-xs font-semibold">{weeklyEvolution.consistency}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                    <div className="h-full bg-chart-2 rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Calendar */}
