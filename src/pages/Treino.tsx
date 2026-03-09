@@ -562,6 +562,26 @@ const Treino = () => {
             </div>
           </div>
 
+          {/* Inactivity Suggestion */}
+          {inactivitySuggestion && (
+            <div className="glass-card p-4 lg:p-5 border border-amber-500/20">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center shrink-0">
+                  <span className="text-lg">{inactivitySuggestion.icone}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">{inactivitySuggestion.titulo}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{inactivitySuggestion.desc}</p>
+                </div>
+                {activePlan && (
+                  <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => startWorkout(activePlan, nextDayIndex)}>
+                    <Play className="w-3 h-3 mr-1" /> Treinar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Avg exercises + Weekly Evolution */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="glass-card p-4 lg:p-5">
