@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
-  Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw
+  Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
+  TrendingUp, TrendingDown, Minus, History
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 
 // Muscle group illustration mapping (SVG-based visual indicators)
 const muscleGroupColors: Record<string, string> = {
@@ -104,11 +106,12 @@ type Props = {
   plan: any;
   dayIndex: number;
   userId: string;
+  experienceLevel?: string;
   onFinish: () => void;
   onBack: () => void;
 };
 
-export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onBack }: Props) {
+export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", onFinish, onBack }: Props) {
   const planData = plan.plan_data as WorkoutDay[];
   const day = planData[dayIndex];
   const [exercises, setExercises] = useState<Exercise[]>(day.exercicios);
@@ -130,6 +133,11 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
   // UI
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  // Progression
+  const [exerciseHistories, setExerciseHistories] = useState<Record<string, ExerciseHistoryEntry[]>>({});
+  const [progressions, setProgressions] = useState<Record<string, ProgressionResult>>({});
+  const [finishedFeedback, setFinishedFeedback] = useState<Record<number, boolean>>({});
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
@@ -137,6 +145,61 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
   const targetSeries = parseInt(currentEx.series) || 4;
   const targetReps = currentEx.reps;
   const restSeconds = parseRestTime(currentEx.descanso);
+  const currentProgression = progressions[currentEx.nome];
+
+  // Load exercise history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      const exerciseNames = exercises.map(e => e.nome);
+      const { data } = await supabase
+        .from("exercise_history")
+        .select("exercise_name, weight, reps, set_number, created_at")
+        .eq("user_id", userId)
+        .in("exercise_name", exerciseNames)
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (!data) return;
+
+      const grouped: Record<string, ExerciseHistoryEntry[]> = {};
+      data.forEach((row: any) => {
+        const name = row.exercise_name;
+        if (!grouped[name]) grouped[name] = [];
+        grouped[name].push({
+          weight: row.weight,
+          reps: row.reps,
+          set_number: row.set_number,
+          created_at: row.created_at,
+        });
+      });
+
+      setExerciseHistories(grouped);
+
+      // Calculate progressions for all exercises
+      const progs: Record<string, ProgressionResult> = {};
+      exercises.forEach(ex => {
+        const hist = grouped[ex.nome] || [];
+        progs[ex.nome] = calculateProgression(
+          hist,
+          parseInt(ex.series) || 4,
+          ex.reps,
+          experienceLevel,
+          ex.nome
+        );
+      });
+      setProgressions(progs);
+    };
+
+    loadHistory();
+  }, [userId, exercises, experienceLevel]);
+
+  // Pre-fill recommended weight when switching exercises
+  useEffect(() => {
+    const prog = progressions[currentEx.nome];
+    if (prog && prog.feedback !== "first_time" && !inputKg) {
+      setInputKg(String(prog.recommendedWeight));
+    }
+  }, [currentExIndex, progressions, currentEx.nome]);
 
   // Workout timer
   useEffect(() => {
@@ -202,6 +265,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
     }));
     setInputKg("");
     setInputReps("");
+
+    // Show feedback when target series reached
+    const newSetsCount = (sets[currentExIndex] || []).length + 1;
+    if (newSetsCount >= targetSeries && !finishedFeedback[currentExIndex]) {
+      setFinishedFeedback(prev => ({ ...prev, [currentExIndex]: true }));
+      const prog = progressions[currentEx.nome];
+      if (prog && prog.feedback !== "first_time") {
+        toast.success(`${prog.feedbackEmoji} ${prog.feedbackLabel}`, { duration: 4000 });
+      } else {
+        toast.success("✅ Séries concluídas! Ótimo trabalho!", { duration: 3000 });
+      }
+    }
+
     // Start rest timer
     setRestTime(restSeconds);
     setRestActive(true);
@@ -256,6 +332,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
       setCurrentExIndex(currentExIndex + 1);
       setRestActive(false);
       setRestTime(0);
+      setInputKg("");
+      setInputReps("");
     }
   };
 
@@ -264,13 +342,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
       setCurrentExIndex(currentExIndex - 1);
       setRestActive(false);
       setRestTime(0);
+      setInputKg("");
+      setInputReps("");
     }
   };
 
-  // Finish
+  // Finish — save session + exercise history
   const handleFinish = async () => {
     try {
-      const { error } = await supabase.from("workout_sessions").insert({
+      // Save workout session
+      const { data: sessionData, error: sessionError } = await supabase.from("workout_sessions").insert({
         user_id: userId,
         workout_plan_id: plan.id,
         day_index: dayIndex,
@@ -278,8 +359,41 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
         muscle_group: day.grupo,
         exercises_completed: completedCount,
         exercises_total: totalExercises,
-      } as any);
-      if (error) throw error;
+      } as any).select("id").single();
+
+      if (sessionError) throw sessionError;
+
+      // Save exercise history for all sets
+      const historyRows: any[] = [];
+      Object.entries(sets).forEach(([exIdxStr, exSets]) => {
+        const exIdx = parseInt(exIdxStr);
+        const ex = exercises[exIdx];
+        if (!ex) return;
+        const grupo = day.grupo.toLowerCase();
+        let muscleGroup = "geral";
+        for (const key of Object.keys(muscleGroupColors)) {
+          if (grupo.includes(key)) { muscleGroup = key; break; }
+        }
+        exSets.forEach((s, setIdx) => {
+          historyRows.push({
+            user_id: userId,
+            exercise_name: ex.nome,
+            muscle_group: muscleGroup,
+            weight: s.kg,
+            reps: s.reps,
+            set_number: setIdx + 1,
+            workout_session_id: sessionData?.id || null,
+          });
+        });
+      });
+
+      if (historyRows.length > 0) {
+        const { error: histError } = await supabase
+          .from("exercise_history")
+          .insert(historyRows as any);
+        if (histError) console.error("Error saving exercise history:", histError);
+      }
+
       toast.success("Treino concluído! 💪🔥");
       onFinish();
     } catch {
@@ -304,6 +418,32 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
     setRestActive(false);
     setRestTime(0);
   };
+
+  // Exercise history for current exercise
+  const currentExHistory = exerciseHistories[currentEx.nome] || [];
+  const recentSessions = useMemo(() => {
+    if (currentExHistory.length === 0) return [];
+    // Group by date
+    const byDate = new Map<string, ExerciseHistoryEntry[]>();
+    currentExHistory.forEach(h => {
+      const date = h.created_at.slice(0, 10);
+      if (!byDate.has(date)) byDate.set(date, []);
+      byDate.get(date)!.push(h);
+    });
+    return Array.from(byDate.entries()).slice(0, 3).map(([date, sets]) => ({
+      date,
+      maxWeight: Math.max(...sets.map(s => s.weight)),
+      avgReps: Math.round(sets.reduce((a, s) => a + s.reps, 0) / sets.length),
+      sets: sets.length,
+    }));
+  }, [currentExHistory]);
+
+  // Feedback badge color
+  const feedbackColor = currentProgression?.feedback === "increase"
+    ? "text-primary bg-primary/10"
+    : currentProgression?.feedback === "decrease"
+    ? "text-destructive bg-destructive/10"
+    : "text-muted-foreground bg-secondary/60";
 
   return (
     <div className="space-y-4 animate-slide-up pb-24">
@@ -344,8 +484,35 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
             {muscleGroupIcons[primaryGroup] || "💪"} Músculos ativados
           </p>
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
+
+          {/* Smart weight recommendation badge */}
+          {currentProgression && currentProgression.feedback !== "first_time" && (
+            <div className={`mt-2 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
+              {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
+              {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
+              {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
+              Peso recomendado: {currentProgression.recommendedWeight} kg
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ===== PROGRESSION FEEDBACK ===== */}
+      {currentProgression && currentProgression.feedback !== "first_time" && (
+        <div className={`glass-card p-3.5 flex items-center gap-3 ${
+          currentProgression.feedback === "increase" ? "border border-primary/20" :
+          currentProgression.feedback === "decrease" ? "border border-destructive/20" :
+          "border border-border/50"
+        }`}>
+          <span className="text-lg">{currentProgression.feedbackEmoji}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold truncate">{currentProgression.feedbackLabel}</p>
+            <p className="text-[10px] text-muted-foreground">
+              Último: {currentProgression.lastWeight}kg • Melhor: {currentProgression.bestWeight}kg
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ===== CIRCULAR INDICATORS ===== */}
       <div className="grid grid-cols-3 gap-3">
@@ -410,7 +577,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
             <label className="text-[10px] text-muted-foreground mb-1 block">Quilos (kg)</label>
             <Input
               type="number"
-              placeholder="0"
+              placeholder={currentProgression?.recommendedWeight ? String(currentProgression.recommendedWeight) : "0"}
               value={inputKg}
               onChange={e => setInputKg(e.target.value)}
               className="h-11 bg-secondary/50 border-border/50 text-center font-display font-bold text-lg"
@@ -477,15 +644,56 @@ export default function WorkoutExecution({ plan, dayIndex, userId, onFinish, onB
         </div>
       )}
 
-      {/* ===== SIDE BUTTONS (swap + info) ===== */}
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" className="h-11" onClick={() => setShowAlternatives(true)}>
-          <RefreshCw className="w-4 h-4 mr-2" /> Trocar exercício
+      {/* ===== ACTION BUTTONS ===== */}
+      <div className="grid grid-cols-3 gap-2">
+        <Button variant="outline" className="h-11 text-xs" onClick={() => setShowAlternatives(true)}>
+          <RefreshCw className="w-3.5 h-3.5 mr-1" /> Trocar
         </Button>
-        <Button variant="outline" className="h-11" onClick={() => setShowInfo(!showInfo)}>
-          <Info className="w-4 h-4 mr-2" /> Informações
+        <Button variant="outline" className="h-11 text-xs" onClick={() => setShowInfo(!showInfo)}>
+          <Info className="w-3.5 h-3.5 mr-1" /> Info
+        </Button>
+        <Button variant="outline" className="h-11 text-xs" onClick={() => setShowHistory(!showHistory)}>
+          <History className="w-3.5 h-3.5 mr-1" /> Histórico
         </Button>
       </div>
+
+      {/* ===== EXERCISE HISTORY PANEL ===== */}
+      {showHistory && (
+        <div className="glass-card p-4 glow-border animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm">Histórico do Exercício</h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          {recentSessions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nenhum histórico encontrado para este exercício.</p>
+          ) : (
+            <div className="space-y-2">
+              {recentSessions.map((session, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40">
+                  <div>
+                    <p className="text-xs font-medium">
+                      {new Date(session.date).toLocaleDateString("pt-BR")}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{session.sets} séries</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-display font-bold">{session.maxWeight} kg</p>
+                    <p className="text-[10px] text-muted-foreground">~{session.avgReps} reps</p>
+                  </div>
+                </div>
+              ))}
+              {currentProgression && currentProgression.feedback !== "first_time" && (
+                <div className="pt-2 border-t border-border/50 mt-2 flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Melhor peso registrado</span>
+                  <span className="text-sm font-display font-bold text-primary">{currentProgression.bestWeight} kg</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ===== EXERCISE INFO PANEL ===== */}
       {showInfo && (
