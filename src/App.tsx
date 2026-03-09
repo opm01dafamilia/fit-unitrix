@@ -92,6 +92,7 @@ const App = () => (
               <Route path="/acompanhamento" element={<Acompanhamento />} />
               <Route path="/metas" element={<Metas />} />
               <Route path="/historico" element={<Historico />} />
+              <Route path="/conquistas" element={<Conquistas />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>

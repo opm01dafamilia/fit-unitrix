@@ -14,6 +14,7 @@ const navItems = [
   { to: "/acompanhamento", icon: Activity, label: "Corpo" },
   { to: "/metas", icon: Target, label: "Metas" },
   { to: "/historico", icon: History, label: "Histórico" },
+  { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
