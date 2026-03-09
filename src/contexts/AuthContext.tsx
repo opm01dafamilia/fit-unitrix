@@ -12,6 +12,8 @@ type Profile = {
   weight: number | null;
   objective: string | null;
   activity_level: string | null;
+  experience_level: string | null;
+  training_location: string | null;
   onboarding_completed: boolean;
 };
 

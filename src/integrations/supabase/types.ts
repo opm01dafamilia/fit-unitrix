@@ -133,12 +133,14 @@ export type Database = {
           activity_level: string | null
           age: number | null
           created_at: string
+          experience_level: string | null
           full_name: string | null
           gender: string | null
           height: number | null
           id: string
           objective: string | null
           onboarding_completed: boolean
+          training_location: string | null
           updated_at: string
           user_id: string
           weight: number | null
@@ -147,12 +149,14 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           created_at?: string
+          experience_level?: string | null
           full_name?: string | null
           gender?: string | null
           height?: number | null
           id?: string
           objective?: string | null
           onboarding_completed?: boolean
+          training_location?: string | null
           updated_at?: string
           user_id: string
           weight?: number | null
@@ -161,12 +165,14 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           created_at?: string
+          experience_level?: string | null
           full_name?: string | null
           gender?: string | null
           height?: number | null
           id?: string
           objective?: string | null
           onboarding_completed?: boolean
+          training_location?: string | null
           updated_at?: string
           user_id?: string
           weight?: number | null
