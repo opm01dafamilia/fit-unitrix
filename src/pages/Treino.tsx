@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3 } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 
 type WorkoutSession = {
   id: string;
