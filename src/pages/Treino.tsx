@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
+import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
+import { useNavigate } from "react-router-dom";
 
 type WorkoutSession = {
   id: string;
