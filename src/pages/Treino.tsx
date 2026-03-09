@@ -85,6 +85,38 @@ const Treino = () => {
     fetchAll();
   }, [user]);
 
+  // Fetch weekly evolution data
+  useEffect(() => {
+    if (!user || loadingSessions) return;
+    const fetchWeeklyEvolution = async () => {
+      const now = new Date();
+      const startOfThisWeek = new Date(now);
+      startOfThisWeek.setDate(now.getDate() - now.getDay());
+      startOfThisWeek.setHours(0, 0, 0, 0);
+      const startOfLastWeek = new Date(startOfThisWeek);
+      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+      const [thisWeekRes, lastWeekRes] = await Promise.all([
+        supabase.from("exercise_history").select("exercise_name, weight, reps, set_number, created_at")
+          .eq("user_id", user.id).gte("created_at", startOfThisWeek.toISOString()).order("created_at", { ascending: false }),
+        supabase.from("exercise_history").select("exercise_name, weight, reps, set_number, created_at")
+          .eq("user_id", user.id).gte("created_at", startOfLastWeek.toISOString()).lt("created_at", startOfThisWeek.toISOString()).order("created_at", { ascending: false }),
+      ]);
+
+      const sessionsThisWeek = sessions.filter(s => new Date(s.completed_at) >= startOfThisWeek).length;
+      const targetDays = activePlan?.days_per_week || 4;
+
+      const evolution = calculateWeeklyEvolution(
+        (thisWeekRes.data as any[]) || [],
+        (lastWeekRes.data as any[]) || [],
+        sessionsThisWeek,
+        targetDays
+      );
+      setWeeklyEvolution(evolution);
+    };
+    fetchWeeklyEvolution();
+  }, [user, loadingSessions, sessions]);
+
   // Streak calculation
   const streak = useMemo(() => {
     if (sessions.length === 0) return 0;
