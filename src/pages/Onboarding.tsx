@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame, ArrowRight, User, Ruler, Target } from "lucide-react";
+import { Flame, ArrowRight, User, Ruler, Target, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,12 +18,14 @@ const Onboarding = () => {
     full_name: "", age: "", gender: "",
     height: "", weight: "",
     objective: "", activity_level: "",
+    experience_level: "", training_location: "",
   });
 
   const steps = [
     { title: "Informações Pessoais", desc: "Nos conte sobre você", icon: User, fields: ["full_name", "age", "gender"] },
     { title: "Dados Físicos", desc: "Suas medidas atuais", icon: Ruler, fields: ["height", "weight"] },
     { title: "Objetivo e Atividade", desc: "O que você busca alcançar", icon: Target, fields: ["objective", "activity_level"] },
+    { title: "Experiência e Local", desc: "Seu nível e onde treina", icon: Dumbbell, fields: ["experience_level", "training_location"] },
   ];
 
   const validateStep = () => {
@@ -51,6 +53,7 @@ const Onboarding = () => {
         full_name: data.full_name, age: Number(data.age), gender: data.gender,
         height: Number(data.height), weight: Number(data.weight),
         objective: data.objective, activity_level: data.activity_level,
+        experience_level: data.experience_level, training_location: data.training_location,
         onboarding_completed: true,
       })
       .eq("user_id", user.id);
@@ -150,9 +153,10 @@ const Onboarding = () => {
                   <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="emagrecer">Emagrecer</SelectItem>
-                    <SelectItem value="massa">Ganhar Massa</SelectItem>
-                    <SelectItem value="condicionamento">Condicionamento</SelectItem>
-                    <SelectItem value="manter">Manter Peso</SelectItem>
+                    <SelectItem value="massa">Ganhar Massa Muscular</SelectItem>
+                    <SelectItem value="definicao">Definição Muscular</SelectItem>
+                    <SelectItem value="condicionamento">Condicionamento Físico</SelectItem>
+                    <SelectItem value="saude">Saúde Geral</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.objective && <p className="text-[11px] text-destructive mt-1">{errors.objective}</p>}
@@ -169,6 +173,34 @@ const Onboarding = () => {
                   </SelectContent>
                 </Select>
                 {errors.activity_level && <p className="text-[11px] text-destructive mt-1">{errors.activity_level}</p>}
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Nível de experiência</label>
+                <Select value={data.experience_level} onValueChange={(v) => { setData({ ...data, experience_level: v }); setErrors(er => ({ ...er, experience_level: "" })); }}>
+                  <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="iniciante">Iniciante</SelectItem>
+                    <SelectItem value="intermediario">Intermediário</SelectItem>
+                    <SelectItem value="avancado">Avançado</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.experience_level && <p className="text-[11px] text-destructive mt-1">{errors.experience_level}</p>}
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Local de treino</label>
+                <Select value={data.training_location} onValueChange={(v) => { setData({ ...data, training_location: v }); setErrors(er => ({ ...er, training_location: "" })); }}>
+                  <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="academia">Academia</SelectItem>
+                    <SelectItem value="casa">Em Casa</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.training_location && <p className="text-[11px] text-destructive mt-1">{errors.training_location}</p>}
               </div>
             </div>
           )}
