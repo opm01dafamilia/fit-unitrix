@@ -552,17 +552,50 @@ const Treino = () => {
             </div>
           </div>
 
-          {/* Avg exercises card */}
-          <div className="glass-card p-4 lg:p-5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                <TrendingUp className="w-4.5 h-4.5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Média de exercícios por sessão</p>
-                <p className="text-xs text-muted-foreground">{avgExercises} exercícios</p>
+          {/* Avg exercises + Weekly Evolution */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="glass-card p-4 lg:p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+                  <TrendingUp className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Média por sessão</p>
+                  <p className="text-xs text-muted-foreground">{avgExercises} exercícios</p>
+                </div>
               </div>
             </div>
+
+            {/* Weekly Evolution Card */}
+            {weeklyEvolution && (
+              <div className="glass-card p-4 lg:p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
+                    <BarChart3 className="w-4.5 h-4.5 text-chart-2" />
+                  </div>
+                  <p className="text-sm font-medium">Evolução Semanal</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
+                    <span className="text-xs font-semibold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
+                  </div>
+                  {weeklyEvolution.avgWeightIncrease > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
+                      <span className="text-xs font-semibold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Consistência</span>
+                    <span className="text-xs font-semibold">{weeklyEvolution.consistency}%</span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                    <div className="h-full bg-chart-2 rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Calendar */}
