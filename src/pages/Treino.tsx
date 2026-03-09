@@ -281,6 +281,7 @@ const Treino = () => {
         plan={executingPlan}
         dayIndex={executingDayIndex}
         userId={user!.id}
+        experienceLevel={profile?.experience_level || "intermediario"}
         onFinish={async () => {
           // Refresh sessions
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
