@@ -602,6 +602,50 @@ const Treino = () => {
             </div>
           )}
 
+          {/* Achievements Quick Card */}
+          {(() => {
+            const totalExCompleted = sessions.reduce((a, s) => a + s.exercises_completed, 0);
+            const quickStats: UserStats = {
+              totalWorkouts: sessions.length,
+              currentStreak: streak,
+              maxStreak: streak,
+              totalProgressions: 0,
+              totalExercisesCompleted: totalExCompleted,
+              daysActive: new Set(sessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))).size,
+            };
+            const achievements = calculateAchievements(quickStats);
+            const unlocked = achievements.filter(a => a.unlocked).length;
+            const nextAchievement = achievements.find(a => !a.unlocked);
+            return (
+              <div className="glass-card p-4 lg:p-5 cursor-pointer hover:bg-secondary/20 transition-colors" onClick={() => navigate("/conquistas")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
+                      <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Conquistas</p>
+                      <p className="text-[10px] text-muted-foreground">{unlocked}/{achievements.length} desbloqueadas</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-primary font-medium">Ver todas →</span>
+                </div>
+                {nextAchievement && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40">
+                    <span className="text-lg">{nextAchievement.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium">{nextAchievement.title}</p>
+                      <div className="h-1 bg-muted rounded-full overflow-hidden mt-1">
+                        <div className="h-full bg-primary/50 rounded-full" style={{ width: `${nextAchievement.progress}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">{nextAchievement.progress}%</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Avg exercises + Weekly Evolution */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="glass-card p-4 lg:p-5">
