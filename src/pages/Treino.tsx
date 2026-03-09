@@ -53,6 +53,8 @@ const Treino = () => {
   // Calendar
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | null>(null);
+  // Weekly evolution
+  const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
 
   // Pre-fill from profile
   useEffect(() => {
