@@ -31,6 +31,7 @@ type WorkoutSession = {
 
 const Treino = () => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   // View state
   const [view, setView] = useState<"dashboard" | "generator" | "execution">("dashboard");
   // Generator state
