@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp } from "lucide-react";
+import WorkoutExecution from "@/components/WorkoutExecution";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
