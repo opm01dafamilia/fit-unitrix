@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3 } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 
 type WorkoutSession = {
   id: string;
@@ -131,6 +132,14 @@ const Treino = () => {
       else break;
     }
     return count;
+  }, [sessions]);
+
+  // Inactivity suggestion
+  const inactivitySuggestion = useMemo((): InactivitySuggestion | null => {
+    if (sessions.length === 0) return getInactivitySuggestion(999);
+    const lastSessionDate = new Date(sessions[0].completed_at);
+    const daysSince = differenceInCalendarDays(new Date(), lastSessionDate);
+    return getInactivitySuggestion(daysSince);
   }, [sessions]);
 
   // Active plan (most recent)
@@ -282,8 +291,9 @@ const Treino = () => {
         dayIndex={executingDayIndex}
         userId={user!.id}
         experienceLevel={profile?.experience_level || "intermediario"}
+        trainingLocation={profile?.training_location || undefined}
+        objective={profile?.objective || undefined}
         onFinish={async () => {
-          // Refresh sessions
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
           setSessions((data as WorkoutSession[]) || []);
           setView("dashboard");
@@ -551,6 +561,26 @@ const Treino = () => {
               <p className="text-[11px] text-muted-foreground mt-1">Treinos concluídos</p>
             </div>
           </div>
+
+          {/* Inactivity Suggestion */}
+          {inactivitySuggestion && (
+            <div className="glass-card p-4 lg:p-5 border border-amber-500/20">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center shrink-0">
+                  <span className="text-lg">{inactivitySuggestion.icone}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">{inactivitySuggestion.titulo}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{inactivitySuggestion.desc}</p>
+                </div>
+                {activePlan && (
+                  <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => startWorkout(activePlan, nextDayIndex)}>
+                    <Play className="w-3 h-3 mr-1" /> Treinar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Avg exercises + Weekly Evolution */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
