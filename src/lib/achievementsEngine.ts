@@ -1,0 +1,245 @@
+// Achievement definitions and unlock logic
+
+export type Achievement = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: "streak" | "volume" | "progression" | "milestone";
+  requirement: number; // threshold value
+  unlocked: boolean;
+  unlockedAt?: string;
+  progress: number; // 0-100
+  currentValue: number;
+};
+
+type AchievementDef = {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: "streak" | "volume" | "progression" | "milestone";
+  requirement: number;
+  getValue: (stats: UserStats) => number;
+};
+
+export type UserStats = {
+  totalWorkouts: number;
+  currentStreak: number;
+  maxStreak: number;
+  totalProgressions: number; // exercises that had weight increase
+  totalExercisesCompleted: number;
+  daysActive: number;
+};
+
+const achievementDefs: AchievementDef[] = [
+  // Milestone achievements
+  {
+    id: "first_workout",
+    title: "Primeiro Passo",
+    description: "Complete seu primeiro treino",
+    icon: "🎯",
+    category: "milestone",
+    requirement: 1,
+    getValue: (s) => s.totalWorkouts,
+  },
+  {
+    id: "10_workouts",
+    title: "Dedicação",
+    description: "Complete 10 treinos",
+    icon: "💪",
+    category: "milestone",
+    requirement: 10,
+    getValue: (s) => s.totalWorkouts,
+  },
+  {
+    id: "25_workouts",
+    title: "Consistente",
+    description: "Complete 25 treinos",
+    icon: "🏅",
+    category: "milestone",
+    requirement: 25,
+    getValue: (s) => s.totalWorkouts,
+  },
+  {
+    id: "50_workouts",
+    title: "Atleta",
+    description: "Complete 50 treinos",
+    icon: "🏆",
+    category: "milestone",
+    requirement: 50,
+    getValue: (s) => s.totalWorkouts,
+  },
+  {
+    id: "100_workouts",
+    title: "Lenda",
+    description: "Complete 100 treinos",
+    icon: "👑",
+    category: "milestone",
+    requirement: 100,
+    getValue: (s) => s.totalWorkouts,
+  },
+
+  // Streak achievements
+  {
+    id: "streak_3",
+    title: "Fogo Aceso",
+    description: "Treine 3 dias seguidos",
+    icon: "🔥",
+    category: "streak",
+    requirement: 3,
+    getValue: (s) => s.maxStreak,
+  },
+  {
+    id: "streak_7",
+    title: "Semana Perfeita",
+    description: "Treine 7 dias seguidos",
+    icon: "⚡",
+    category: "streak",
+    requirement: 7,
+    getValue: (s) => s.maxStreak,
+  },
+  {
+    id: "streak_14",
+    title: "Imparável",
+    description: "Treine 14 dias seguidos",
+    icon: "💎",
+    category: "streak",
+    requirement: 14,
+    getValue: (s) => s.maxStreak,
+  },
+  {
+    id: "streak_30",
+    title: "Máquina",
+    description: "Treine 30 dias seguidos",
+    icon: "🌟",
+    category: "streak",
+    requirement: 30,
+    getValue: (s) => s.maxStreak,
+  },
+
+  // Progression achievements
+  {
+    id: "first_progression",
+    title: "Evolução",
+    description: "Aumente a carga pela primeira vez",
+    icon: "📈",
+    category: "progression",
+    requirement: 1,
+    getValue: (s) => s.totalProgressions,
+  },
+  {
+    id: "10_progressions",
+    title: "Em Ascensão",
+    description: "Aumente a carga em 10 exercícios",
+    icon: "🚀",
+    category: "progression",
+    requirement: 10,
+    getValue: (s) => s.totalProgressions,
+  },
+  {
+    id: "25_progressions",
+    title: "Superação",
+    description: "Aumente a carga em 25 exercícios",
+    icon: "⭐",
+    category: "progression",
+    requirement: 25,
+    getValue: (s) => s.totalProgressions,
+  },
+
+  // Volume achievements
+  {
+    id: "50_exercises",
+    title: "Aquecendo",
+    description: "Complete 50 exercícios no total",
+    icon: "🏋️",
+    category: "volume",
+    requirement: 50,
+    getValue: (s) => s.totalExercisesCompleted,
+  },
+  {
+    id: "200_exercises",
+    title: "Guerreiro",
+    description: "Complete 200 exercícios no total",
+    icon: "⚔️",
+    category: "volume",
+    requirement: 200,
+    getValue: (s) => s.totalExercisesCompleted,
+  },
+  {
+    id: "500_exercises",
+    title: "Titã",
+    description: "Complete 500 exercícios no total",
+    icon: "🔱",
+    category: "volume",
+    requirement: 500,
+    getValue: (s) => s.totalExercisesCompleted,
+  },
+];
+
+export function calculateAchievements(stats: UserStats): Achievement[] {
+  return achievementDefs.map((def) => {
+    const currentValue = def.getValue(stats);
+    const unlocked = currentValue >= def.requirement;
+    const progress = Math.min(100, Math.round((currentValue / def.requirement) * 100));
+
+    return {
+      id: def.id,
+      title: def.title,
+      description: def.description,
+      icon: def.icon,
+      category: def.category,
+      requirement: def.requirement,
+      unlocked,
+      progress,
+      currentValue,
+    };
+  });
+}
+
+export function getNewlyUnlocked(
+  prevStats: UserStats,
+  newStats: UserStats
+): Achievement[] {
+  const prevAchievements = calculateAchievements(prevStats);
+  const newAchievements = calculateAchievements(newStats);
+
+  return newAchievements.filter((a, i) => a.unlocked && !prevAchievements[i].unlocked);
+}
+
+// Motivational messages after workout
+const motivationalMessages = [
+  { emoji: "🔥", text: "Ótimo trabalho! Cada treino conta!" },
+  { emoji: "💪", text: "Você está ficando mais forte a cada dia!" },
+  { emoji: "🚀", text: "Superação é seu sobrenome!" },
+  { emoji: "⚡", text: "Energia pura! Continue assim!" },
+  { emoji: "🏆", text: "Campeão! Mais um treino concluído!" },
+  { emoji: "🎯", text: "Foco total! Resultados vêm com consistência!" },
+  { emoji: "💎", text: "Diamantes são feitos sob pressão. Você brilha!" },
+  { emoji: "🌟", text: "Estrela! Seu esforço vai ser recompensado!" },
+];
+
+export function getMotivationalMessage(streak: number): { emoji: string; text: string; streakText: string } {
+  const msg = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+  const streakText = streak > 1
+    ? `Sua sequência agora é de ${streak} dias! 🔥`
+    : streak === 1
+    ? "Sequência iniciada! Treine amanhã para manter! 🔥"
+    : "Comece uma nova sequência treinando amanhã!";
+
+  return { ...msg, streakText };
+}
+
+export const categoryLabels: Record<string, string> = {
+  streak: "Sequência",
+  volume: "Volume",
+  progression: "Progressão",
+  milestone: "Marco",
+};
+
+export const categoryIcons: Record<string, string> = {
+  streak: "🔥",
+  volume: "🏋️",
+  progression: "📈",
+  milestone: "🎯",
+};

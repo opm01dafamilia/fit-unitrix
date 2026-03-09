@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
+import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
+import { useNavigate } from "react-router-dom";
 
 type WorkoutSession = {
   id: string;
@@ -29,6 +31,7 @@ type WorkoutSession = {
 
 const Treino = () => {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   // View state
   const [view, setView] = useState<"dashboard" | "generator" | "execution">("dashboard");
   // Generator state
@@ -295,7 +298,24 @@ const Treino = () => {
         objective={profile?.objective || undefined}
         onFinish={async () => {
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
-          setSessions((data as WorkoutSession[]) || []);
+          const newSessions = (data as WorkoutSession[]) || [];
+          setSessions(newSessions);
+          
+          // Motivational message with streak info
+          const uniqueDays = [...new Set(newSessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
+          let newStreak = 0;
+          const today = format(new Date(), "yyyy-MM-dd");
+          const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+          if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+            for (let i = 0; i < uniqueDays.length; i++) {
+              const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+              if (uniqueDays[i] === expected) newStreak++;
+              else break;
+            }
+          }
+          const msg = getMotivationalMessage(newStreak);
+          toast.success(`${msg.emoji} ${msg.text}`, { description: msg.streakText, duration: 5000 });
+          
           setView("dashboard");
         }}
         onBack={() => setView("dashboard")}
@@ -581,6 +601,50 @@ const Treino = () => {
               </div>
             </div>
           )}
+
+          {/* Achievements Quick Card */}
+          {(() => {
+            const totalExCompleted = sessions.reduce((a, s) => a + s.exercises_completed, 0);
+            const quickStats: UserStats = {
+              totalWorkouts: sessions.length,
+              currentStreak: streak,
+              maxStreak: streak,
+              totalProgressions: 0,
+              totalExercisesCompleted: totalExCompleted,
+              daysActive: new Set(sessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))).size,
+            };
+            const achievements = calculateAchievements(quickStats);
+            const unlocked = achievements.filter(a => a.unlocked).length;
+            const nextAchievement = achievements.find(a => !a.unlocked);
+            return (
+              <div className="glass-card p-4 lg:p-5 cursor-pointer hover:bg-secondary/20 transition-colors" onClick={() => navigate("/conquistas")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
+                      <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Conquistas</p>
+                      <p className="text-[10px] text-muted-foreground">{unlocked}/{achievements.length} desbloqueadas</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-primary font-medium">Ver todas →</span>
+                </div>
+                {nextAchievement && (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40">
+                    <span className="text-lg">{nextAchievement.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium">{nextAchievement.title}</p>
+                      <div className="h-1 bg-muted rounded-full overflow-hidden mt-1">
+                        <div className="h-full bg-primary/50 rounded-full" style={{ width: `${nextAchievement.progress}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">{nextAchievement.progress}%</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Avg exercises + Weekly Evolution */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
