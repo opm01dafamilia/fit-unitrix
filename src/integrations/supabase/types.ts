@@ -212,6 +212,50 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_sessions: {
+        Row: {
+          completed_at: string
+          day_index: number
+          day_name: string
+          exercises_completed: number
+          exercises_total: number
+          id: string
+          muscle_group: string
+          user_id: string
+          workout_plan_id: string | null
+        }
+        Insert: {
+          completed_at?: string
+          day_index: number
+          day_name: string
+          exercises_completed?: number
+          exercises_total?: number
+          id?: string
+          muscle_group: string
+          user_id: string
+          workout_plan_id?: string | null
+        }
+        Update: {
+          completed_at?: string
+          day_index?: number
+          day_name?: string
+          exercises_completed?: number
+          exercises_total?: number
+          id?: string
+          muscle_group?: string
+          user_id?: string
+          workout_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sessions_workout_plan_id_fkey"
+            columns: ["workout_plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
