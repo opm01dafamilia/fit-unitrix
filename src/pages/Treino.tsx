@@ -241,73 +241,19 @@ const Treino = () => {
 
   // ==================== EXECUTION VIEW ====================
   if (view === "execution" && executingPlan) {
-    const planData = executingPlan.plan_data as any[];
-    const day = planData[executingDayIndex];
-    const progress = day.exercicios.length > 0 ? Math.round((completedExercises.size / day.exercicios.length) * 100) : 0;
-
     return (
-      <div className="space-y-5 animate-slide-up">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => setView("dashboard")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-display font-bold">{day.dia}</h1>
-            <p className="text-sm text-muted-foreground">{day.grupo}</p>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="glass-card p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-muted-foreground font-medium">Progresso</span>
-            <span className="text-xs font-semibold text-primary">{progress}%</span>
-          </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-2">{completedExercises.size}/{day.exercicios.length} exercícios</p>
-        </div>
-
-        {/* Exercises */}
-        <div className="space-y-2.5">
-          {day.exercicios.map((ex: any, j: number) => {
-            const done = completedExercises.has(j);
-            return (
-              <button
-                key={j}
-                onClick={() => toggleExercise(j)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${done ? "bg-primary/8 border-primary/20" : "glass-card border-transparent hover:border-border/50"}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 transition-colors ${done ? "bg-primary text-primary-foreground" : "bg-secondary/60"}`}>
-                    {done ? <Check className="w-4 h-4" /> : <span className="text-xs font-medium text-muted-foreground">{j + 1}</span>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-medium text-sm ${done ? "line-through text-muted-foreground" : ""}`}>{ex.nome}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{ex.desc}</p>
-                    <div className="flex gap-3 mt-2 text-[11px]">
-                      <span className="flex items-center gap-1 text-primary font-medium px-2 py-0.5 rounded-md bg-primary/8">
-                        <Clock className="w-3 h-3" />{ex.series}x{ex.reps}
-                      </span>
-                      {ex.descanso && ex.descanso !== "—" && (
-                        <span className="flex items-center gap-1 text-muted-foreground px-2 py-0.5 rounded-md bg-secondary/50">
-                          <Timer className="w-3 h-3" />{ex.descanso}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <Button onClick={finishWorkout} className="w-full h-12" disabled={completedExercises.size === 0}>
-          <Trophy className="w-4 h-4 mr-2" />
-          Finalizar Treino ({completedExercises.size}/{day.exercicios.length})
-        </Button>
-      </div>
+      <WorkoutExecution
+        plan={executingPlan}
+        dayIndex={executingDayIndex}
+        userId={user!.id}
+        onFinish={async () => {
+          // Refresh sessions
+          const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
+          setSessions((data as WorkoutSession[]) || []);
+          setView("dashboard");
+        }}
+        onBack={() => setView("dashboard")}
+      />
     );
   }
 
