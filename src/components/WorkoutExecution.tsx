@@ -588,25 +588,42 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
             <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
           </h3>
-          <div className="flex items-center gap-4">
-            <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} className="w-28 h-40 shrink-0" />
-            <div className="flex-1 space-y-1.5">
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Principal</span>
-                <p className="text-sm font-medium mt-0.5">{libraryExercise.musculos[0]}</p>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            {/* Left: Body maps */}
+            <div className="shrink-0">
+              <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} />
+            </div>
+
+            {/* Right: Muscle info */}
+            <div className="flex-1 w-full space-y-3">
+              {/* Primary muscle */}
+              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
+                  <Target className="w-3 h-3" /> Principal
+                </span>
+                <p className="text-sm font-semibold mt-1">{libraryExercise.musculos[0]}</p>
               </div>
+
+              {/* Secondary muscles */}
               {libraryExercise.musculos.length > 1 && (
-                <div>
+                <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
-                  <div className="flex flex-wrap gap-1 mt-0.5">
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {libraryExercise.musculos.slice(1).map((m, i) => (
-                      <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/60 text-muted-foreground">{m}</span>
+                      <span key={i} className="text-[11px] px-2.5 py-1 rounded-md bg-secondary/80 text-foreground/80 border border-border/30 font-medium">{m}</span>
                     ))}
                   </div>
                 </div>
               )}
-              <div className="pt-1">
-                <span className="text-[10px] text-muted-foreground">{libraryExercise.equipamento}</span>
+
+              {/* Equipment & difficulty */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-secondary/60 text-muted-foreground border border-border/30 flex items-center gap-1">
+                  <Dumbbell className="w-3 h-3" /> {libraryExercise.equipamento}
+                </span>
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-secondary/60 text-muted-foreground border border-border/30">
+                  {libraryExercise.dificuldade}
+                </span>
               </div>
             </div>
           </div>

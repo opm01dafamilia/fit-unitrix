@@ -299,16 +299,29 @@ function ExerciseDetailView({
 
         {/* Muscle Body Map */}
         <div className="p-4 rounded-xl bg-secondary/30 border border-border/30">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center justify-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5" /> Músculos ativados
           </h3>
-          <MuscleBodyMap highlightedMuscles={exercise.musculosDestacados} />
-          <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-            {exercise.musculos.map((m, i) => (
-              <Badge key={i} variant="secondary" className="text-xs font-normal">
-                {m}
-              </Badge>
-            ))}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <div className="shrink-0">
+              <MuscleBodyMap highlightedMuscles={exercise.musculosDestacados} />
+            </div>
+            <div className="flex-1 w-full space-y-2.5">
+              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Principal</span>
+                <p className="text-sm font-semibold mt-1">{exercise.musculos[0]}</p>
+              </div>
+              {exercise.musculos.length > 1 && (
+                <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {exercise.musculos.slice(1).map((m, i) => (
+                      <Badge key={i} variant="secondary" className="text-xs font-normal">{m}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
