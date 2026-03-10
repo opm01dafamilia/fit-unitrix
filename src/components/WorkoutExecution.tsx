@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
-  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home
+  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
+import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
+import ExerciseAnimation from "@/components/ExerciseAnimation";
+import MuscleBodyMap from "@/components/MuscleBodyMap";
 
 // Muscle group illustration mapping
 const muscleGroupColors: Record<string, string> = {
