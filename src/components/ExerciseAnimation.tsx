@@ -696,14 +696,50 @@ const AnatomicalBody = ({
 
 const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAnimationProps) => {
   const [animTime, setAnimTime] = useState(0);
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [gifLoading, setGifLoading] = useState(true);
+  const [gifError, setGifError] = useState(false);
   const config = useMemo(() => getExerciseConfig(exercise.id), [exercise.id]);
   const activeMuscles = useMemo(() => getActiveMuscles(exercise.id), [exercise.id]);
   const sizes = sizeMap[size];
 
+  // Fetch GIF from ExerciseDB
   useEffect(() => {
+    let cancelled = false;
+    setGifLoading(true);
+    setGifError(false);
+    setGifUrl(null);
+
+    fetchExerciseGif(exercise.id).then((url) => {
+      if (!cancelled) {
+        setGifUrl(url);
+        if (!url) {
+          setGifLoading(false);
+          setGifError(true);
+        }
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [exercise.id]);
+
+  const handleGifLoad = useCallback(() => {
+    setGifLoading(false);
+    setGifError(false);
+  }, []);
+
+  const handleGifError = useCallback(() => {
+    setGifLoading(false);
+    setGifError(true);
+    setGifUrl(null);
+  }, []);
+
+  // SVG animation (used as fallback)
+  useEffect(() => {
+    if (gifUrl && !gifError) return; // Don't run SVG animation if GIF is available
     let raf: number;
     let start: number | null = null;
-    const duration = 2400; // ms per full cycle
+    const duration = 2400;
 
     const tick = (ts: number) => {
       if (start === null) start = ts;
@@ -713,12 +749,11 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [gifUrl, gifError]);
 
   // Smooth interpolation between frames using sine easing
   const frames = config.frames;
-  const cyclePos = animTime; // 0 → 1
-  // Ping-pong: 0→1→0
+  const cyclePos = animTime;
   const t = Math.sin(cyclePos * Math.PI);
 
   const interpolatedTransform: PoseTransform = {};
@@ -735,29 +770,55 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
     (interpolatedTransform as any)[key] = lerp(v0, v1, t);
   }
 
+  const showGif = gifUrl && !gifError;
+
   return (
     <div
       className={`relative ${sizes.container} rounded-2xl flex items-center justify-center overflow-hidden ${className}`}
       style={{
-        background: "linear-gradient(180deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 100%)",
+        background: showGif 
+          ? "hsl(var(--background))" 
+          : "linear-gradient(180deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 100%)",
         border: "1px solid hsl(var(--border) / 0.5)",
       }}
     >
-      {/* Subtle anatomical grid */}
-      <div className="absolute inset-0 opacity-[0.02]"
-        style={{
-          backgroundImage: `radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)`,
-          backgroundSize: "8px 8px",
-        }}
-      />
-
-      <svg viewBox={sizes.viewBox} className="absolute inset-0 w-full h-full p-1">
-        <AnatomicalBody
-          transform={interpolatedTransform}
-          activeMuscles={activeMuscles}
-          progress={cyclePos}
+      {/* GIF from ExerciseDB */}
+      {gifUrl && (
+        <img
+          src={gifUrl}
+          alt={exercise.nome}
+          className={`absolute inset-0 w-full h-full object-contain p-1 transition-opacity duration-500 ${gifLoading ? 'opacity-0' : 'opacity-100'}`}
+          onLoad={handleGifLoad}
+          onError={handleGifError}
+          loading="lazy"
         />
-      </svg>
+      )}
+
+      {/* Loading state */}
+      {gifLoading && gifUrl && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* SVG Fallback - shown when no GIF or GIF failed */}
+      {(!showGif && !gifLoading) && (
+        <>
+          <div className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)`,
+              backgroundSize: "8px 8px",
+            }}
+          />
+          <svg viewBox={sizes.viewBox} className="absolute inset-0 w-full h-full p-1">
+            <AnatomicalBody
+              transform={interpolatedTransform}
+              activeMuscles={activeMuscles}
+              progress={cyclePos}
+            />
+          </svg>
+        </>
+      )}
 
       {/* Active muscle indicators */}
       {activeMuscles.length > 0 && (
