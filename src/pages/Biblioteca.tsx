@@ -302,21 +302,19 @@ function ExerciseDetailView({
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5" /> Músculos ativados
           </h3>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-            <div className="shrink-0">
-              <MuscleBodyMap highlightedMuscles={exercise.musculosDestacados} />
-            </div>
-            <div className="flex-1 w-full space-y-2.5">
-              <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+          <div className="flex flex-row items-center gap-4">
+            <MuscleBodyMap highlightedMuscles={exercise.musculosDestacados} />
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="p-2 rounded-lg bg-primary/5 border border-primary/10">
                 <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Principal</span>
-                <p className="text-sm font-semibold mt-1">{exercise.musculos[0]}</p>
+                <p className="text-sm font-semibold mt-0.5">{exercise.musculos[0]}</p>
               </div>
               {exercise.musculos.length > 1 && (
-                <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30">
+                <div className="p-2 rounded-lg bg-secondary/40 border border-border/30">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  <div className="flex flex-wrap gap-1 mt-1">
                     {exercise.musculos.slice(1).map((m, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs font-normal">{m}</Badge>
+                      <Badge key={i} variant="secondary" className="text-[10px] font-normal">{m}</Badge>
                     ))}
                   </div>
                 </div>
