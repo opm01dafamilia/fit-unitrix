@@ -19,6 +19,10 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import { preloadExerciseGifs } from "@/lib/exerciseGifs";
+
+// Preload exercise GIFs in background
+preloadExerciseGifs();
 
 const queryClient = new QueryClient();
 
