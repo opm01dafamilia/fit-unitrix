@@ -374,8 +374,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
 
   const toggleRestPause = () => setRestPaused(p => !p);
-  const resetRest = () => { setRestTime(restSeconds); setRestPaused(false); setRestActive(true); };
-  const skipRest = () => { setRestActive(false); setRestTime(0); };
+  const resetRest = () => { setRestTime(restSeconds); setRestPaused(false); setRestActive(true); setRestFinished(false); };
+  const skipRest = () => { setRestActive(false); setRestTime(0); setRestFinished(false); };
+  const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
+  const dismissRestFinished = () => setRestFinished(false);
 
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
