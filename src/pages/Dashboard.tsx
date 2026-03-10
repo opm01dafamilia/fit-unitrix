@@ -71,6 +71,67 @@ const Dashboard = () => {
     ? bodyRecords.map((r, i) => ({ semana: `S${i + 1}`, peso: Number(r.weight) }))
     : [];
 
+  // === STREAK CALCULATION ===
+  const uniqueDays = [...new Set(sessions.map((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
+  let currentStreak = 0;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+  if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+    for (let i = 0; i < uniqueDays.length; i++) {
+      const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+      if (uniqueDays[i] === expected) currentStreak++;
+      else break;
+    }
+  }
+  let maxStreak = currentStreak;
+  if (uniqueDays.length > 1) {
+    let tempStreak = 1;
+    for (let i = 1; i < uniqueDays.length; i++) {
+      const prev = new Date(uniqueDays[i - 1]);
+      const curr = new Date(uniqueDays[i]);
+      const diff = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff === 1) { tempStreak++; maxStreak = Math.max(maxStreak, tempStreak); }
+      else tempStreak = 1;
+    }
+  }
+
+  // === WEEKLY STATS ===
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekSessions = sessions.filter((s: any) => {
+    const d = new Date(s.completed_at);
+    return d >= weekStart && d <= weekEnd;
+  });
+  const weekWorkouts = weekSessions.length;
+  const weekExercises = weekSessions.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0);
+  const weekSeries = exerciseHistory.filter((h: any) => {
+    const d = new Date(h.created_at);
+    return d >= weekStart && d <= weekEnd;
+  }).length;
+
+  // === ACHIEVEMENTS ===
+  const exerciseWeights = new Map<string, number[]>();
+  exerciseHistory.forEach((h: any) => {
+    if (!exerciseWeights.has(h.exercise_name)) exerciseWeights.set(h.exercise_name, []);
+    exerciseWeights.get(h.exercise_name)!.push(h.weight);
+  });
+  let totalProgressions = 0;
+  exerciseWeights.forEach((weights) => {
+    if (weights.length >= 2 && weights[0] > weights[weights.length - 1]) totalProgressions++;
+  });
+
+  const userStats: UserStats = {
+    totalWorkouts: sessions.length,
+    currentStreak,
+    maxStreak,
+    totalProgressions,
+    totalExercisesCompleted: sessions.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0),
+    daysActive: uniqueDays.length,
+  };
+  const achievements = calculateAchievements(userStats);
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
+  const nextAchievement = achievements.find(a => !a.unlocked);
+
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
   const hasDiet = dietPlans.length > 0;
