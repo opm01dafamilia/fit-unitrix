@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -22,24 +24,30 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
   const [dietPlans, setDietPlans] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
       try {
-        const [bodyRes, goalsRes, workoutRes, dietRes] = await Promise.all([
+        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
           supabase.from("fitness_goals").select("id,title,current_value,target_value,unit,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
           supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+          supabase.from("workout_sessions").select("id,completed_at,exercises_completed,exercises_total,muscle_group").eq("user_id", user.id).order("completed_at", { ascending: false }),
+          supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
         ]);
         setBodyRecords(bodyRes.data || []);
         setGoals(goalsRes.data || []);
         setWorkoutPlans(workoutRes.data || []);
         setDietPlans(dietRes.data || []);
+        setSessions(sessionsRes.data || []);
+        setExerciseHistory(historyRes.data || []);
       } catch {
-        // silently fail, data will show as empty
+        // silently fail
       } finally {
         setLoading(false);
       }
