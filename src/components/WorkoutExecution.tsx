@@ -304,6 +304,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       setCurrentExIndex(currentExIndex + 1);
       setRestActive(false);
       setRestTime(0);
+      setRestFinished(false);
       setInputKg("");
       setInputReps("");
     }
@@ -314,6 +315,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       setCurrentExIndex(currentExIndex - 1);
       setRestActive(false);
       setRestTime(0);
+      setRestFinished(false);
       setInputKg("");
       setInputReps("");
     }
