@@ -97,9 +97,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const totalExercises = exercises.length;
   const currentSets = sets[currentExIndex] || [];
   const targetSeries = parseInt(currentEx.series) || 4;
-  const targetReps = currentEx.reps;
-  const restSeconds = parseRestTime(currentEx.descanso);
+  const effectiveRestSeconds = customRestSeconds ?? parseRestTime(currentEx.descanso);
+  const restSeconds = effectiveRestSeconds;
   const currentProgression = progressions[currentEx.nome];
+  const REST_OPTIONS = [30, 45, 60, 90, 120];
 
   // Stretching & cardio data
   const stretching = useMemo(() => getStretchingForDay(day.grupo), [day.grupo]);
