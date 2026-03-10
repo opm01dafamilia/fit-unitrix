@@ -94,6 +94,7 @@ const App = () => (
               <Route path="/metas" element={<Metas />} />
               <Route path="/historico" element={<Historico />} />
               <Route path="/conquistas" element={<Conquistas />} />
+              <Route path="/biblioteca" element={<Biblioteca />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>

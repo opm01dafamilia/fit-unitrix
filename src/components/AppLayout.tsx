@@ -15,6 +15,7 @@ const navItems = [
   { to: "/metas", icon: Target, label: "Metas" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
+  { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
