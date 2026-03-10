@@ -266,7 +266,130 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Weight Chart */}
+      {/* 🔥 Streak & Weekly Summary */}
+      {sessions.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Streak Card */}
+          <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/8 to-transparent rounded-bl-full" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold text-base flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-orange-400" />
+                  Sequência de Treinos
+                </h3>
+                <span className="text-[11px] px-2 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-medium">
+                  Recorde: {maxStreak} dias
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex flex-col items-center justify-center border border-orange-500/15">
+                  <span className="text-3xl font-display font-bold text-orange-400">{currentStreak}</span>
+                  <span className="text-[9px] text-orange-400/70 font-medium uppercase tracking-wider">dias</span>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-1">
+                    {Array.from({ length: 7 }).map((_, i) => {
+                      const day = subDays(new Date(), 6 - i);
+                      const dayStr = format(day, "yyyy-MM-dd");
+                      const trained = uniqueDays.includes(dayStr);
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                          <div className={`w-full h-8 rounded-lg transition-all ${trained ? "bg-gradient-to-t from-orange-500/30 to-orange-400/50 border border-orange-400/30" : "bg-secondary/40 border border-border/20"}`} />
+                          <span className="text-[8px] text-muted-foreground">{format(day, "EEE", { locale: undefined }).charAt(0).toUpperCase()}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {currentStreak > 0 ? "Continue treinando para manter! 💪" : "Treine hoje para começar uma sequência!"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Summary Card */}
+          <div className="glass-card p-5 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-semibold text-base flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Resumo Semanal
+              </h3>
+              <span className="text-[11px] text-muted-foreground font-medium">Esta semana</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
+                <Dumbbell className="w-4 h-4 text-primary mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekWorkouts}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Treinos</span>
+              </div>
+              <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
+                <Zap className="w-4 h-4 text-chart-2 mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekExercises}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Exercícios</span>
+              </div>
+              <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
+                <Target className="w-4 h-4 text-chart-4 mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekSeries}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Séries</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🏆 Achievements Summary */}
+      {(unlockedAchievements.length > 0 || nextAchievement) && (
+        <div className="glass-card p-5 lg:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold text-base flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              Conquistas
+            </h3>
+            <button onClick={() => navigate("/conquistas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+              Ver todas <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Unlocked badges */}
+          {unlockedAchievements.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {unlockedAchievements.map((a) => (
+                <div key={a.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/15">
+                  <span className="text-sm">{a.icon}</span>
+                  <span className="text-[11px] font-medium text-foreground">{a.title}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Next achievement progress */}
+          {nextAchievement && (
+            <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center text-lg">
+                  🔒
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium">Próxima: {nextAchievement.title}</p>
+                    <span className="text-[10px] font-semibold text-primary">{nextAchievement.progress}%</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-2">{nextAchievement.description}</p>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-primary/50 transition-all duration-500" style={{ width: `${nextAchievement.progress}%` }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {nextAchievement.currentValue}/{nextAchievement.requirement}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {weightChartData.length > 1 && (
         <div className="glass-card p-5 lg:p-6">
           <div className="flex items-center justify-between mb-5">
