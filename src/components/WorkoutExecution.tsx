@@ -521,12 +521,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-primary font-display font-bold text-sm">
                 {currentExIndex + 1}/{totalExercises}
               </span>
-              <span className="text-muted-foreground text-sm">{day.grupo}</span>
+              <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-semibold">
+                {day.grupo}
+              </span>
               {trainingLocation === "casa" && (
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">🏠</span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
               <Timer className="w-3 h-3" /> {formatTime(workoutSeconds)}
             </p>
           </div>
