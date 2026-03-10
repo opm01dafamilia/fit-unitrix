@@ -787,7 +787,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
         {exercise.tipoExercicio === "alongamento" && "Posição"}
         {exercise.tipoExercicio === "mobilidade" && "Mobilidade"}
       </div>
-    </g>
+    </div>
   );
 };
 
