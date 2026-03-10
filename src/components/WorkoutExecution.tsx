@@ -370,8 +370,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         if (histError) console.error("Error saving exercise history:", histError);
       }
 
-      toast.success("Treino concluído! 💪🔥");
-      onFinish();
+      setShowCompletion(true);
     } catch {
       toast.error("Erro ao salvar sessão");
     }
