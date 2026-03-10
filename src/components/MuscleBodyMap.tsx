@@ -127,12 +127,11 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
   };
 
   return (
-    <div className={`flex gap-4 items-center justify-center ${className}`}>
+    <div className={`inline-flex gap-1.5 items-start justify-center ${className}`}>
       {/* Front View */}
       <div className="relative">
-        <p className="text-[10px] text-center text-muted-foreground mb-1 uppercase tracking-wider">Frente</p>
-        <svg viewBox="30 20 120 148" className="w-28 h-40" xmlns="http://www.w3.org/2000/svg">
-          {/* Body outline */}
+        <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">Frente</p>
+        <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
             fill="none"
@@ -140,7 +139,6 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
             strokeWidth="0.8"
             opacity="0.5"
           />
-          {/* Render front muscles */}
           {Object.entries(musclePaths)
             .filter(([, config]) => config.side === "front" || config.side === "both")
             .map(([id, config]) => (
@@ -161,9 +159,8 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
 
       {/* Back View */}
       <div className="relative">
-        <p className="text-[10px] text-center text-muted-foreground mb-1 uppercase tracking-wider">Costas</p>
-        <svg viewBox="30 20 120 148" className="w-28 h-40" xmlns="http://www.w3.org/2000/svg">
-          {/* Body outline (mirrored) */}
+        <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">Costas</p>
+        <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
             fill="none"
@@ -171,7 +168,6 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
             strokeWidth="0.8"
             opacity="0.5"
           />
-          {/* Render back muscles */}
           {Object.entries(musclePaths)
             .filter(([, config]) => config.side === "back" || config.side === "both")
             .map(([id, config]) => (
