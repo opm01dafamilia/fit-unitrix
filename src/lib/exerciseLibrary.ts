@@ -1,4 +1,15 @@
-export type MuscleGroup = "peito" | "costas" | "pernas" | "ombros" | "biceps" | "triceps" | "abdomen" | "cardio";
+export type MuscleGroup = "peito" | "costas" | "pernas" | "ombros" | "biceps" | "triceps" | "abdomen" | "cardio" | "alongamento";
+
+export type ExerciseType = "musculação" | "cardio" | "alongamento" | "mobilidade";
+
+export type MuscleId =
+  | "peitoral" | "peitoral-superior"
+  | "dorsal" | "trapezio" | "lombar"
+  | "deltoide-anterior" | "deltoide-lateral" | "deltoide-posterior"
+  | "biceps" | "triceps" | "antebraco"
+  | "quadriceps" | "isquiotibiais" | "gluteos" | "panturrilha" | "adutor"
+  | "reto-abdominal" | "obliquos" | "core"
+  | "corpo-inteiro";
 
 export type ExerciseDetail = {
   id: string;
@@ -6,12 +17,18 @@ export type ExerciseDetail = {
   grupo: MuscleGroup;
   grupoLabel: string;
   musculos: string[];
+  musculosDestacados: MuscleId[];
   instrucoes: string[];
   dicas: string[];
   equipamento: string;
   dificuldade: "iniciante" | "intermediário" | "avançado";
   tipo: "composto" | "isolado";
-  alternativas: string[]; // ids of related exercises
+  tipoExercicio: ExerciseType;
+  alternativas: string[];
+  animacao: {
+    frames: string[];
+    cor: string;
+  };
 };
 
 const muscleGroupLabels: Record<MuscleGroup, string> = {
@@ -23,6 +40,7 @@ const muscleGroupLabels: Record<MuscleGroup, string> = {
   triceps: "Tríceps",
   abdomen: "Abdômen",
   cardio: "Cardio",
+  alongamento: "Alongamento",
 };
 
 export const muscleGroupIcons: Record<MuscleGroup, string> = {
@@ -34,7 +52,17 @@ export const muscleGroupIcons: Record<MuscleGroup, string> = {
   triceps: "💪",
   abdomen: "🎯",
   cardio: "❤️",
+  alongamento: "🧘",
 };
+
+export const exerciseTypeIcons: Record<ExerciseType, string> = {
+  "musculação": "🏋️",
+  "cardio": "❤️",
+  "alongamento": "🧘",
+  "mobilidade": "🔄",
+};
+
+export const exerciseTypeLabels: ExerciseType[] = ["musculação", "cardio", "alongamento", "mobilidade"];
 
 export const allMuscleGroups: { key: MuscleGroup; label: string }[] = [
   { key: "peito", label: "Peito" },
@@ -45,6 +73,7 @@ export const allMuscleGroups: { key: MuscleGroup; label: string }[] = [
   { key: "triceps", label: "Tríceps" },
   { key: "abdomen", label: "Abdômen" },
   { key: "cardio", label: "Cardio" },
+  { key: "alongamento", label: "Alongamento" },
 ];
 
 export const exerciseLibrary: ExerciseDetail[] = [
@@ -55,6 +84,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Tríceps", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "triceps", "deltoide-anterior"],
     instrucoes: [
       "Deite no banco com os pés firmes no chão",
       "Segure a barra na largura dos ombros ou um pouco mais",
@@ -70,7 +100,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra e banco reto",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["supino-inclinado-halteres", "supino-maquina", "flexao"],
+    animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "supino-inclinado-halteres",
@@ -78,6 +110,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior (porção clavicular)", "Tríceps", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral-superior", "triceps", "deltoide-anterior"],
     instrucoes: [
       "Ajuste o banco a 30-45 graus de inclinação",
       "Segure um halter em cada mão na altura do peito",
@@ -92,7 +125,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres e banco inclinável",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["supino-reto", "crucifixo", "cross-over"],
+    animacao: { frames: ["🏋️ ↗", "🏋️ ↙"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "supino-maquina",
@@ -100,6 +135,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Tríceps", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "triceps", "deltoide-anterior"],
     instrucoes: [
       "Ajuste o assento para que os pegadores fiquem na altura do peito",
       "Segure os pegadores com firmeza",
@@ -114,7 +150,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de supino",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["supino-reto", "flexao"],
+    animacao: { frames: ["🏋️ →", "🏋️ ←"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "crucifixo",
@@ -122,6 +160,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "deltoide-anterior"],
     instrucoes: [
       "Deite no banco reto segurando halteres com braços estendidos acima",
       "Com leve flexão nos cotovelos, abra os braços lateralmente",
@@ -136,7 +175,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres e banco reto",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["cross-over", "crucifixo-maquina"],
+    animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "crucifixo-maquina",
@@ -144,6 +185,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "deltoide-anterior"],
     instrucoes: [
       "Sente-se na máquina com as costas apoiadas",
       "Segure os pegadores com os braços abertos",
@@ -158,7 +200,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina peck deck",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["crucifixo", "cross-over"],
+    animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "cross-over",
@@ -166,6 +210,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "deltoide-anterior"],
     instrucoes: [
       "Posicione-se entre as polias com um pé à frente",
       "Segure os cabos com leve flexão nos cotovelos",
@@ -180,7 +225,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Crossover / Cabos",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["crucifixo", "crucifixo-maquina"],
+    animacao: { frames: ["✖ ↔", "✖ →←"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "flexao",
@@ -188,6 +235,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "peito",
     grupoLabel: "Peito",
     musculos: ["Peitoral Maior", "Tríceps", "Deltóide Anterior", "Core"],
+    musculosDestacados: ["peitoral", "triceps", "deltoide-anterior", "core"],
     instrucoes: [
       "Posicione as mãos na largura dos ombros no chão",
       "Mantenha o corpo reto da cabeça aos pés",
@@ -202,7 +250,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["supino-reto", "supino-maquina"],
+    animacao: { frames: ["🧎 ↓", "🧎 ↑"], cor: "hsl(152 69% 46%)" },
   },
 
   // === COSTAS ===
@@ -212,6 +262,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Bíceps", "Trapézio Inferior", "Romboides"],
+    musculosDestacados: ["dorsal", "biceps", "trapezio"],
     instrucoes: [
       "Segure a barra com pegada pronada na largura dos ombros ou mais",
       "Parta da posição de braços estendidos",
@@ -226,7 +277,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra fixa",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["pulldown", "pulldown-fechado"],
+    animacao: { frames: ["🧗 ↑", "🧗 ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "pulldown",
@@ -234,6 +287,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Bíceps", "Trapézio Inferior"],
+    musculosDestacados: ["dorsal", "biceps", "trapezio"],
     instrucoes: [
       "Sente-se na máquina e ajuste a almofada nas coxas",
       "Segure a barra com pegada pronada aberta",
@@ -248,7 +302,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de pulldown",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["barra-fixa", "pulldown-fechado"],
+    animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "pulldown-fechado",
@@ -256,6 +312,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal (inferior)", "Bíceps", "Romboides"],
+    musculosDestacados: ["dorsal", "biceps"],
     instrucoes: [
       "Use o triângulo ou barra com pegada fechada",
       "Puxe em direção ao peito inferior",
@@ -270,7 +327,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de pulldown com triângulo",
     dificuldade: "avançado",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["pulldown", "barra-fixa"],
+    animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "remada-curvada",
@@ -278,6 +337,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Trapézio", "Romboides", "Bíceps"],
+    musculosDestacados: ["dorsal", "trapezio", "biceps"],
     instrucoes: [
       "Segure a barra com pegada supinada ou pronada",
       "Incline o tronco a 45° com joelhos levemente flexionados",
@@ -292,7 +352,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["remada-maquina", "remada-unilateral"],
+    animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "remada-maquina",
@@ -300,6 +362,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Trapézio", "Bíceps"],
+    musculosDestacados: ["dorsal", "trapezio", "biceps"],
     instrucoes: [
       "Ajuste o apoio de peito e o assento",
       "Segure os pegadores com firmeza",
@@ -314,7 +377,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de remada",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["remada-curvada", "remada-unilateral"],
+    animacao: { frames: ["🏋️ ←", "🏋️ →"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "remada-unilateral",
@@ -322,6 +387,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Romboides", "Bíceps"],
+    musculosDestacados: ["dorsal", "biceps"],
     instrucoes: [
       "Apoie um joelho e uma mão no banco",
       "Segure o halter com a mão livre",
@@ -336,7 +402,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halter e banco",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["remada-curvada", "remada-maquina"],
+    animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
     id: "remada-baixa",
@@ -344,6 +412,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "costas",
     grupoLabel: "Costas",
     musculos: ["Grande Dorsal", "Romboides", "Trapézio", "Bíceps"],
+    musculosDestacados: ["dorsal", "trapezio", "biceps"],
     instrucoes: [
       "Sente-se na máquina com pés apoiados",
       "Segure o triângulo ou barra com braços estendidos",
@@ -358,7 +427,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Cabo baixo",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["remada-curvada", "remada-maquina"],
+    animacao: { frames: ["🏋️ ←", "🏋️ →"], cor: "hsl(199 89% 48%)" },
   },
 
   // === PERNAS ===
@@ -368,6 +439,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Quadríceps", "Glúteos", "Isquiotibiais", "Core"],
+    musculosDestacados: ["quadriceps", "gluteos", "isquiotibiais", "core"],
     instrucoes: [
       "Posicione a barra nas costas, apoiada nos trapézios",
       "Pés na largura dos ombros, pontas levemente voltadas para fora",
@@ -383,7 +455,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra e rack",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["leg-press", "agachamento-bulgaro", "agachamento-goblet"],
+    animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "leg-press",
@@ -391,6 +465,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Quadríceps", "Glúteos", "Isquiotibiais"],
+    musculosDestacados: ["quadriceps", "gluteos", "isquiotibiais"],
     instrucoes: [
       "Sente-se na máquina com as costas bem apoiadas",
       "Posicione os pés na plataforma na largura dos ombros",
@@ -405,7 +480,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina leg press",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["agachamento-livre", "agachamento-goblet"],
+    animacao: { frames: ["🦵 ↓", "🦵 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "agachamento-bulgaro",
@@ -413,6 +490,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Quadríceps", "Glúteos", "Isquiotibiais"],
+    musculosDestacados: ["quadriceps", "gluteos", "isquiotibiais"],
     instrucoes: [
       "Posicione um pé em um banco atrás de você",
       "Segure halteres em cada mão",
@@ -427,7 +505,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres e banco",
     dificuldade: "avançado",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["agachamento-livre", "leg-press"],
+    animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "agachamento-goblet",
@@ -435,6 +515,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Quadríceps", "Glúteos", "Core"],
+    musculosDestacados: ["quadriceps", "gluteos", "core"],
     instrucoes: [
       "Segure um halter ou kettlebell na frente do peito",
       "Pés na largura dos ombros",
@@ -449,7 +530,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halter ou kettlebell",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["agachamento-livre", "leg-press"],
+    animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "cadeira-extensora",
@@ -457,6 +540,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Quadríceps"],
+    musculosDestacados: ["quadriceps"],
     instrucoes: [
       "Sente-se na máquina com as costas apoiadas",
       "Posicione o rolo na frente dos tornozelos",
@@ -471,7 +555,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Cadeira extensora",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["agachamento-livre", "leg-press"],
+    animacao: { frames: ["🦵 ↗", "🦵 ↙"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "mesa-flexora",
@@ -479,6 +565,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Isquiotibiais"],
+    musculosDestacados: ["isquiotibiais"],
     instrucoes: [
       "Deite de bruços na máquina",
       "Posicione o rolo atrás dos tornozelos",
@@ -493,7 +580,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Mesa flexora",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["stiff"],
+    animacao: { frames: ["🦵 ↑", "🦵 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "stiff",
@@ -501,6 +590,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Isquiotibiais", "Glúteos", "Eretores da Coluna"],
+    musculosDestacados: ["isquiotibiais", "gluteos", "lombar"],
     instrucoes: [
       "Segure a barra com pegada pronada na frente das coxas",
       "Com pernas quase estendidas, incline o tronco à frente",
@@ -515,7 +605,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["mesa-flexora"],
+    animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "panturrilha-pe",
@@ -523,6 +615,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Gastrocnêmio", "Sóleo"],
+    musculosDestacados: ["panturrilha"],
     instrucoes: [
       "Posicione-se na máquina com os ombros sob as almofadas",
       "Pés na borda da plataforma, calcanhares para fora",
@@ -537,7 +630,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de panturrilha",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["panturrilha-sentado"],
+    animacao: { frames: ["🦶 ↑", "🦶 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "panturrilha-sentado",
@@ -545,6 +640,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "pernas",
     grupoLabel: "Pernas",
     musculos: ["Sóleo"],
+    musculosDestacados: ["panturrilha"],
     instrucoes: [
       "Sente-se na máquina com os joelhos sob a almofada",
       "Suba na ponta dos pés",
@@ -557,7 +653,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de panturrilha sentado",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["panturrilha-pe"],
+    animacao: { frames: ["🦶 ↑", "🦶 ↓"], cor: "hsl(45 93% 47%)" },
   },
 
   // === OMBROS ===
@@ -567,6 +665,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Anterior", "Deltóide Lateral", "Tríceps"],
+    musculosDestacados: ["deltoide-anterior", "deltoide-lateral", "triceps"],
     instrucoes: [
       "Segure a barra ou halteres na altura dos ombros",
       "Empurre o peso acima da cabeça até estender os braços",
@@ -580,7 +679,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra ou halteres",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["desenvolvimento-arnold", "desenvolvimento-maquina"],
+    animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
     id: "desenvolvimento-arnold",
@@ -588,6 +689,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Anterior", "Deltóide Lateral", "Deltóide Posterior"],
+    musculosDestacados: ["deltoide-anterior", "deltoide-lateral", "deltoide-posterior"],
     instrucoes: [
       "Segure os halteres na frente do peito com palmas voltadas para você",
       "Enquanto empurra para cima, rotacione as palmas para frente",
@@ -602,7 +704,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres",
     dificuldade: "avançado",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["desenvolvimento-militar", "desenvolvimento-maquina"],
+    animacao: { frames: ["🏋️ ↑🔄", "🏋️ ↓🔄"], cor: "hsl(280 65% 60%)" },
   },
   {
     id: "desenvolvimento-maquina",
@@ -610,6 +714,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Anterior", "Deltóide Lateral", "Tríceps"],
+    musculosDestacados: ["deltoide-anterior", "deltoide-lateral", "triceps"],
     instrucoes: [
       "Ajuste o assento para que os pegadores fiquem na altura dos ombros",
       "Empurre acima da cabeça até estender os braços",
@@ -623,7 +728,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Máquina de desenvolvimento",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["desenvolvimento-militar", "desenvolvimento-arnold"],
+    animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
     id: "elevacao-lateral",
@@ -631,6 +738,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Lateral"],
+    musculosDestacados: ["deltoide-lateral"],
     instrucoes: [
       "Segure um halter em cada mão ao lado do corpo",
       "Com leve flexão nos cotovelos, eleve os braços lateralmente",
@@ -645,7 +753,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["elevacao-frontal", "face-pull"],
+    animacao: { frames: ["💪 ↗", "💪 ↙"], cor: "hsl(280 65% 60%)" },
   },
   {
     id: "elevacao-frontal",
@@ -653,6 +763,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Anterior"],
+    musculosDestacados: ["deltoide-anterior"],
     instrucoes: [
       "Segure halteres à frente das coxas",
       "Eleve alternadamente ou simultaneamente até a linha dos ombros",
@@ -666,7 +777,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["elevacao-lateral"],
+    animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
     id: "face-pull",
@@ -674,6 +787,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "ombros",
     grupoLabel: "Ombros",
     musculos: ["Deltóide Posterior", "Trapézio", "Infraespinhal"],
+    musculosDestacados: ["deltoide-posterior", "trapezio"],
     instrucoes: [
       "Ajuste o cabo na altura do rosto",
       "Segure a corda com pegada pronada",
@@ -688,7 +802,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Cabo com corda",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["elevacao-lateral"],
+    animacao: { frames: ["🤲 ←", "🤲 →"], cor: "hsl(280 65% 60%)" },
   },
 
   // === BÍCEPS ===
@@ -698,6 +814,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "biceps",
     grupoLabel: "Bíceps",
     musculos: ["Bíceps Braquial", "Braquial"],
+    musculosDestacados: ["biceps", "antebraco"],
     instrucoes: [
       "Segure a barra com pegada supinada na largura dos ombros",
       "Mantenha os cotovelos fixos ao lado do corpo",
@@ -712,7 +829,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra reta ou EZ",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["rosca-martelo", "rosca-scott"],
+    animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "rosca-martelo",
@@ -720,6 +839,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "biceps",
     grupoLabel: "Bíceps",
     musculos: ["Braquial", "Braquiorradial", "Bíceps Braquial"],
+    musculosDestacados: ["biceps", "antebraco"],
     instrucoes: [
       "Segure halteres com pegada neutra (palmas voltadas uma para outra)",
       "Flexione os cotovelos levantando os halteres alternadamente",
@@ -733,7 +853,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Halteres",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["rosca-direta", "rosca-scott"],
+    animacao: { frames: ["🔨 ↑", "🔨 ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
     id: "rosca-scott",
@@ -741,6 +863,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "biceps",
     grupoLabel: "Bíceps",
     musculos: ["Bíceps Braquial (porção curta)", "Braquial"],
+    musculosDestacados: ["biceps"],
     instrucoes: [
       "Apoie os braços no banco Scott",
       "Segure a barra EZ com pegada supinada",
@@ -755,7 +878,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra EZ e banco Scott",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["rosca-direta", "rosca-martelo"],
+    animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(152 69% 46%)" },
   },
 
   // === TRÍCEPS ===
@@ -765,6 +890,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "triceps",
     grupoLabel: "Tríceps",
     musculos: ["Tríceps (cabeça lateral e medial)"],
+    musculosDestacados: ["triceps"],
     instrucoes: [
       "Segure a corda no cabo alto",
       "Mantenha cotovelos fixos ao lado do corpo",
@@ -779,7 +905,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Cabo com corda",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["triceps-testa", "mergulho-paralelas"],
+    animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
     id: "triceps-testa",
@@ -787,6 +915,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "triceps",
     grupoLabel: "Tríceps",
     musculos: ["Tríceps (cabeça longa)"],
+    musculosDestacados: ["triceps"],
     instrucoes: [
       "Deite no banco segurando a barra EZ com braços estendidos",
       "Flexione os cotovelos descendo a barra em direção à testa",
@@ -800,7 +929,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barra EZ e banco",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["triceps-corda", "mergulho-paralelas"],
+    animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
     id: "mergulho-paralelas",
@@ -808,6 +939,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "triceps",
     grupoLabel: "Tríceps",
     musculos: ["Tríceps", "Peitoral Inferior", "Deltóide Anterior"],
+    musculosDestacados: ["triceps", "peitoral", "deltoide-anterior"],
     instrucoes: [
       "Segure as barras paralelas com braços estendidos",
       "Desça flexionando os cotovelos até 90°",
@@ -821,7 +953,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Barras paralelas",
     dificuldade: "avançado",
     tipo: "composto",
+    tipoExercicio: "musculação",
     alternativas: ["triceps-testa", "triceps-corda"],
+    animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(0 72% 51%)" },
   },
 
   // === ABDÔMEN ===
@@ -831,6 +965,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "abdomen",
     grupoLabel: "Abdômen",
     musculos: ["Reto Abdominal", "Transverso do Abdômen", "Oblíquos"],
+    musculosDestacados: ["reto-abdominal", "obliquos", "core"],
     instrucoes: [
       "Apoie-se nos antebraços e pontas dos pés",
       "Mantenha o corpo reto da cabeça aos pés",
@@ -844,7 +979,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["abdominal-crunch", "abdominal-bicicleta"],
+    animacao: { frames: ["🧎 —", "🧎 —"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "abdominal-crunch",
@@ -852,6 +989,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "abdomen",
     grupoLabel: "Abdômen",
     musculos: ["Reto Abdominal"],
+    musculosDestacados: ["reto-abdominal"],
     instrucoes: [
       "Deite de costas com joelhos flexionados e pés no chão",
       "Mãos atrás da cabeça sem puxar o pescoço",
@@ -866,7 +1004,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "iniciante",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["prancha-frontal", "abdominal-bicicleta"],
+    animacao: { frames: ["🧎 ↑", "🧎 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "abdominal-bicicleta",
@@ -874,6 +1014,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "abdomen",
     grupoLabel: "Abdômen",
     musculos: ["Reto Abdominal", "Oblíquos"],
+    musculosDestacados: ["reto-abdominal", "obliquos"],
     instrucoes: [
       "Deite de costas com as mãos atrás da cabeça",
       "Eleve as pernas do chão",
@@ -888,7 +1029,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["prancha-frontal", "abdominal-crunch"],
+    animacao: { frames: ["🚴 ←", "🚴 →"], cor: "hsl(45 93% 47%)" },
   },
   {
     id: "elevacao-pernas",
@@ -896,6 +1039,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "abdomen",
     grupoLabel: "Abdômen",
     musculos: ["Reto Abdominal (inferior)", "Iliopsoas"],
+    musculosDestacados: ["reto-abdominal"],
     instrucoes: [
       "Deite de costas com as mãos ao lado do corpo",
       "Mantenha as pernas estendidas",
@@ -910,7 +1054,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "intermediário",
     tipo: "isolado",
+    tipoExercicio: "musculação",
     alternativas: ["abdominal-crunch", "prancha-frontal"],
+    animacao: { frames: ["🦵 ↑", "🦵 ↓"], cor: "hsl(45 93% 47%)" },
   },
 
   // === CARDIO ===
@@ -920,6 +1066,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "cardio",
     grupoLabel: "Cardio",
     musculos: ["Quadríceps", "Isquiotibiais", "Panturrilha", "Core"],
+    musculosDestacados: ["quadriceps", "isquiotibiais", "panturrilha", "core"],
     instrucoes: [
       "Ajuste a velocidade de acordo com seu nível",
       "Comece com aquecimento de 3-5 minutos em ritmo leve",
@@ -934,7 +1081,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Esteira",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "cardio",
     alternativas: ["bicicleta-ergometrica", "caminhada-inclinada"],
+    animacao: { frames: ["🏃 →", "🏃 →→"], cor: "hsl(0 72% 51%)" },
   },
   {
     id: "bicicleta-ergometrica",
@@ -942,6 +1091,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "cardio",
     grupoLabel: "Cardio",
     musculos: ["Quadríceps", "Isquiotibiais", "Panturrilha"],
+    musculosDestacados: ["quadriceps", "isquiotibiais", "panturrilha"],
     instrucoes: [
       "Ajuste a altura do banco para extensão adequada das pernas",
       "Comece com resistência leve e aqueça por 3 minutos",
@@ -956,7 +1106,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Bicicleta ergométrica",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "cardio",
     alternativas: ["corrida-esteira", "caminhada-inclinada"],
+    animacao: { frames: ["🚴 ⟳", "🚴 ⟳⟳"], cor: "hsl(0 72% 51%)" },
   },
   {
     id: "caminhada-inclinada",
@@ -964,6 +1116,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "cardio",
     grupoLabel: "Cardio",
     musculos: ["Quadríceps", "Glúteos", "Panturrilha"],
+    musculosDestacados: ["quadriceps", "gluteos", "panturrilha"],
     instrucoes: [
       "Ajuste a esteira para 8-12% de inclinação",
       "Velocidade entre 5-6 km/h",
@@ -977,7 +1130,9 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Esteira",
     dificuldade: "iniciante",
     tipo: "composto",
+    tipoExercicio: "cardio",
     alternativas: ["corrida-esteira", "bicicleta-ergometrica"],
+    animacao: { frames: ["🚶 ↗", "🚶 ↗↗"], cor: "hsl(0 72% 51%)" },
   },
   {
     id: "burpees",
@@ -985,6 +1140,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     grupo: "cardio",
     grupoLabel: "Cardio",
     musculos: ["Corpo Inteiro"],
+    musculosDestacados: ["corpo-inteiro"],
     instrucoes: [
       "Em pé, agache e coloque as mãos no chão",
       "Salte os pés para trás ficando em posição de prancha",
@@ -999,7 +1155,236 @@ export const exerciseLibrary: ExerciseDetail[] = [
     equipamento: "Peso corporal",
     dificuldade: "intermediário",
     tipo: "composto",
+    tipoExercicio: "cardio",
     alternativas: ["corrida-esteira"],
+    animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(0 72% 51%)" },
+  },
+
+  // === ALONGAMENTO & MOBILIDADE ===
+  {
+    id: "along-peitoral",
+    nome: "Alongamento de Peitoral",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Peitoral Maior", "Deltóide Anterior"],
+    musculosDestacados: ["peitoral", "deltoide-anterior"],
+    instrucoes: [
+      "Posicione o braço estendido contra uma parede ou batente",
+      "Gire o tronco na direção oposta ao braço",
+      "Mantenha a posição por 20-30 segundos",
+      "Repita do outro lado",
+    ],
+    dicas: [
+      "Sinta o alongamento no peitoral, não dor",
+      "Respire profundamente durante o alongamento",
+      "Varie a altura do braço para alongar diferentes porções",
+    ],
+    equipamento: "Parede ou batente",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "alongamento",
+    alternativas: ["along-triceps", "mob-ombro"],
+    animacao: { frames: ["🧘 ←", "🧘 →"], cor: "hsl(199 89% 48%)" },
+  },
+  {
+    id: "along-triceps",
+    nome: "Alongamento de Tríceps",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Tríceps", "Deltóide"],
+    musculosDestacados: ["triceps", "deltoide-posterior"],
+    instrucoes: [
+      "Levante um braço acima da cabeça",
+      "Flexione o cotovelo levando a mão às costas",
+      "Com a outra mão, pressione gentilmente o cotovelo",
+      "Mantenha por 20-30 segundos e troque de lado",
+    ],
+    dicas: [
+      "Mantenha o tronco ereto",
+      "Não force além do conforto",
+      "Respire normalmente",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "alongamento",
+    alternativas: ["along-peitoral", "mob-ombro"],
+    animacao: { frames: ["🧘 ↑", "🧘 ↑"], cor: "hsl(199 89% 48%)" },
+  },
+  {
+    id: "mob-ombro",
+    nome: "Mobilidade de Ombro",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Deltóides", "Manguito Rotador", "Trapézio"],
+    musculosDestacados: ["deltoide-anterior", "deltoide-lateral", "deltoide-posterior", "trapezio"],
+    instrucoes: [
+      "Faça círculos com os braços estendidos, começando pequenos",
+      "Aumente gradualmente a amplitude dos círculos",
+      "Inverta a direção após 10 repetições",
+      "Adicione rotações internas e externas com cotovelo a 90°",
+    ],
+    dicas: [
+      "Faça antes de treinos de peito ou ombros",
+      "Movimentos lentos e controlados",
+      "Se sentir dor, reduza a amplitude",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "mobilidade",
+    alternativas: ["along-peitoral", "along-triceps"],
+    animacao: { frames: ["🔄 ⟳", "🔄 ⟲"], cor: "hsl(199 89% 48%)" },
+  },
+  {
+    id: "along-quadriceps",
+    nome: "Alongamento de Quadríceps",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Quadríceps", "Iliopsoas"],
+    musculosDestacados: ["quadriceps"],
+    instrucoes: [
+      "Em pé, flexione um joelho e segure o pé por trás",
+      "Mantenha os joelhos juntos",
+      "Empurre o quadril levemente para frente",
+      "Mantenha por 20-30 segundos e troque de lado",
+    ],
+    dicas: [
+      "Apoie-se em uma parede para equilíbrio se necessário",
+      "Mantenha o tronco ereto",
+      "Sinta o alongamento na frente da coxa",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "alongamento",
+    alternativas: ["along-isquiotibiais", "mob-quadril"],
+    animacao: { frames: ["🧘 ←", "🧘 →"], cor: "hsl(45 93% 47%)" },
+  },
+  {
+    id: "along-isquiotibiais",
+    nome: "Alongamento de Isquiotibiais",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Isquiotibiais", "Lombar"],
+    musculosDestacados: ["isquiotibiais", "lombar"],
+    instrucoes: [
+      "Sente-se no chão com uma perna estendida",
+      "Incline o tronco à frente mantendo a coluna reta",
+      "Tente alcançar a ponta do pé",
+      "Mantenha por 20-30 segundos e troque de lado",
+    ],
+    dicas: [
+      "Não arredonde as costas",
+      "Respire profundamente",
+      "Flexione levemente o joelho se necessário",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "alongamento",
+    alternativas: ["along-quadriceps", "mob-quadril"],
+    animacao: { frames: ["🧘 ↓", "🧘 ↓"], cor: "hsl(45 93% 47%)" },
+  },
+  {
+    id: "mob-quadril",
+    nome: "Mobilidade de Quadril",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Flexores do Quadril", "Glúteos", "Adutores"],
+    musculosDestacados: ["gluteos", "adutor", "quadriceps"],
+    instrucoes: [
+      "Em posição de avanço, desça o joelho traseiro ao chão",
+      "Empurre o quadril para frente mantendo o tronco ereto",
+      "Faça círculos com o quadril em amplitude controlada",
+      "Mantenha cada posição por 15-20 segundos",
+    ],
+    dicas: [
+      "Essencial para quem fica muito sentado",
+      "Faça antes de treinos de pernas",
+      "Movimentos suaves e controlados",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "mobilidade",
+    alternativas: ["along-quadriceps", "along-isquiotibiais"],
+    animacao: { frames: ["🧘 ⟳", "🧘 ⟲"], cor: "hsl(45 93% 47%)" },
+  },
+  {
+    id: "along-dorsal",
+    nome: "Alongamento Dorsal",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Grande Dorsal", "Romboides", "Trapézio"],
+    musculosDestacados: ["dorsal", "trapezio"],
+    instrucoes: [
+      "Em pé, cruze os braços à frente do corpo",
+      "Arredonde as costas empurrando as mãos para frente",
+      "Sinta o alongamento entre as escápulas",
+      "Mantenha por 20-30 segundos",
+    ],
+    dicas: [
+      "Respire profundamente durante o alongamento",
+      "Ideal após treinos de costas",
+      "Não force além do conforto",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "alongamento",
+    alternativas: ["mob-ombro"],
+    animacao: { frames: ["🧘 →", "🧘 ←"], cor: "hsl(199 89% 48%)" },
+  },
+  {
+    id: "mob-tornozelo",
+    nome: "Mobilidade de Tornozelo",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Panturrilha", "Tibial Anterior"],
+    musculosDestacados: ["panturrilha"],
+    instrucoes: [
+      "Posicione um pé à frente próximo à parede",
+      "Empurre o joelho em direção à parede sem levantar o calcanhar",
+      "Mantenha por 15-20 segundos",
+      "Repita do outro lado",
+    ],
+    dicas: [
+      "Importante para quem faz agachamento",
+      "Melhora a profundidade do agachamento",
+      "Faça diariamente para melhores resultados",
+    ],
+    equipamento: "Parede",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "mobilidade",
+    alternativas: ["along-isquiotibiais"],
+    animacao: { frames: ["🦶 →", "🦶 →"], cor: "hsl(45 93% 47%)" },
+  },
+  {
+    id: "mob-coluna",
+    nome: "Mobilidade de Coluna Torácica",
+    grupo: "alongamento",
+    grupoLabel: "Alongamento",
+    musculos: ["Eretores da Coluna", "Oblíquos", "Trapézio"],
+    musculosDestacados: ["lombar", "obliquos", "trapezio"],
+    instrucoes: [
+      "Em posição de quatro apoios, coloque uma mão atrás da cabeça",
+      "Rotacione o tronco abrindo o cotovelo para o teto",
+      "Retorne e repita 10 vezes",
+      "Troque de lado",
+    ],
+    dicas: [
+      "Fundamental para postura e performance",
+      "Faça antes de treinos de costas ou ombros",
+      "Mantenha o quadril estável durante a rotação",
+    ],
+    equipamento: "Nenhum",
+    dificuldade: "iniciante",
+    tipo: "isolado",
+    tipoExercicio: "mobilidade",
+    alternativas: ["along-dorsal", "mob-ombro"],
+    animacao: { frames: ["🔄 ↑", "🔄 ↓"], cor: "hsl(199 89% 48%)" },
   },
 ];
 
@@ -1011,6 +1396,10 @@ export function getExercisesByGroup(grupo: MuscleGroup): ExerciseDetail[] {
   return exerciseLibrary.filter((e) => e.grupo === grupo);
 }
 
+export function getExercisesByType(tipo: ExerciseType): ExerciseDetail[] {
+  return exerciseLibrary.filter((e) => e.tipoExercicio === tipo);
+}
+
 export function searchExercises(query: string): ExerciseDetail[] {
   const q = query.toLowerCase().trim();
   if (!q) return exerciseLibrary;
@@ -1018,7 +1407,8 @@ export function searchExercises(query: string): ExerciseDetail[] {
     (e) =>
       e.nome.toLowerCase().includes(q) ||
       e.grupoLabel.toLowerCase().includes(q) ||
-      e.musculos.some((m) => m.toLowerCase().includes(q))
+      e.musculos.some((m) => m.toLowerCase().includes(q)) ||
+      e.tipoExercicio.toLowerCase().includes(q)
   );
 }
 
