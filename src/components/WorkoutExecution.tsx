@@ -75,6 +75,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [restTime, setRestTime] = useState(0);
   const [restActive, setRestActive] = useState(false);
   const [restPaused, setRestPaused] = useState(false);
+  const [restFinished, setRestFinished] = useState(false);
+  const [customRestSeconds, setCustomRestSeconds] = useState<number | null>(null);
+  const [showRestConfig, setShowRestConfig] = useState(false);
   const restIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Workout timer
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
@@ -95,8 +98,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const currentSets = sets[currentExIndex] || [];
   const targetSeries = parseInt(currentEx.series) || 4;
   const targetReps = currentEx.reps;
-  const restSeconds = parseRestTime(currentEx.descanso);
+  const effectiveRestSeconds = customRestSeconds ?? parseRestTime(currentEx.descanso);
+  const restSeconds = effectiveRestSeconds;
   const currentProgression = progressions[currentEx.nome];
+  const REST_OPTIONS = [30, 45, 60, 90, 120];
 
   // Stretching & cardio data
   const stretching = useMemo(() => getStretchingForDay(day.grupo), [day.grupo]);
@@ -163,7 +168,32 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           if (t <= 1) {
             clearInterval(restIntervalRef.current!);
             setRestActive(false);
-            toast.info("Descanso finalizado! Hora da próxima série 💪");
+            setRestFinished(true);
+            // Vibrate
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+            // Sound
+            try {
+              const ctx = new AudioContext();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.frequency.value = 880;
+              gain.gain.value = 0.3;
+              osc.start();
+              osc.stop(ctx.currentTime + 0.5);
+              setTimeout(() => {
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.frequency.value = 1100;
+                gain2.gain.value = 0.3;
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.3);
+              }, 600);
+            } catch {}
+            toast.info("⏰ Descanso finalizado! Hora da próxima série 💪");
             return 0;
           }
           return t - 1;
@@ -226,6 +256,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     setRestTime(restSeconds);
     setRestActive(true);
     setRestPaused(false);
+    setRestFinished(false);
   };
 
   const startEdit = (setIdx: number) => {
@@ -273,6 +304,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       setCurrentExIndex(currentExIndex + 1);
       setRestActive(false);
       setRestTime(0);
+      setRestFinished(false);
       setInputKg("");
       setInputReps("");
     }
@@ -283,6 +315,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       setCurrentExIndex(currentExIndex - 1);
       setRestActive(false);
       setRestTime(0);
+      setRestFinished(false);
       setInputKg("");
       setInputReps("");
     }
@@ -344,8 +377,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
 
   const toggleRestPause = () => setRestPaused(p => !p);
-  const resetRest = () => { setRestTime(restSeconds); setRestPaused(false); setRestActive(true); };
-  const skipRest = () => { setRestActive(false); setRestTime(0); };
+  const resetRest = () => { setRestTime(restSeconds); setRestPaused(false); setRestActive(true); setRestFinished(false); };
+  const skipRest = () => { setRestActive(false); setRestTime(0); setRestFinished(false); };
+  const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
+  const dismissRestFinished = () => setRestFinished(false);
 
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
@@ -541,12 +576,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           </div>
           <span className="text-[10px] text-muted-foreground font-medium">Repetições</span>
         </div>
-        <div className="glass-card p-3.5 flex flex-col items-center">
+        <button onClick={() => setShowRestConfig(!showRestConfig)} className="glass-card p-3.5 flex flex-col items-center cursor-pointer hover:bg-secondary/60 transition-colors">
           <div className="w-14 h-14 rounded-full border-[3px] border-amber-500/30 flex items-center justify-center mb-1.5">
-            <span className="font-display font-bold text-base">{currentEx.descanso !== "—" ? currentEx.descanso : "—"}</span>
+            <span className="font-display font-bold text-sm">{restSeconds}s</span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium">Descanso</span>
-        </div>
+          <span className="text-[10px] text-muted-foreground font-medium">Descanso ⚙️</span>
+        </button>
         <div className="glass-card p-3.5 flex flex-col items-center">
           <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center mb-1.5 ${currentSets.length >= targetSeries ? "border-green-500/50" : "border-muted-foreground/20"}`}>
             <span className="font-display font-bold text-base">{currentSets.length}/{targetSeries}</span>
@@ -555,29 +590,105 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
+      {/* ===== REST TIME CONFIG ===== */}
+      {showRestConfig && (
+        <div className="glass-card p-4 glow-border animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">⚙️ Tempo de Descanso</h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowRestConfig(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            {REST_OPTIONS.map(sec => (
+              <button
+                key={sec}
+                onClick={() => { setCustomRestSeconds(sec); setShowRestConfig(false); }}
+                className={`p-2.5 rounded-xl text-center text-sm font-display font-bold transition-colors ${
+                  restSeconds === sec
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/50 text-foreground hover:bg-secondary"
+                }`}
+              >
+                {sec}s
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              placeholder="Personalizado (s)"
+              className="h-9 bg-secondary/50 border-border/50 text-center text-sm"
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  const v = parseInt((e.target as HTMLInputElement).value);
+                  if (v > 0) { setCustomRestSeconds(v); setShowRestConfig(false); }
+                }
+              }}
+            />
+            <span className="text-xs text-muted-foreground shrink-0">segundos</span>
+          </div>
+        </div>
+      )}
+
+      {/* ===== REST FINISHED ALERT ===== */}
+      {restFinished && !restActive && (
+        <div className="glass-card p-5 glow-border animate-slide-up border border-primary/30">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
+              <Zap className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-bold text-lg">⏰ Descanso Finalizado!</h3>
+            <p className="text-sm text-muted-foreground mt-1">Hora da próxima série</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Série {currentSets.length + 1} de {targetSeries}
+            </p>
+            <Button onClick={dismissRestFinished} className="mt-4 h-11 px-8">
+              <Play className="w-4 h-4 mr-2" /> Iniciar Próxima Série
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ===== REST TIMER ===== */}
       {restActive && (
-        <div className="glass-card p-4 glow-border">
-          <div className="flex items-center justify-between mb-3">
+        <div className="glass-card p-5 glow-border">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">⏱ Descanso</span>
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={skipRest}>
-              Pular
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>
+                +15s
+              </Button>
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>
+                Pular
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-4">
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={toggleRestPause}>
-              {restPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-            </Button>
-            <span className="font-display font-bold text-4xl text-amber-400 tabular-nums min-w-[100px] text-center">
-              {formatTime(restTime)}
-            </span>
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={resetRest}>
-              <RotateCcw className="w-5 h-5" />
-            </Button>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-3">
-            <div className="h-full rounded-full transition-all duration-1000 bg-amber-400/70"
-              style={{ width: `${restSeconds > 0 ? (restTime / restSeconds) * 100 : 0}%` }} />
+          <div className="flex flex-col items-center">
+            <div className="relative w-36 h-36 mb-4">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+                <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 54}`}
+                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - (restSeconds > 0 ? restTime / restSeconds : 0))}`}
+                  className="transition-all duration-1000" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-display font-bold text-3xl tabular-nums text-foreground">
+                  {formatTime(restTime)}
+                </span>
+                <span className="text-[10px] text-muted-foreground">restante</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={toggleRestPause}>
+                {restPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+              </Button>
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={resetRest}>
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
