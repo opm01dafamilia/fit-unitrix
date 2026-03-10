@@ -256,6 +256,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     setRestTime(restSeconds);
     setRestActive(true);
     setRestPaused(false);
+    setRestFinished(false);
   };
 
   const startEdit = (setIdx: number) => {
