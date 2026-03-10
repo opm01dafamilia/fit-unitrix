@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -22,24 +24,30 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
   const [dietPlans, setDietPlans] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
       try {
-        const [bodyRes, goalsRes, workoutRes, dietRes] = await Promise.all([
+        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
           supabase.from("fitness_goals").select("id,title,current_value,target_value,unit,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
           supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+          supabase.from("workout_sessions").select("id,completed_at,exercises_completed,exercises_total,muscle_group").eq("user_id", user.id).order("completed_at", { ascending: false }),
+          supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
         ]);
         setBodyRecords(bodyRes.data || []);
         setGoals(goalsRes.data || []);
         setWorkoutPlans(workoutRes.data || []);
         setDietPlans(dietRes.data || []);
+        setSessions(sessionsRes.data || []);
+        setExerciseHistory(historyRes.data || []);
       } catch {
-        // silently fail, data will show as empty
+        // silently fail
       } finally {
         setLoading(false);
       }
@@ -62,6 +70,67 @@ const Dashboard = () => {
   const weightChartData = bodyRecords.length > 0
     ? bodyRecords.map((r, i) => ({ semana: `S${i + 1}`, peso: Number(r.weight) }))
     : [];
+
+  // === STREAK CALCULATION ===
+  const uniqueDays = [...new Set(sessions.map((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
+  let currentStreak = 0;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+  if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+    for (let i = 0; i < uniqueDays.length; i++) {
+      const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+      if (uniqueDays[i] === expected) currentStreak++;
+      else break;
+    }
+  }
+  let maxStreak = currentStreak;
+  if (uniqueDays.length > 1) {
+    let tempStreak = 1;
+    for (let i = 1; i < uniqueDays.length; i++) {
+      const prev = new Date(uniqueDays[i - 1]);
+      const curr = new Date(uniqueDays[i]);
+      const diff = Math.round((prev.getTime() - curr.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff === 1) { tempStreak++; maxStreak = Math.max(maxStreak, tempStreak); }
+      else tempStreak = 1;
+    }
+  }
+
+  // === WEEKLY STATS ===
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekSessions = sessions.filter((s: any) => {
+    const d = new Date(s.completed_at);
+    return d >= weekStart && d <= weekEnd;
+  });
+  const weekWorkouts = weekSessions.length;
+  const weekExercises = weekSessions.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0);
+  const weekSeries = exerciseHistory.filter((h: any) => {
+    const d = new Date(h.created_at);
+    return d >= weekStart && d <= weekEnd;
+  }).length;
+
+  // === ACHIEVEMENTS ===
+  const exerciseWeights = new Map<string, number[]>();
+  exerciseHistory.forEach((h: any) => {
+    if (!exerciseWeights.has(h.exercise_name)) exerciseWeights.set(h.exercise_name, []);
+    exerciseWeights.get(h.exercise_name)!.push(h.weight);
+  });
+  let totalProgressions = 0;
+  exerciseWeights.forEach((weights) => {
+    if (weights.length >= 2 && weights[0] > weights[weights.length - 1]) totalProgressions++;
+  });
+
+  const userStats: UserStats = {
+    totalWorkouts: sessions.length,
+    currentStreak,
+    maxStreak,
+    totalProgressions,
+    totalExercisesCompleted: sessions.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0),
+    daysActive: uniqueDays.length,
+  };
+  const achievements = calculateAchievements(userStats);
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
+  const nextAchievement = achievements.find(a => !a.unlocked);
 
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
@@ -197,7 +266,130 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Weight Chart */}
+      {/* 🔥 Streak & Weekly Summary */}
+      {sessions.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Streak Card */}
+          <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-500/8 to-transparent rounded-bl-full" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display font-semibold text-base flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-orange-400" />
+                  Sequência de Treinos
+                </h3>
+                <span className="text-[11px] px-2 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-medium">
+                  Recorde: {maxStreak} dias
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex flex-col items-center justify-center border border-orange-500/15">
+                  <span className="text-3xl font-display font-bold text-orange-400">{currentStreak}</span>
+                  <span className="text-[9px] text-orange-400/70 font-medium uppercase tracking-wider">dias</span>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-1">
+                    {Array.from({ length: 7 }).map((_, i) => {
+                      const day = subDays(new Date(), 6 - i);
+                      const dayStr = format(day, "yyyy-MM-dd");
+                      const trained = uniqueDays.includes(dayStr);
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                          <div className={`w-full h-8 rounded-lg transition-all ${trained ? "bg-gradient-to-t from-orange-500/30 to-orange-400/50 border border-orange-400/30" : "bg-secondary/40 border border-border/20"}`} />
+                          <span className="text-[8px] text-muted-foreground">{format(day, "EEE", { locale: undefined }).charAt(0).toUpperCase()}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    {currentStreak > 0 ? "Continue treinando para manter! 💪" : "Treine hoje para começar uma sequência!"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Summary Card */}
+          <div className="glass-card p-5 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-semibold text-base flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Resumo Semanal
+              </h3>
+              <span className="text-[11px] text-muted-foreground font-medium">Esta semana</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
+                <Dumbbell className="w-4 h-4 text-primary mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekWorkouts}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Treinos</span>
+              </div>
+              <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
+                <Zap className="w-4 h-4 text-chart-2 mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekExercises}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Exercícios</span>
+              </div>
+              <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
+                <Target className="w-4 h-4 text-chart-4 mb-1.5" />
+                <span className="text-xl font-display font-bold text-foreground">{weekSeries}</span>
+                <span className="text-[9px] text-muted-foreground font-medium">Séries</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🏆 Achievements Summary */}
+      {(unlockedAchievements.length > 0 || nextAchievement) && (
+        <div className="glass-card p-5 lg:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display font-semibold text-base flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              Conquistas
+            </h3>
+            <button onClick={() => navigate("/conquistas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+              Ver todas <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Unlocked badges */}
+          {unlockedAchievements.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {unlockedAchievements.map((a) => (
+                <div key={a.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/15">
+                  <span className="text-sm">{a.icon}</span>
+                  <span className="text-[11px] font-medium text-foreground">{a.title}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Next achievement progress */}
+          {nextAchievement && (
+            <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary/80 flex items-center justify-center text-lg">
+                  🔒
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-sm font-medium">Próxima: {nextAchievement.title}</p>
+                    <span className="text-[10px] font-semibold text-primary">{nextAchievement.progress}%</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-2">{nextAchievement.description}</p>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-primary/50 transition-all duration-500" style={{ width: `${nextAchievement.progress}%` }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {nextAchievement.currentValue}/{nextAchievement.requirement}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {weightChartData.length > 1 && (
         <div className="glass-card p-5 lg:p-6">
           <div className="flex items-center justify-between mb-5">
