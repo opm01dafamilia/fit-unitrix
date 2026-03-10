@@ -14,6 +14,7 @@ import Perfil from "./pages/Perfil";
 import Configuracoes from "./pages/Configuracoes";
 import Historico from "./pages/Historico";
 import Conquistas from "./pages/Conquistas";
+import Biblioteca from "./pages/Biblioteca";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
@@ -93,6 +94,7 @@ const App = () => (
               <Route path="/metas" element={<Metas />} />
               <Route path="/historico" element={<Historico />} />
               <Route path="/conquistas" element={<Conquistas />} />
+              <Route path="/biblioteca" element={<Biblioteca />} />
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
             </Route>
