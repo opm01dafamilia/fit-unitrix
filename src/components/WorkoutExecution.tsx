@@ -75,6 +75,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [restTime, setRestTime] = useState(0);
   const [restActive, setRestActive] = useState(false);
   const [restPaused, setRestPaused] = useState(false);
+  const [restFinished, setRestFinished] = useState(false);
+  const [customRestSeconds, setCustomRestSeconds] = useState<number | null>(null);
+  const [showRestConfig, setShowRestConfig] = useState(false);
   const restIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // Workout timer
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
