@@ -97,6 +97,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const totalExercises = exercises.length;
   const currentSets = sets[currentExIndex] || [];
   const targetSeries = parseInt(currentEx.series) || 4;
+  const targetReps = currentEx.reps;
   const effectiveRestSeconds = customRestSeconds ?? parseRestTime(currentEx.descanso);
   const restSeconds = effectiveRestSeconds;
   const currentProgression = progressions[currentEx.nome];
