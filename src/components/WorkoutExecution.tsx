@@ -416,6 +416,74 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     ? "text-destructive bg-destructive/10"
     : "text-muted-foreground bg-secondary/60";
 
+  // ===== COMPLETION CELEBRATION SCREEN =====
+  const totalSetsCompleted = Object.values(sets).reduce((a, exSets) => a + exSets.length, 0);
+  const totalVolume = Object.values(sets).reduce((a, exSets) => a + exSets.reduce((b, s) => b + s.kg * s.reps, 0), 0);
+
+  if (showCompletion) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center animate-scale-in px-4">
+        {/* Celebration Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/5 blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-chart-4/5 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
+          {/* Trophy */}
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 flex items-center justify-center mb-4 shadow-2xl border border-yellow-500/20">
+            <Trophy className="w-12 h-12 text-yellow-500" />
+          </div>
+
+          <h1 className="font-display font-bold text-2xl text-center mb-1">Treino Concluído! 🎉</h1>
+          <p className="text-muted-foreground text-sm text-center mb-6">Ótimo trabalho! Cada treino te deixa mais forte.</p>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 w-full mb-6">
+            <div className="glass-card p-4 flex flex-col items-center">
+              <Dumbbell className="w-5 h-5 text-primary mb-2" />
+              <span className="text-2xl font-display font-bold">{completedCount}</span>
+              <span className="text-[10px] text-muted-foreground">Exercícios</span>
+            </div>
+            <div className="glass-card p-4 flex flex-col items-center">
+              <Target className="w-5 h-5 text-chart-4 mb-2" />
+              <span className="text-2xl font-display font-bold">{totalSetsCompleted}</span>
+              <span className="text-[10px] text-muted-foreground">Séries</span>
+            </div>
+            <div className="glass-card p-4 flex flex-col items-center">
+              <Clock className="w-5 h-5 text-chart-2 mb-2" />
+              <span className="text-2xl font-display font-bold">{formatTime(workoutSeconds)}</span>
+              <span className="text-[10px] text-muted-foreground">Duração</span>
+            </div>
+            <div className="glass-card p-4 flex flex-col items-center">
+              <Flame className="w-5 h-5 text-orange-400 mb-2" />
+              <span className="text-2xl font-display font-bold">{Math.round(totalVolume)}</span>
+              <span className="text-[10px] text-muted-foreground">Volume (kg)</span>
+            </div>
+          </div>
+
+          {/* Workout details */}
+          <div className="glass-card p-4 w-full mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold">{day.dia}</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium">{day.grupo}</span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full" style={{ width: `${progress}%` }} />
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">{completedCount} de {totalExercises} exercícios completados</p>
+          </div>
+
+          {/* Continue Button */}
+          <Button className="w-full h-12 text-base font-semibold" onClick={onFinish}>
+            <Home className="w-5 h-5 mr-2" />
+            Voltar ao Painel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // ===== STRETCHING PRE-WORKOUT SCREEN =====
   if (showStretching && stretching.length > 0) {
     return (
