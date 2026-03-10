@@ -168,7 +168,32 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           if (t <= 1) {
             clearInterval(restIntervalRef.current!);
             setRestActive(false);
-            toast.info("Descanso finalizado! Hora da próxima série 💪");
+            setRestFinished(true);
+            // Vibrate
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+            // Sound
+            try {
+              const ctx = new AudioContext();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.frequency.value = 880;
+              gain.gain.value = 0.3;
+              osc.start();
+              osc.stop(ctx.currentTime + 0.5);
+              setTimeout(() => {
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.frequency.value = 1100;
+                gain2.gain.value = 0.3;
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.3);
+              }, 600);
+            } catch {}
+            toast.info("⏰ Descanso finalizado! Hora da próxima série 💪");
             return 0;
           }
           return t - 1;
