@@ -1,20 +1,25 @@
 import { useState } from "react";
-import { Search, Dumbbell, ChevronRight, ArrowLeft, X, Plus, Info, Zap, BookOpen } from "lucide-react";
+import { Search, Dumbbell, ChevronRight, ArrowLeft, X, Plus, Info, Zap, BookOpen, Heart, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/sonner";
+import ExerciseAnimation from "@/components/ExerciseAnimation";
+import MuscleBodyMap from "@/components/MuscleBodyMap";
 import {
   exerciseLibrary,
   allMuscleGroups,
   muscleGroupIcons,
+  exerciseTypeIcons,
+  exerciseTypeLabels,
   searchExercises,
   getExercisesByGroup,
-  getExerciseById,
+  getExercisesByType,
   getRelatedExercises,
   type ExerciseDetail,
+  type ExerciseType,
   type MuscleGroup,
 } from "@/lib/exerciseLibrary";
 
@@ -24,18 +29,34 @@ const difficultyColors: Record<string, string> = {
   avançado: "bg-red-500/15 text-red-400 border-red-500/20",
 };
 
+const typeColors: Record<ExerciseType, string> = {
+  "musculação": "bg-primary/15 text-primary border-primary/20",
+  "cardio": "bg-red-500/15 text-red-400 border-red-500/20",
+  "alongamento": "bg-sky-500/15 text-sky-400 border-sky-500/20",
+  "mobilidade": "bg-purple-500/15 text-purple-400 border-purple-500/20",
+};
+
 const Biblioteca = () => {
   const [query, setQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<MuscleGroup | null>(null);
+  const [selectedType, setSelectedType] = useState<ExerciseType | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<ExerciseDetail | null>(null);
 
-  const filteredExercises = selectedGroup
-    ? getExercisesByGroup(selectedGroup).filter(
-        (e) => !query || e.nome.toLowerCase().includes(query.toLowerCase())
-      )
-    : searchExercises(query);
+  let filteredExercises: ExerciseDetail[];
+  if (selectedGroup) {
+    filteredExercises = getExercisesByGroup(selectedGroup).filter(
+      (e) => (!query || e.nome.toLowerCase().includes(query.toLowerCase())) &&
+        (!selectedType || e.tipoExercicio === selectedType)
+    );
+  } else if (selectedType) {
+    filteredExercises = getExercisesByType(selectedType).filter(
+      (e) => !query || e.nome.toLowerCase().includes(query.toLowerCase())
+    );
+  } else {
+    filteredExercises = searchExercises(query);
+  }
 
-  const groupedExercises = selectedGroup
+  const groupedExercises = (selectedGroup || selectedType)
     ? null
     : allMuscleGroups.map((g) => ({
         ...g,
@@ -77,7 +98,34 @@ const Biblioteca = () => {
         )}
       </div>
 
-      {/* Filter chips */}
+      {/* Type filter */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedType(null)}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+            !selectedType
+              ? "bg-primary/15 text-primary border-primary/20"
+              : "bg-secondary/60 text-muted-foreground border-border/50 hover:bg-secondary"
+          }`}
+        >
+          Todos tipos
+        </button>
+        {exerciseTypeLabels.map((t) => (
+          <button
+            key={t}
+            onClick={() => setSelectedType(selectedType === t ? null : t)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+              selectedType === t
+                ? typeColors[t]
+                : "bg-secondary/60 text-muted-foreground border-border/50 hover:bg-secondary"
+            }`}
+          >
+            {exerciseTypeIcons[t]} {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Muscle group filter chips */}
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setSelectedGroup(null)}
@@ -104,21 +152,22 @@ const Biblioteca = () => {
         ))}
       </div>
 
-      {/* Selected group header */}
-      {selectedGroup && (
+      {/* Selected group/type header */}
+      {(selectedGroup || selectedType) && (
         <div className="flex items-center gap-2">
-          <button onClick={() => setSelectedGroup(null)} className="text-muted-foreground hover:text-foreground">
+          <button onClick={() => { setSelectedGroup(null); setSelectedType(null); }} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <h2 className="font-semibold">
-            {muscleGroupIcons[selectedGroup]} {allMuscleGroups.find((g) => g.key === selectedGroup)?.label}
+            {selectedGroup && <>{muscleGroupIcons[selectedGroup]} {allMuscleGroups.find((g) => g.key === selectedGroup)?.label}</>}
+            {selectedType && !selectedGroup && <>{exerciseTypeIcons[selectedType]} {selectedType}</>}
           </h2>
           <span className="text-xs text-muted-foreground">({filteredExercises.length} exercícios)</span>
         </div>
       )}
 
       {/* Exercise list */}
-      {selectedGroup ? (
+      {(selectedGroup || selectedType) ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {filteredExercises.map((ex) => (
             <ExerciseCard key={ex.id} exercise={ex} onClick={() => setSelectedExercise(ex)} />
@@ -184,8 +233,13 @@ function ExerciseCard({ exercise, onClick }: { exercise: ExerciseDetail; onClick
       onClick={onClick}
       className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border/50 hover:border-primary/20 hover:bg-primary/5 transition-all text-left w-full group"
     >
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10 shrink-0">
-        <Dumbbell className="w-5 h-5 text-primary" />
+      <div
+        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg"
+        style={{
+          background: `${exercise.animacao.cor}15`,
+        }}
+      >
+        {exercise.animacao.frames[0]?.split(" ")[0] || "💪"}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{exercise.nome}</p>
@@ -217,35 +271,39 @@ function ExerciseDetailView({
   return (
     <ScrollArea className="max-h-[90vh]">
       <div className="p-6 space-y-5">
+        {/* Animation Hero */}
+        <div className="flex justify-center">
+          <ExerciseAnimation exercise={exercise} size="lg" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 shrink-0">
-            <Dumbbell className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <DialogHeader>
-              <DialogTitle className="text-lg text-left">{exercise.nome}</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${difficultyColors[exercise.dificuldade]}`}>
-                {exercise.dificuldade}
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full border bg-secondary/60 text-muted-foreground border-border/50">
-                {exercise.tipo}
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full border bg-secondary/60 text-muted-foreground border-border/50">
-                {exercise.equipamento}
-              </span>
-            </div>
+        <div className="text-center">
+          <DialogHeader>
+            <DialogTitle className="text-lg">{exercise.nome}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-wrap justify-center gap-1.5 mt-2">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${difficultyColors[exercise.dificuldade]}`}>
+              {exercise.dificuldade}
+            </span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${typeColors[exercise.tipoExercicio]}`}>
+              {exerciseTypeIcons[exercise.tipoExercicio]} {exercise.tipoExercicio}
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-secondary/60 text-muted-foreground border-border/50">
+              {exercise.tipo}
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-secondary/60 text-muted-foreground border-border/50">
+              {exercise.equipamento}
+            </span>
           </div>
         </div>
 
-        {/* Muscles */}
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5" /> Músculos trabalhados
+        {/* Muscle Body Map */}
+        <div className="p-4 rounded-xl bg-secondary/30 border border-border/30">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center justify-center gap-1.5">
+            <Zap className="w-3.5 h-3.5" /> Músculos ativados
           </h3>
-          <div className="flex flex-wrap gap-1.5">
+          <MuscleBodyMap highlightedMuscles={exercise.musculosDestacados} />
+          <div className="flex flex-wrap justify-center gap-1.5 mt-3">
             {exercise.musculos.map((m, i) => (
               <Badge key={i} variant="secondary" className="text-xs font-normal">
                 {m}
@@ -297,8 +355,11 @@ function ExerciseDetailView({
                   onClick={() => onSelectRelated(rel)}
                   className="flex items-center gap-2.5 w-full p-2.5 rounded-lg bg-secondary/40 hover:bg-secondary/70 transition-colors text-left"
                 >
-                  <Dumbbell className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-base">{rel.animacao.frames[0]?.split(" ")[0] || "💪"}</span>
                   <span className="text-sm flex-1">{rel.nome}</span>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${typeColors[rel.tipoExercicio]}`}>
+                    {rel.tipoExercicio}
+                  </span>
                   <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               ))}
