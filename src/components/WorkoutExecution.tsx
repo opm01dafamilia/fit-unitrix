@@ -541,20 +541,38 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
-      {/* ===== EXERCISE ILLUSTRATION ===== */}
-      <div className={`glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden`}>
+      {/* ===== EXERCISE HERO WITH ANIMATION ===== */}
+      <div className="glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
-            <Dumbbell className="w-10 h-10 text-primary" />
-          </div>
-          <p className="text-[11px] uppercase tracking-wider text-primary font-semibold mb-1">
-            {muscleGroupIcons[primaryGroup] || "💪"} Músculos ativados
-          </p>
+        <div className="relative z-10 flex flex-col items-center w-full">
+          {/* Exercise Animation */}
+          {libraryExercise ? (
+            <ExerciseAnimation exercise={libraryExercise} size="lg" className="mb-3" />
+          ) : (
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
+              <Dumbbell className="w-10 h-10 text-primary" />
+            </div>
+          )}
+          
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
+          
+          {/* Muscle tags */}
+          {libraryExercise && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                <Target className="w-3 h-3" /> {libraryExercise.musculos[0]}
+              </span>
+              {libraryExercise.musculos.slice(1).map((m, i) => (
+                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">
+                  {m}
+                </span>
+              ))}
+            </div>
+          )}
 
+          {/* Progression badge */}
           {currentProgression && currentProgression.feedback !== "first_time" && (
-            <div className={`mt-2 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
+            <div className={`mt-2.5 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
@@ -563,6 +581,37 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
         </div>
       </div>
+
+      {/* ===== MUSCLE BODY MAP ===== */}
+      {libraryExercise && (
+        <div className="glass-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
+          </h3>
+          <div className="flex items-center gap-4">
+            <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} className="w-28 h-40 shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Principal</span>
+                <p className="text-sm font-medium mt-0.5">{libraryExercise.musculos[0]}</p>
+              </div>
+              {libraryExercise.musculos.length > 1 && (
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {libraryExercise.musculos.slice(1).map((m, i) => (
+                      <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/60 text-muted-foreground">{m}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="pt-1">
+                <span className="text-[10px] text-muted-foreground">{libraryExercise.equipamento}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== PROGRESSION FEEDBACK ===== */}
       {currentProgression && currentProgression.feedback !== "first_time" && (
