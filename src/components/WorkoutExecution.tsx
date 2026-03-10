@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
-  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home
+  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
+import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
+import ExerciseAnimation from "@/components/ExerciseAnimation";
+import MuscleBodyMap from "@/components/MuscleBodyMap";
 
 // Muscle group illustration mapping
 const muscleGroupColors: Record<string, string> = {
@@ -382,6 +385,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
   const dismissRestFinished = () => setRestFinished(false);
 
+  // Find matching exercise from library
+  const libraryExercise = useMemo(() => {
+    const name = currentEx.nome.toLowerCase();
+    return exerciseLibrary.find(e => 
+      name.includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(name)
+    ) || null;
+  }, [currentEx.nome]);
+
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
     if (currentExHistory.length === 0) return [];
@@ -510,12 +521,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-primary font-display font-bold text-sm">
                 {currentExIndex + 1}/{totalExercises}
               </span>
-              <span className="text-muted-foreground text-sm">{day.grupo}</span>
+              <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-semibold">
+                {day.grupo}
+              </span>
               {trainingLocation === "casa" && (
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">🏠</span>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
               <Timer className="w-3 h-3" /> {formatTime(workoutSeconds)}
             </p>
           </div>
@@ -528,20 +541,38 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
-      {/* ===== EXERCISE ILLUSTRATION ===== */}
-      <div className={`glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden`}>
+      {/* ===== EXERCISE HERO WITH ANIMATION ===== */}
+      <div className="glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
-            <Dumbbell className="w-10 h-10 text-primary" />
-          </div>
-          <p className="text-[11px] uppercase tracking-wider text-primary font-semibold mb-1">
-            {muscleGroupIcons[primaryGroup] || "💪"} Músculos ativados
-          </p>
+        <div className="relative z-10 flex flex-col items-center w-full">
+          {/* Exercise Animation */}
+          {libraryExercise ? (
+            <ExerciseAnimation exercise={libraryExercise} size="lg" className="mb-3" />
+          ) : (
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
+              <Dumbbell className="w-10 h-10 text-primary" />
+            </div>
+          )}
+          
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
+          
+          {/* Muscle tags */}
+          {libraryExercise && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                <Target className="w-3 h-3" /> {libraryExercise.musculos[0]}
+              </span>
+              {libraryExercise.musculos.slice(1).map((m, i) => (
+                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">
+                  {m}
+                </span>
+              ))}
+            </div>
+          )}
 
+          {/* Progression badge */}
           {currentProgression && currentProgression.feedback !== "first_time" && (
-            <div className={`mt-2 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
+            <div className={`mt-2.5 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
@@ -550,6 +581,37 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
         </div>
       </div>
+
+      {/* ===== MUSCLE BODY MAP ===== */}
+      {libraryExercise && (
+        <div className="glass-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
+          </h3>
+          <div className="flex items-center gap-4">
+            <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} className="w-28 h-40 shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">Principal</span>
+                <p className="text-sm font-medium mt-0.5">{libraryExercise.musculos[0]}</p>
+              </div>
+              {libraryExercise.musculos.length > 1 && (
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {libraryExercise.musculos.slice(1).map((m, i) => (
+                      <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-secondary/60 text-muted-foreground">{m}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="pt-1">
+                <span className="text-[10px] text-muted-foreground">{libraryExercise.equipamento}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ===== PROGRESSION FEEDBACK ===== */}
       {currentProgression && currentProgression.feedback !== "first_time" && (
@@ -812,23 +874,70 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       {/* ===== EXERCISE INFO PANEL ===== */}
       {showInfo && (
         <div className="glass-card p-4 glow-border animate-slide-up">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Sobre o exercício</h3>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowInfo(false)}>
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">{currentEx.desc}</p>
-          <div className="flex gap-3 mt-3 text-[11px]">
-            <span className="flex items-center gap-1 text-primary font-medium px-2 py-1 rounded-md bg-primary/8">
-              <Clock className="w-3 h-3" />{currentEx.series}x{currentEx.reps}
-            </span>
-            {currentEx.descanso && currentEx.descanso !== "—" && (
-              <span className="flex items-center gap-1 text-muted-foreground px-2 py-1 rounded-md bg-secondary/50">
-                <Timer className="w-3 h-3" />{currentEx.descanso} descanso
-              </span>
-            )}
-          </div>
+          
+          {libraryExercise ? (
+            <div className="space-y-4">
+              {/* Instructions */}
+              <div>
+                <h4 className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Execução Passo a Passo</h4>
+                <div className="space-y-2">
+                  {libraryExercise.instrucoes.map((inst, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                        {i + 1}
+                      </span>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{inst}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Tips */}
+              <div>
+                <h4 className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-2">💡 Dicas Importantes</h4>
+                <div className="space-y-1.5">
+                  {libraryExercise.dicas.map((dica, i) => (
+                    <p key={i} className="text-xs text-muted-foreground leading-relaxed pl-3 border-l-2 border-amber-500/30">
+                      {dica}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Meta */}
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground">
+                  {libraryExercise.equipamento}
+                </span>
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">
+                  {libraryExercise.dificuldade}
+                </span>
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">
+                  {libraryExercise.tipo}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{currentEx.desc}</p>
+              <div className="flex gap-3 mt-3 text-[11px]">
+                <span className="flex items-center gap-1 text-primary font-medium px-2 py-1 rounded-md bg-primary/8">
+                  <Clock className="w-3 h-3" />{currentEx.series}x{currentEx.reps}
+                </span>
+                {currentEx.descanso && currentEx.descanso !== "—" && (
+                  <span className="flex items-center gap-1 text-muted-foreground px-2 py-1 rounded-md bg-secondary/50">
+                    <Timer className="w-3 h-3" />{currentEx.descanso} descanso
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
