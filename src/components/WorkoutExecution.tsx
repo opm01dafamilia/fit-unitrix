@@ -385,6 +385,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
   const dismissRestFinished = () => setRestFinished(false);
 
+  // Find matching exercise from library
+  const libraryExercise = useMemo(() => {
+    const name = currentEx.nome.toLowerCase();
+    return exerciseLibrary.find(e => 
+      name.includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(name)
+    ) || null;
+  }, [currentEx.nome]);
+
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
     if (currentExHistory.length === 0) return [];
