@@ -574,12 +574,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           </div>
           <span className="text-[10px] text-muted-foreground font-medium">Repetições</span>
         </div>
-        <div className="glass-card p-3.5 flex flex-col items-center">
+        <button onClick={() => setShowRestConfig(!showRestConfig)} className="glass-card p-3.5 flex flex-col items-center cursor-pointer hover:bg-secondary/60 transition-colors">
           <div className="w-14 h-14 rounded-full border-[3px] border-amber-500/30 flex items-center justify-center mb-1.5">
-            <span className="font-display font-bold text-base">{currentEx.descanso !== "—" ? currentEx.descanso : "—"}</span>
+            <span className="font-display font-bold text-sm">{restSeconds}s</span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium">Descanso</span>
-        </div>
+          <span className="text-[10px] text-muted-foreground font-medium">Descanso ⚙️</span>
+        </button>
         <div className="glass-card p-3.5 flex flex-col items-center">
           <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center mb-1.5 ${currentSets.length >= targetSeries ? "border-green-500/50" : "border-muted-foreground/20"}`}>
             <span className="font-display font-bold text-base">{currentSets.length}/{targetSeries}</span>
@@ -588,29 +588,105 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
+      {/* ===== REST TIME CONFIG ===== */}
+      {showRestConfig && (
+        <div className="glass-card p-4 glow-border animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">⚙️ Tempo de Descanso</h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowRestConfig(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            {REST_OPTIONS.map(sec => (
+              <button
+                key={sec}
+                onClick={() => { setCustomRestSeconds(sec); setShowRestConfig(false); }}
+                className={`p-2.5 rounded-xl text-center text-sm font-display font-bold transition-colors ${
+                  restSeconds === sec
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/50 text-foreground hover:bg-secondary"
+                }`}
+              >
+                {sec}s
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              placeholder="Personalizado (s)"
+              className="h-9 bg-secondary/50 border-border/50 text-center text-sm"
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  const v = parseInt((e.target as HTMLInputElement).value);
+                  if (v > 0) { setCustomRestSeconds(v); setShowRestConfig(false); }
+                }
+              }}
+            />
+            <span className="text-xs text-muted-foreground shrink-0">segundos</span>
+          </div>
+        </div>
+      )}
+
+      {/* ===== REST FINISHED ALERT ===== */}
+      {restFinished && !restActive && (
+        <div className="glass-card p-5 glow-border animate-slide-up border border-primary/30">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
+              <Zap className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-bold text-lg">⏰ Descanso Finalizado!</h3>
+            <p className="text-sm text-muted-foreground mt-1">Hora da próxima série</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Série {currentSets.length + 1} de {targetSeries}
+            </p>
+            <Button onClick={dismissRestFinished} className="mt-4 h-11 px-8">
+              <Play className="w-4 h-4 mr-2" /> Iniciar Próxima Série
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ===== REST TIMER ===== */}
       {restActive && (
-        <div className="glass-card p-4 glow-border">
-          <div className="flex items-center justify-between mb-3">
+        <div className="glass-card p-5 glow-border">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">⏱ Descanso</span>
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={skipRest}>
-              Pular
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>
+                +15s
+              </Button>
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>
+                Pular
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-4">
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={toggleRestPause}>
-              {restPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
-            </Button>
-            <span className="font-display font-bold text-4xl text-amber-400 tabular-nums min-w-[100px] text-center">
-              {formatTime(restTime)}
-            </span>
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={resetRest}>
-              <RotateCcw className="w-5 h-5" />
-            </Button>
-          </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-3">
-            <div className="h-full rounded-full transition-all duration-1000 bg-amber-400/70"
-              style={{ width: `${restSeconds > 0 ? (restTime / restSeconds) * 100 : 0}%` }} />
+          <div className="flex flex-col items-center">
+            <div className="relative w-36 h-36 mb-4">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
+                <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 54}`}
+                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - (restSeconds > 0 ? restTime / restSeconds : 0))}`}
+                  className="transition-all duration-1000" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-display font-bold text-3xl tabular-nums text-foreground">
+                  {formatTime(restTime)}
+                </span>
+                <span className="text-[10px] text-muted-foreground">restante</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={toggleRestPause}>
+                {restPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
+              </Button>
+              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={resetRest}>
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
