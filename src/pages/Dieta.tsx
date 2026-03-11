@@ -142,7 +142,7 @@ const MealCard = ({ meal, index, onFocus }: { meal: MealPlan; index: number; onF
   );
 };
 
-const DayAccordion = ({ dayPlan, defaultOpen }: { dayPlan: DayPlan; defaultOpen?: boolean }) => {
+const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void }) => {
   const [open, setOpen] = useState(defaultOpen || false);
   const dayCal = dayPlan.refeicoes.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0);
 
@@ -166,7 +166,7 @@ const DayAccordion = ({ dayPlan, defaultOpen }: { dayPlan: DayPlan; defaultOpen?
       {open && (
         <div className="px-4 pb-4 lg:px-5 lg:pb-5 space-y-3">
           {dayPlan.refeicoes.map((meal, i) => (
-            <MealCard key={i} meal={meal} index={i} />
+            <MealCard key={i} meal={meal} index={i} onFocus={() => onMealFocus?.(meal)} />
           ))}
         </div>
       )}
