@@ -5,13 +5,6 @@ interface MuscleBodyMapProps {
   className?: string;
 }
 
-const muscleColors: Record<string, string> = {
-  active: "hsl(152 69% 46%)",
-  secondary: "hsl(152 69% 46% / 0.35)",
-  inactive: "hsl(225 12% 18%)",
-  outline: "hsl(225 12% 25%)",
-};
-
 // Maps muscle IDs to SVG path definitions (front view body)
 const musclePaths: Record<string, { d: string; label: string; side: "front" | "back" | "both" }> = {
   "peitoral": {
@@ -113,78 +106,80 @@ const musclePaths: Record<string, { d: string; label: string; side: "front" | "b
 
 const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProps) => {
   const isFullBody = highlightedMuscles.includes("corpo-inteiro");
+  const primaryMuscle = highlightedMuscles[0];
 
   const getMuscleColor = (muscleId: string) => {
-    if (isFullBody) return muscleColors.active;
-    if (highlightedMuscles.includes(muscleId as MuscleId)) return muscleColors.active;
-    return muscleColors.inactive;
+    if (isFullBody) return "hsl(152 69% 46%)";
+    if (muscleId === primaryMuscle) return "hsl(152 69% 52%)";
+    if (highlightedMuscles.includes(muscleId as MuscleId)) return "hsl(152 69% 46% / 0.5)";
+    return "hsl(225 12% 18%)";
   };
 
   const getMuscleOpacity = (muscleId: string) => {
     if (isFullBody) return 0.7;
-    if (highlightedMuscles.includes(muscleId as MuscleId)) return 0.85;
+    if (muscleId === primaryMuscle) return 1;
+    if (highlightedMuscles.includes(muscleId as MuscleId)) return 0.65;
     return 0.3;
   };
 
+  const isActive = (muscleId: string) =>
+    isFullBody || highlightedMuscles.includes(muscleId as MuscleId);
+
+  const isPrimary = (muscleId: string) => muscleId === primaryMuscle;
+
+  const renderSvgView = (side: "front" | "back", label: string) => (
+    <div className="relative">
+      <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">{label}</p>
+      <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id={`glow-${side}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id={`glow-strong-${side}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {/* Body outline */}
+        <path
+          d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
+          fill="none"
+          stroke="hsl(225 12% 25%)"
+          strokeWidth="0.8"
+          opacity="0.5"
+        />
+        {Object.entries(musclePaths)
+          .filter(([, config]) => config.side === side || config.side === "both")
+          .map(([id, config]) => (
+            <path
+              key={id}
+              d={config.d}
+              fill={getMuscleColor(id)}
+              opacity={getMuscleOpacity(id)}
+              stroke={isActive(id) ? "hsl(152 69% 52%)" : "transparent"}
+              strokeWidth={isPrimary(id) ? "1" : "0.5"}
+              filter={isPrimary(id) ? `url(#glow-strong-${side})` : isActive(id) ? `url(#glow-${side})` : undefined}
+              className={isPrimary(id) ? "animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" : "transition-all duration-500"}
+            >
+              <title>{config.label}</title>
+            </path>
+          ))}
+      </svg>
+    </div>
+  );
+
   return (
     <div className={`inline-flex gap-1.5 items-start justify-center ${className}`}>
-      {/* Front View */}
-      <div className="relative">
-        <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">Frente</p>
-        <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
-            fill="none"
-            stroke={muscleColors.outline}
-            strokeWidth="0.8"
-            opacity="0.5"
-          />
-          {Object.entries(musclePaths)
-            .filter(([, config]) => config.side === "front" || config.side === "both")
-            .map(([id, config]) => (
-              <path
-                key={id}
-                d={config.d}
-                fill={getMuscleColor(id)}
-                opacity={getMuscleOpacity(id)}
-                stroke={highlightedMuscles.includes(id as MuscleId) || isFullBody ? muscleColors.active : "transparent"}
-                strokeWidth="0.5"
-                className="transition-all duration-500"
-              >
-                <title>{config.label}</title>
-              </path>
-            ))}
-        </svg>
-      </div>
-
-      {/* Back View */}
-      <div className="relative">
-        <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">Costas</p>
-        <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
-            fill="none"
-            stroke={muscleColors.outline}
-            strokeWidth="0.8"
-            opacity="0.5"
-          />
-          {Object.entries(musclePaths)
-            .filter(([, config]) => config.side === "back" || config.side === "both")
-            .map(([id, config]) => (
-              <path
-                key={id}
-                d={config.d}
-                fill={getMuscleColor(id)}
-                opacity={getMuscleOpacity(id)}
-                stroke={highlightedMuscles.includes(id as MuscleId) || isFullBody ? muscleColors.active : "transparent"}
-                strokeWidth="0.5"
-                className="transition-all duration-500"
-              >
-                <title>{config.label}</title>
-              </path>
-            ))}
-        </svg>
-      </div>
+      {renderSvgView("front", "Frente")}
+      {renderSvgView("back", "Costas")}
     </div>
   );
 };
