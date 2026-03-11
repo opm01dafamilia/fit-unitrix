@@ -202,6 +202,49 @@ const Treino = () => {
   const totalCompleted = sessions.length;
   const avgExercises = sessions.length > 0 ? Math.round(sessions.reduce((a, s) => a + s.exercises_completed, 0) / sessions.length) : 0;
 
+  // Check if a workout is "in progress" (started today but not finished all exercises)
+  const inProgressDay = useMemo(() => {
+    if (!activePlan || !activePlanData) return null;
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    const todaySess = sessions.find(s =>
+      s.workout_plan_id === activePlan.id &&
+      format(new Date(s.completed_at), "yyyy-MM-dd") === todayKey &&
+      s.exercises_completed < s.exercises_total
+    );
+    if (todaySess) return todaySess.day_index;
+    return null;
+  }, [activePlan, activePlanData, sessions]);
+
+  // Muscle group icons & gradients
+  const muscleGroupIcons: Record<string, string> = {
+    peito: "💪", costas: "🏋️", pernas: "🦵", ombros: "🎯",
+    biceps: "💪", triceps: "💪", abdomen: "🔥", hiit: "⚡",
+    cardio: "🏃", corpo: "🏆", full: "🏆",
+  };
+  const getMuscleIcon = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    for (const [key, icon] of Object.entries(muscleGroupIcons)) {
+      if (g.includes(key)) return icon;
+    }
+    return "💪";
+  };
+  const muscleGradients: Record<string, string> = {
+    peito: "from-red-500/20 to-red-600/5",
+    costas: "from-blue-500/20 to-blue-600/5",
+    pernas: "from-purple-500/20 to-purple-600/5",
+    ombros: "from-amber-500/20 to-amber-600/5",
+    biceps: "from-pink-500/20 to-pink-600/5",
+    triceps: "from-cyan-500/20 to-cyan-600/5",
+    abdomen: "from-green-500/20 to-green-600/5",
+  };
+  const getGradient = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    for (const [key, grad] of Object.entries(muscleGradients)) {
+      if (g.includes(key)) return grad;
+    }
+    return "from-primary/20 to-primary/5";
+  };
+
   // Handlers
   const handleGenerate = () => {
     if (!objetivo || !nivel || !dias) { toast.error("Preencha todos os campos"); return; }
