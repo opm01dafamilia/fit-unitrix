@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight } from "lucide-react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -100,6 +101,23 @@ const DayAccordion = ({ dayPlan, defaultOpen }: { dayPlan: DayPlan; defaultOpen?
   );
 };
 
+const deadlineOptions = [
+  { value: "1", label: "1 mês" },
+  { value: "2", label: "2 meses" },
+  { value: "3", label: "3 meses" },
+  { value: "6", label: "6 meses" },
+];
+
+function buildMetaDescription(sp: any): string | null {
+  const data = sp.plan_data;
+  const meta = data && typeof data === "object" ? (data as any).meta : null;
+  if (!meta) return null;
+  const { currentWeight, weightGoal, deadlineMonths } = meta;
+  if (!weightGoal || !currentWeight) return null;
+  const months = deadlineMonths || 3;
+  return `De ${currentWeight}kg para ${weightGoal}kg em ${months} ${months === 1 ? "mês" : "meses"}`;
+}
+
 const Dieta = () => {
   const { user, profile } = useAuth();
   const [objetivo, setObjetivo] = useState("");
@@ -107,6 +125,8 @@ const Dieta = () => {
   const [altura, setAltura] = useState("");
   const [atividade, setAtividade] = useState("");
   const [metaPeso, setMetaPeso] = useState("");
+  const [prazo, setPrazo] = useState("3");
+  const [preferencias, setPreferencias] = useState("");
   const [periodo, setPeriodo] = useState<PlanPeriod>("hoje");
   const [plan, setPlan] = useState<MealPlan[] | null>(null);
   const [weekPlan, setWeekPlan] = useState<DayPlan[] | null>(null);
@@ -162,7 +182,8 @@ const Dieta = () => {
           profile?.age || undefined,
           profile?.gender || undefined,
           metaPeso ? Number(metaPeso) : undefined,
-          periodo
+          periodo,
+          Number(prazo)
         );
         setPlan(result.plan);
         setWeekPlan(result.weekPlan || null);
@@ -182,13 +203,23 @@ const Dieta = () => {
     if (!user || !plan) return;
     setSaving(true);
     try {
+      const meta = {
+        currentWeight: Number(peso),
+        weightGoal: metaPeso ? Number(metaPeso) : null,
+        deadlineMonths: Number(prazo),
+        preferencias: preferencias || null,
+      };
+      const planData = weekPlan
+        ? { plan, weekPlan, period: planPeriod, meta }
+        : { plan, period: planPeriod, meta };
+
       const { error } = await supabase.from("diet_plans").insert({
         user_id: user.id,
         objective: objetivo,
         weight: Number(peso),
         height: Number(altura) || 0,
         activity_level: atividade || "moderado",
-        plan_data: weekPlan ? { plan, weekPlan, period: planPeriod } : plan,
+        plan_data: planData,
       });
       if (error) throw error;
       toast.success("Plano salvo!");
@@ -213,7 +244,6 @@ const Dieta = () => {
     }
   };
 
-  // Handle viewing saved plans (may have weekPlan embedded)
   const handleViewSaved = (sp: any) => {
     setViewingSaved(sp);
     setPlan(null);
@@ -224,6 +254,9 @@ const Dieta = () => {
       setPlan(data.plan as MealPlan[]);
       setWeekPlan(data.weekPlan as DayPlan[]);
       setPlanPeriod(data.period as PlanPeriod || "semana");
+    } else if (data && typeof data === "object" && "plan" in data) {
+      setPlan(data.plan as MealPlan[]);
+      setPlanPeriod(data.period as PlanPeriod || "hoje");
     } else {
       setPlanPeriod("hoje");
     }
@@ -309,14 +342,14 @@ const Dieta = () => {
         {/* Divider */}
         <div className="border-t border-border/40" />
 
-        {/* Section: Meta de Peso */}
+        {/* Section: Meta de Peso + Prazo */}
         <div>
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <span className="w-5 h-5 rounded-md bg-chart-3/10 flex items-center justify-center text-[10px] font-bold text-chart-3">2</span>
-            Meta de Peso
+            Meta de Peso &amp; Prazo
           </h3>
-          <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="flex-1 w-full sm:max-w-xs">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+            <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Peso Desejado (kg)</label>
               <div className="relative">
                 <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -330,8 +363,22 @@ const Dieta = () => {
               </div>
               {errors.metaPeso && <p className="text-[11px] text-destructive mt-1">{errors.metaPeso}</p>}
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Prazo</label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Select value={prazo} onValueChange={setPrazo}>
+                  <SelectTrigger className="bg-secondary/50 border-border/50 pl-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {deadlineOptions.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             {weightDiff !== null && peso && metaPeso && (
-              <div className="flex items-center gap-2 mt-1 sm:mt-7">
+              <div className="flex items-center gap-2 sm:mt-7">
                 <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
                   weightDiff < 0 
                     ? "bg-chart-2/10 text-chart-2" 
@@ -342,8 +389,8 @@ const Dieta = () => {
                   {weightDiff === 0 
                     ? "Manutenção" 
                     : weightDiff < 0 
-                      ? `↓ ${Math.abs(weightDiff).toFixed(1)} kg para perder` 
-                      : `↑ ${weightDiff.toFixed(1)} kg para ganhar`
+                      ? `↓ ${Math.abs(weightDiff).toFixed(1)}kg em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` 
+                      : `↑ ${weightDiff.toFixed(1)}kg em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}`
                   }
                 </div>
               </div>
@@ -354,10 +401,33 @@ const Dieta = () => {
         {/* Divider */}
         <div className="border-t border-border/40" />
 
+        {/* Section: Preferências Alimentares */}
+        <div>
+          <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <span className="w-5 h-5 rounded-md bg-chart-4/10 flex items-center justify-center text-[10px] font-bold text-chart-4">3</span>
+            Preferências Alimentares
+          </h3>
+          <div className="relative">
+            <Textarea
+              placeholder="Ex: prefiro comidas simples, não gosto de peixe, quero dieta barata..."
+              value={preferencias}
+              onChange={(e) => setPreferencias(e.target.value.slice(0, 100))}
+              maxLength={100}
+              rows={2}
+              className="bg-secondary/50 border-border/50 resize-none text-sm"
+            />
+            <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{preferencias.length}/100</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1.5">Opcional — ajuda a personalizar melhor seu plano</p>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-border/40" />
+
         {/* Section: Período */}
         <div>
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-            <span className="w-5 h-5 rounded-md bg-chart-2/10 flex items-center justify-center text-[10px] font-bold text-chart-2">3</span>
+            <span className="w-5 h-5 rounded-md bg-chart-2/10 flex items-center justify-center text-[10px] font-bold text-chart-2">4</span>
             Período do Plano
           </h3>
           <RadioGroup value={periodo} onValueChange={(v) => setPeriodo(v as PlanPeriod)} className="grid grid-cols-3 gap-3">
@@ -401,23 +471,29 @@ const Dieta = () => {
         <div className="glass-card p-5 lg:p-6">
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest">Planos Salvos</h3>
           <div className="space-y-2">
-            {savedPlans.map((sp) => (
-              <div key={sp.id} className={`flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all ${viewingSaved?.id === sp.id ? "bg-primary/8 border border-primary/20" : "bg-secondary/40 hover:bg-secondary/60 border border-transparent"}`}
-                onClick={() => handleViewSaved(sp)}>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                    <UtensilsCrossed className="w-4 h-4 text-chart-3" />
+            {savedPlans.map((sp) => {
+              const metaDesc = buildMetaDescription(sp);
+              return (
+                <div key={sp.id} className={`flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all ${viewingSaved?.id === sp.id ? "bg-primary/8 border border-primary/20" : "bg-secondary/40 hover:bg-secondary/60 border border-transparent"}`}
+                  onClick={() => handleViewSaved(sp)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                      <UtensilsCrossed className="w-4 h-4 text-chart-3" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium capitalize">{sp.objective} — {sp.weight}kg</p>
+                      {metaDesc ? (
+                        <p className="text-[11px] text-primary/80 font-medium">{metaDesc}</p>
+                      ) : null}
+                      <p className="text-[11px] text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium capitalize">{sp.objective} — {sp.weight}kg</p>
-                    <p className="text-[11px] text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")}</p>
-                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(sp.id); }} className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); handleDelete(sp.id); }} className="text-muted-foreground hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
