@@ -606,14 +606,14 @@ const Dieta = () => {
                 {planPeriod === "semana" ? "Plano Semanal" : "Plano Mensal"}
               </h3>
               {displayWeekPlan.map((dayPlan, i) => (
-                <DayAccordion key={i} dayPlan={dayPlan} defaultOpen={i === 0} />
+                <DayAccordion key={i} dayPlan={dayPlan} defaultOpen={i === 0} onMealFocus={(meal) => setFocusMeal(meal)} />
               ))}
             </div>
           ) : (
             <div className="space-y-3">
               <h3 className="font-display font-semibold text-xs text-muted-foreground uppercase tracking-widest">Refeições de Hoje</h3>
               {displayPlan.map((meal, i) => (
-                <MealCard key={i} meal={meal} index={i} />
+                <MealCard key={i} meal={meal} index={i} onFocus={() => setFocusMeal(meal)} />
               ))}
             </div>
           )}
@@ -628,6 +628,11 @@ const Dieta = () => {
           <p className="text-muted-foreground text-sm">Preencha seus dados e gere seu plano alimentar personalizado.</p>
         </div>
       )}
+
+      {/* Focus Mode for Meals */}
+      <FocusMode open={!!focusMeal} onClose={() => setFocusMeal(null)}>
+        {focusMeal && <MealFocusCard meal={focusMeal} onClose={() => setFocusMeal(null)} />}
+      </FocusMode>
     </div>
   );
 };
