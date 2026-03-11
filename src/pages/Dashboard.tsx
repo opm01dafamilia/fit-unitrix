@@ -63,9 +63,13 @@ const Dashboard = () => {
   const completedGoals = goals.filter((g) => g.status === "completed");
 
   const latestDiet = dietPlans[0];
-  const estimatedCalories = latestDiet
-    ? (latestDiet.plan_data as any[])?.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0) || 0
-    : 0;
+  const estimatedCalories = (() => {
+    if (!latestDiet) return 0;
+    const pd = latestDiet.plan_data as any;
+    // plan_data may be an array of meals or an object with a "plan" key
+    const meals: any[] = Array.isArray(pd) ? pd : Array.isArray(pd?.plan) ? pd.plan : [];
+    return meals.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0);
+  })();
 
   const weightChartData = bodyRecords.length > 0
     ? bodyRecords.map((r, i) => ({ semana: `S${i + 1}`, peso: Number(r.weight) }))
