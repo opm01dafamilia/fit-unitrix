@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2 } from "lucide-react";
+import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,18 +7,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { addWeeks, addMonths, format } from "date-fns";
+
+const prazoOptions = [
+  { value: "1s", label: "1 semana" },
+  { value: "1m", label: "1 mês" },
+  { value: "3m", label: "3 meses" },
+  { value: "6m", label: "6 meses" },
+  { value: "custom", label: "Personalizado" },
+];
+
+function prazoToDate(prazo: string): string {
+  const now = new Date();
+  switch (prazo) {
+    case "1s": return format(addWeeks(now, 1), "yyyy-MM-dd");
+    case "1m": return format(addMonths(now, 1), "yyyy-MM-dd");
+    case "3m": return format(addMonths(now, 3), "yyyy-MM-dd");
+    case "6m": return format(addMonths(now, 6), "yyyy-MM-dd");
+    default: return "";
+  }
+}
+
+function prazoLabel(prazo: string): string {
+  return prazoOptions.find(p => p.value === prazo)?.label || prazo;
+}
 
 const Metas = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [metas, setMetas] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
-  const [tipo, setTipo] = useState("");
+  const [objetivo, setObjetivo] = useState("");
   const [valorAtual, setValorAtual] = useState("");
   const [valorMeta, setValorMeta] = useState("");
-  const [unidade, setUnidade] = useState("");
-  const [targetDate, setTargetDate] = useState("");
+  const [unidade, setUnidade] = useState("kg");
+  const [prazo, setPrazo] = useState("");
+  const [customDate, setCustomDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingMetas, setLoadingMetas] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,38 +64,70 @@ const Metas = () => {
 
   useEffect(() => { fetchMetas(); }, [user]);
 
+  // Pre-fill peso atual from profile
+  useEffect(() => {
+    if (profile?.weight && !valorAtual && !editingId) {
+      setValorAtual(String(profile.weight));
+    }
+  }, [profile, showForm]);
+
   const resetForm = () => {
-    setTitulo(""); setTipo(""); setValorAtual(""); setValorMeta(""); setUnidade(""); setTargetDate("");
-    setEditingId(null); setShowForm(false); setErrors({});
+    setTitulo(""); setObjetivo(""); setValorAtual(profile?.weight ? String(profile.weight) : ""); setValorMeta(""); setUnidade("kg"); setPrazo(""); setCustomDate("");
+    setEditingId(null); setShowForm(false); setShowConfirm(false); setErrors({});
   };
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!titulo.trim()) e.titulo = "Título obrigatório";
     if (titulo.trim().length > 100) e.titulo = "Máximo 100 caracteres";
-    if (!valorAtual || Number(valorAtual) < 0) e.valorAtual = "Valor inválido";
-    if (!valorMeta || Number(valorMeta) <= 0) e.valorMeta = "Meta deve ser > 0";
-    if (Number(valorMeta) > 99999) e.valorMeta = "Valor muito alto";
-    if (targetDate && new Date(targetDate) < new Date()) e.targetDate = "Data deve ser futura";
+    if (!objetivo) e.objetivo = "Selecione um objetivo";
+    if (!valorAtual || Number(valorAtual) <= 0) e.valorAtual = "Peso atual inválido";
+    if (!valorMeta || Number(valorMeta) <= 0) e.valorMeta = "Peso meta inválido";
+    if (!prazo) e.prazo = "Selecione um prazo";
+    if (prazo === "custom" && !customDate) e.customDate = "Informe a data";
+    if (prazo === "custom" && customDate && new Date(customDate) <= new Date()) e.customDate = "Data deve ser futura";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  const getTargetDate = (): string | null => {
+    if (prazo === "custom") return customDate || null;
+    if (prazo) return prazoToDate(prazo);
+    return null;
+  };
+
+  const handleNext = () => {
+    if (!validate()) return;
+    setShowConfirm(true);
+  };
+
+  const getSummaryText = () => {
+    const atual = Number(valorAtual);
+    const meta = Number(valorMeta);
+    const diff = meta - atual;
+    const direction = diff > 0 ? "ganhar" : "perder";
+    const prazoText = prazo === "custom" && customDate
+      ? `até ${new Date(customDate).toLocaleDateString("pt-BR")}`
+      : prazoLabel(prazo);
+    return `Você quer ir de ${atual}${unidade} para ${meta}${unidade} (${direction} ${Math.abs(diff).toFixed(1)}${unidade}) em ${prazoText}.`;
+  };
+
   const handleSave = async () => {
-    if (!validate() || !user) return;
+    if (!user) return;
     setSaving(true);
 
+    const targetDate = getTargetDate();
     const progress = Math.min(100, Math.max(0, (Number(valorAtual) / Number(valorMeta)) * 100));
     const autoStatus = progress >= 100 ? "completed" : "active";
 
     const payload = {
       user_id: user.id,
       title: titulo.trim(),
-      goal_type: tipo || "outro",
+      goal_type: objetivo || "outro",
       current_value: Number(valorAtual),
       target_value: Number(valorMeta),
       unit: unidade || null,
-      target_date: targetDate || null,
+      target_date: targetDate,
       status: autoStatus,
     };
 
@@ -77,16 +135,16 @@ const Metas = () => {
       if (editingId) {
         const { error } = await supabase.from("fitness_goals").update(payload).eq("id", editingId);
         if (error) throw error;
-        toast.success("Meta atualizada!");
+        toast.success("Meta atualizada com sucesso!");
       } else {
         const { error } = await supabase.from("fitness_goals").insert(payload);
         if (error) throw error;
-        toast.success("Meta criada!");
+        toast.success("Meta criada com sucesso! 🎯");
       }
       resetForm();
       fetchMetas();
     } catch {
-      toast.error("Não foi possível salvar a meta. Tente novamente.");
+      toast.error("Não foi possível salvar a meta.");
     } finally {
       setSaving(false);
     }
@@ -95,12 +153,14 @@ const Metas = () => {
   const handleEdit = (meta: any) => {
     setEditingId(meta.id);
     setTitulo(meta.title);
-    setTipo(meta.goal_type || "");
+    setObjetivo(meta.goal_type || "");
     setValorAtual(String(meta.current_value));
     setValorMeta(String(meta.target_value));
-    setUnidade(meta.unit || "");
-    setTargetDate(meta.target_date || "");
+    setUnidade(meta.unit || "kg");
+    setPrazo("custom");
+    setCustomDate(meta.target_date || "");
     setShowForm(true);
+    setShowConfirm(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -168,7 +228,7 @@ const Metas = () => {
           <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Metas Fitness</h1>
           <p className="text-muted-foreground text-sm mt-1">Defina e acompanhe seus objetivos</p>
         </div>
-        <Button onClick={() => { resetForm(); setShowForm(!showForm); }} size="sm">
+        <Button onClick={() => { resetForm(); setShowForm(true); }} size="sm">
           <Plus className="w-4 h-4 mr-2" /> Nova Meta
         </Button>
       </div>
@@ -186,58 +246,189 @@ const Metas = () => {
         ))}
       </div>
 
-      {/* Add/Edit Form */}
-      {showForm && (
-        <div className="glass-card p-5 lg:p-6 glow-border">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-semibold text-sm">{editingId ? "Editar Meta" : "Nova Meta"}</h3>
-            <button onClick={resetForm} className="text-muted-foreground hover:text-foreground p-1">
+      {/* Creation / Edit Form */}
+      {showForm && !showConfirm && (
+        <div className="glass-card p-6 lg:p-8 glow-border max-w-2xl mx-auto animate-slide-up">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                <Target className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-display font-bold text-lg">{editingId ? "Editar Meta" : "Nova Meta"}</h3>
+            </div>
+            <button onClick={resetForm} className="text-muted-foreground hover:text-foreground p-2 rounded-lg hover:bg-secondary/60 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+
+          <div className="space-y-5">
+            {/* Título */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Título *</label>
-              <Input placeholder="Ex: Perder 5kg" value={titulo} onChange={(e) => { setTitulo(e.target.value); setErrors(er => ({ ...er, titulo: "" })); }} className="bg-secondary/50 border-border/50" maxLength={100} />
+              <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Título da Meta *</label>
+              <Input
+                placeholder="Ex: Ganhar 5kg de massa muscular"
+                value={titulo}
+                onChange={(e) => { setTitulo(e.target.value); setErrors(er => ({ ...er, titulo: "" })); }}
+                className="bg-secondary/50 border-border/50 h-12 text-base"
+                maxLength={100}
+              />
               {errors.titulo && <p className="text-[11px] text-destructive mt-1">{errors.titulo}</p>}
             </div>
+
+            {/* Objetivo */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Tipo</label>
-              <Select value={tipo} onValueChange={setTipo}>
-                <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Tipo" /></SelectTrigger>
+              <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Objetivo *</label>
+              <Select value={objetivo} onValueChange={(v) => { setObjetivo(v); setErrors(er => ({ ...er, objetivo: "" })); }}>
+                <SelectTrigger className="bg-secondary/50 border-border/50 h-12 text-base">
+                  <SelectValue placeholder="Selecione o objetivo" />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="peso">Peso</SelectItem>
-                  <SelectItem value="forca">Força</SelectItem>
-                  <SelectItem value="condicionamento">Condicionamento</SelectItem>
-                  <SelectItem value="medida">Medida</SelectItem>
-                  <SelectItem value="treino">Treino</SelectItem>
+                  <SelectItem value="massa">Ganhar Massa</SelectItem>
+                  <SelectItem value="emagrecer">Emagrecer</SelectItem>
+                  <SelectItem value="definicao">Definição</SelectItem>
+                  <SelectItem value="manutencao">Manutenção</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.objetivo && <p className="text-[11px] text-destructive mt-1">{errors.objetivo}</p>}
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Valor Atual *</label>
-              <Input type="number" placeholder="80" value={valorAtual} onChange={(e) => { setValorAtual(e.target.value); setErrors(er => ({ ...er, valorAtual: "" })); }} className="bg-secondary/50 border-border/50" />
-              {errors.valorAtual && <p className="text-[11px] text-destructive mt-1">{errors.valorAtual}</p>}
+
+            {/* Peso Atual + Peso Meta */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Peso Atual (kg) *</label>
+                <Input
+                  type="number"
+                  placeholder="76"
+                  value={valorAtual}
+                  onChange={(e) => { setValorAtual(e.target.value); setErrors(er => ({ ...er, valorAtual: "" })); }}
+                  className="bg-secondary/50 border-border/50 h-12 text-base"
+                />
+                {errors.valorAtual && <p className="text-[11px] text-destructive mt-1">{errors.valorAtual}</p>}
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Peso Meta (kg) *</label>
+                <Input
+                  type="number"
+                  placeholder="82"
+                  value={valorMeta}
+                  onChange={(e) => { setValorMeta(e.target.value); setErrors(er => ({ ...er, valorMeta: "" })); }}
+                  className="bg-secondary/50 border-border/50 h-12 text-base"
+                />
+                {errors.valorMeta && <p className="text-[11px] text-destructive mt-1">{errors.valorMeta}</p>}
+              </div>
             </div>
+
+            {/* Prazo */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Valor Meta *</label>
-              <Input type="number" placeholder="75" value={valorMeta} onChange={(e) => { setValorMeta(e.target.value); setErrors(er => ({ ...er, valorMeta: "" })); }} className="bg-secondary/50 border-border/50" />
-              {errors.valorMeta && <p className="text-[11px] text-destructive mt-1">{errors.valorMeta}</p>}
+              <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Prazo *</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {prazoOptions.map((p) => (
+                  <button
+                    key={p.value}
+                    type="button"
+                    onClick={() => { setPrazo(p.value); setErrors(er => ({ ...er, prazo: "" })); }}
+                    className={`p-3 rounded-xl text-sm font-medium border transition-all text-center ${
+                      prazo === p.value
+                        ? "bg-primary/15 border-primary/30 text-primary"
+                        : "bg-secondary/40 border-border/30 text-muted-foreground hover:bg-secondary/60 hover:border-border/50"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              {errors.prazo && <p className="text-[11px] text-destructive mt-1">{errors.prazo}</p>}
+              {prazo === "custom" && (
+                <div className="mt-3">
+                  <Input
+                    type="date"
+                    value={customDate}
+                    onChange={(e) => { setCustomDate(e.target.value); setErrors(er => ({ ...er, customDate: "" })); }}
+                    className="bg-secondary/50 border-border/50 h-12 text-base"
+                  />
+                  {errors.customDate && <p className="text-[11px] text-destructive mt-1">{errors.customDate}</p>}
+                </div>
+              )}
             </div>
+
+            {/* Unidade */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Unidade</label>
-              <Input placeholder="kg" value={unidade} onChange={(e) => setUnidade(e.target.value)} className="bg-secondary/50 border-border/50" maxLength={20} />
+              <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Unidade</label>
+              <Input
+                placeholder="kg"
+                value={unidade}
+                onChange={(e) => setUnidade(e.target.value)}
+                className="bg-secondary/50 border-border/50 h-12 text-base"
+                maxLength={20}
+              />
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Data Alvo</label>
-              <Input type="date" value={targetDate} onChange={(e) => { setTargetDate(e.target.value); setErrors(er => ({ ...er, targetDate: "" })); }} className="bg-secondary/50 border-border/50" />
-              {errors.targetDate && <p className="text-[11px] text-destructive mt-1">{errors.targetDate}</p>}
+
+            {/* Avançar */}
+            <Button
+              onClick={handleNext}
+              disabled={!titulo || !valorAtual || !valorMeta || !objetivo || !prazo}
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+            >
+              Revisar Meta <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Screen */}
+      {showForm && showConfirm && (
+        <div className="glass-card p-6 lg:p-8 glow-border max-w-2xl mx-auto animate-slide-up">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-bold text-xl mb-2">Confirme sua Meta</h3>
+            <p className="text-muted-foreground text-sm">{titulo}</p>
+          </div>
+
+          {/* Summary Card */}
+          <div className="bg-secondary/30 border border-border/30 rounded-2xl p-5 mb-6 space-y-4">
+            <div className="flex items-center justify-center gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-display font-bold text-foreground">{valorAtual}<span className="text-sm text-muted-foreground ml-1">{unidade}</span></p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Atual</p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-primary" />
+              <div className="text-center">
+                <p className="text-2xl font-display font-bold text-primary">{valorMeta}<span className="text-sm text-primary/60 ml-1">{unidade}</span></p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Meta</p>
+              </div>
+            </div>
+
+            <div className="border-t border-border/20 pt-3">
+              <p className="text-sm text-center text-muted-foreground">{getSummaryText()}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="bg-secondary/40 rounded-xl p-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Objetivo</p>
+                <p className="text-sm font-semibold text-foreground mt-1 capitalize">{objetivo}</p>
+              </div>
+              <div className="bg-secondary/40 rounded-xl p-3">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Prazo</p>
+                <p className="text-sm font-semibold text-foreground mt-1">{prazo === "custom" && customDate ? new Date(customDate).toLocaleDateString("pt-BR") : prazoLabel(prazo)}</p>
+              </div>
             </div>
           </div>
-          <Button onClick={handleSave} disabled={!titulo || !valorAtual || !valorMeta || saving} size="sm">
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            {saving ? "Salvando..." : editingId ? "Atualizar Meta" : "Criar Meta"}
-          </Button>
+
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setShowConfirm(false)} className="flex-1 h-12 text-base">
+              Voltar
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+            >
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+              {saving ? "Salvando..." : "Confirmar Meta"}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -261,8 +452,11 @@ const Metas = () => {
                   </button>
                   <div>
                     <p className={`font-semibold text-sm ${isDone ? 'text-primary' : ''}`}>{meta.title}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${status.bg} ${status.color}`}>{status.label}</span>
+                      {meta.goal_type && (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground capitalize">{meta.goal_type}</span>
+                      )}
                       {meta.target_date && (
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <Clock className="w-3 h-3" />
