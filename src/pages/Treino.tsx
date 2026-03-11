@@ -762,9 +762,14 @@ const Treino = () => {
                               <Clock className="w-3 h-3" /> ~{day.exercicios.length * 5}min
                             </span>
                           </div>
-                          <Button variant="ghost" size="sm" className={`text-xs opacity-0 group-hover:opacity-100 transition-opacity ${isNext ? "text-primary" : ""}`}>
-                            <Play className="w-3.5 h-3.5 mr-1" /> Treinar
-                          </Button>
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
+                              <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                            </Button>
+                            <Button variant="ghost" size="sm" className={`text-xs ${isNext ? "text-primary" : ""}`}>
+                              <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
