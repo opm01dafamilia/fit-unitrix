@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
-  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame
+  TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame,
+  CheckCircle2, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,6 @@ import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
 
-// Muscle group illustration mapping
 const muscleGroupColors: Record<string, string> = {
   peito: "from-red-500/20 to-red-600/10",
   costas: "from-blue-500/20 to-blue-600/10",
@@ -27,30 +27,9 @@ const muscleGroupColors: Record<string, string> = {
   cardio: "from-teal-500/20 to-teal-600/10",
 };
 
-const muscleGroupIcons: Record<string, string> = {
-  peito: "💪", costas: "🔙", pernas: "🦵", ombros: "🏋️",
-  biceps: "💪", triceps: "💪", abdomen: "🔥", hiit: "⚡", cardio: "🏃",
-};
-
-type SetRecord = {
-  id: string;
-  kg: number;
-  reps: number;
-};
-
-type Exercise = {
-  nome: string;
-  series: string;
-  reps: string;
-  desc: string;
-  descanso: string;
-};
-
-type WorkoutDay = {
-  dia: string;
-  grupo: string;
-  exercicios: Exercise[];
-};
+type SetRecord = { id: string; kg: number; reps: number };
+type Exercise = { nome: string; series: string; reps: string; desc: string; descanso: string };
+type WorkoutDay = { dia: string; grupo: string; exercicios: Exercise[] };
 
 type Props = {
   plan: any;
@@ -63,6 +42,9 @@ type Props = {
   onBack: () => void;
 };
 
+// === Phase enum for auto-flow ===
+type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
+
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
   const planData = plan.plan_data as WorkoutDay[];
   const day = planData[dayIndex];
@@ -74,24 +56,28 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [editingSet, setEditingSet] = useState<{ exIdx: number; setIdx: number } | null>(null);
   const [editKg, setEditKg] = useState("");
   const [editReps, setEditReps] = useState("");
+
+  // Phase-based flow
+  const [phase, setPhase] = useState<WorkoutPhase>("input");
+
   // Rest timer
   const [restTime, setRestTime] = useState(0);
-  const [restActive, setRestActive] = useState(false);
   const [restPaused, setRestPaused] = useState(false);
-  const [restFinished, setRestFinished] = useState(false);
   const [customRestSeconds, setCustomRestSeconds] = useState<number | null>(null);
   const [showRestConfig, setShowRestConfig] = useState(false);
   const restIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   // Workout timer
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
   const workoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // UI
   const [showAlternatives, setShowAlternatives] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showStretching, setShowStretching] = useState(true);
-  const [showCardio, setShowCardio] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+
   // Progression
   const [exerciseHistories, setExerciseHistories] = useState<Record<string, ExerciseHistoryEntry[]>>({});
   const [progressions, setProgressions] = useState<Record<string, ProgressionResult>>({});
@@ -103,15 +89,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const targetSeries = parseInt(currentEx.series) || 4;
   const targetReps = currentEx.reps;
   const effectiveRestSeconds = customRestSeconds ?? parseRestTime(currentEx.descanso);
-  const restSeconds = effectiveRestSeconds;
   const currentProgression = progressions[currentEx.nome];
   const REST_OPTIONS = [30, 45, 60, 90, 120];
 
-  // Stretching & cardio data
   const stretching = useMemo(() => getStretchingForDay(day.grupo), [day.grupo]);
   const cardioRec = useMemo(() => getCardioRecommendation(objective), [objective]);
 
-  // Load exercise history on mount
+  // Load exercise history
   useEffect(() => {
     const loadHistory = async () => {
       const exerciseNames = exercises.map(e => e.nome);
@@ -122,23 +106,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         .in("exercise_name", exerciseNames)
         .order("created_at", { ascending: false })
         .limit(500);
-
       if (!data) return;
-
       const grouped: Record<string, ExerciseHistoryEntry[]> = {};
       data.forEach((row: any) => {
         const name = row.exercise_name;
         if (!grouped[name]) grouped[name] = [];
-        grouped[name].push({
-          weight: row.weight,
-          reps: row.reps,
-          set_number: row.set_number,
-          created_at: row.created_at,
-        });
+        grouped[name].push({ weight: row.weight, reps: row.reps, set_number: row.set_number, created_at: row.created_at });
       });
-
       setExerciseHistories(grouped);
-
       const progs: Record<string, ProgressionResult> = {};
       exercises.forEach(ex => {
         const hist = grouped[ex.nome] || [];
@@ -146,7 +121,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       });
       setProgressions(progs);
     };
-
     loadHistory();
   }, [userId, exercises, experienceLevel]);
 
@@ -166,38 +140,28 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   // Rest timer
   useEffect(() => {
-    if (restActive && !restPaused && restTime > 0) {
+    if (phase === "resting" && !restPaused && restTime > 0) {
       restIntervalRef.current = setInterval(() => {
         setRestTime(t => {
           if (t <= 1) {
             clearInterval(restIntervalRef.current!);
-            setRestActive(false);
-            setRestFinished(true);
-            // Vibrate
+            setPhase("rest-done");
             if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-            // Sound
             try {
               const ctx = new AudioContext();
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.frequency.value = 880;
-              gain.gain.value = 0.3;
-              osc.start();
-              osc.stop(ctx.currentTime + 0.5);
+              osc.connect(gain); gain.connect(ctx.destination);
+              osc.frequency.value = 880; gain.gain.value = 0.3;
+              osc.start(); osc.stop(ctx.currentTime + 0.5);
               setTimeout(() => {
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.frequency.value = 1100;
-                gain2.gain.value = 0.3;
-                osc2.start();
-                osc2.stop(ctx.currentTime + 0.3);
+                osc2.connect(gain2); gain2.connect(ctx.destination);
+                osc2.frequency.value = 1100; gain2.gain.value = 0.3;
+                osc2.start(); osc2.stop(ctx.currentTime + 0.3);
               }, 600);
             } catch {}
-            toast.info("⏰ Descanso finalizado! Hora da próxima série 💪");
             return 0;
           }
           return t - 1;
@@ -205,7 +169,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       }, 1000);
     }
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
-  }, [restActive, restPaused]);
+  }, [phase, restPaused]);
 
   function parseRestTime(descanso: string): number {
     if (!descanso || descanso === "—") return 60;
@@ -233,7 +197,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   const progress = totalExercises > 0 ? Math.round((completedCount / totalExercises) * 100) : 0;
 
-  // Add set
+  // === Add set & auto-flow ===
   const addSet = () => {
     const kg = parseFloat(inputKg) || 0;
     const reps = parseInt(inputReps) || 0;
@@ -243,31 +207,42 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       ...prev,
       [currentExIndex]: [...(prev[currentExIndex] || []), newSet],
     }));
+
+    // Vibrate lightly on set completion
+    if (navigator.vibrate) navigator.vibrate(50);
+
     setInputKg("");
     setInputReps("");
 
     const newSetsCount = (sets[currentExIndex] || []).length + 1;
-    if (newSetsCount >= targetSeries && !finishedFeedback[currentExIndex]) {
-      setFinishedFeedback(prev => ({ ...prev, [currentExIndex]: true }));
-      const prog = progressions[currentEx.nome];
-      if (prog && prog.feedback !== "first_time") {
-        toast.success(`${prog.feedbackEmoji} ${prog.feedbackLabel}`, { duration: 4000 });
-      } else {
-        toast.success("✅ Séries concluídas! Ótimo trabalho!", { duration: 3000 });
+    if (newSetsCount >= targetSeries) {
+      // Exercise complete
+      if (!finishedFeedback[currentExIndex]) {
+        setFinishedFeedback(prev => ({ ...prev, [currentExIndex]: true }));
+        const prog = progressions[currentEx.nome];
+        if (prog && prog.feedback !== "first_time") {
+          toast.success(`${prog.feedbackEmoji} ${prog.feedbackLabel}`, { duration: 4000 });
+        }
       }
+      setPhase("exercise-done");
+    } else {
+      // Auto-start rest
+      setRestTime(effectiveRestSeconds);
+      setRestPaused(false);
+      setPhase("resting");
     }
+  };
 
-    setRestTime(restSeconds);
-    setRestActive(true);
+  const startManualRest = () => {
+    setRestTime(effectiveRestSeconds);
     setRestPaused(false);
-    setRestFinished(false);
+    setPhase("resting");
   };
 
   const startEdit = (setIdx: number) => {
     const s = currentSets[setIdx];
     setEditingSet({ exIdx: currentExIndex, setIdx });
-    setEditKg(String(s.kg));
-    setEditReps(String(s.reps));
+    setEditKg(String(s.kg)); setEditReps(String(s.reps));
   };
 
   const saveEdit = () => {
@@ -292,7 +267,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     toast.success("Série removida");
   };
 
-  // Swap exercise with location-aware alternatives
   const swapExercise = (newName: string) => {
     setExercises(prev => {
       const updated = [...prev];
@@ -303,41 +277,29 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     toast.success(`Exercício trocado para ${newName}`);
   };
 
+  const goToExercise = (idx: number) => {
+    setCurrentExIndex(idx);
+    setPhase("input");
+    setRestTime(0);
+    setInputKg("");
+    setInputReps("");
+  };
+
   const goNext = () => {
-    if (currentExIndex < totalExercises - 1) {
-      setCurrentExIndex(currentExIndex + 1);
-      setRestActive(false);
-      setRestTime(0);
-      setRestFinished(false);
-      setInputKg("");
-      setInputReps("");
-    }
+    if (currentExIndex < totalExercises - 1) goToExercise(currentExIndex + 1);
   };
 
   const goPrev = () => {
-    if (currentExIndex > 0) {
-      setCurrentExIndex(currentExIndex - 1);
-      setRestActive(false);
-      setRestTime(0);
-      setRestFinished(false);
-      setInputKg("");
-      setInputReps("");
-    }
+    if (currentExIndex > 0) goToExercise(currentExIndex - 1);
   };
 
-  // Finish — save session + exercise history
   const handleFinish = async () => {
     try {
       const { data: sessionData, error: sessionError } = await supabase.from("workout_sessions").insert({
-        user_id: userId,
-        workout_plan_id: plan.id,
-        day_index: dayIndex,
-        day_name: day.dia,
-        muscle_group: day.grupo,
-        exercises_completed: completedCount,
-        exercises_total: totalExercises,
+        user_id: userId, workout_plan_id: plan.id, day_index: dayIndex,
+        day_name: day.dia, muscle_group: day.grupo,
+        exercises_completed: completedCount, exercises_total: totalExercises,
       } as any).select("id").single();
-
       if (sessionError) throw sessionError;
 
       const historyRows: any[] = [];
@@ -352,43 +314,32 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         }
         exSets.forEach((s, setIdx) => {
           historyRows.push({
-            user_id: userId,
-            exercise_name: ex.nome,
-            muscle_group: muscleGroup,
-            weight: s.kg,
-            reps: s.reps,
-            set_number: setIdx + 1,
+            user_id: userId, exercise_name: ex.nome, muscle_group: muscleGroup,
+            weight: s.kg, reps: s.reps, set_number: setIdx + 1,
             workout_session_id: sessionData?.id || null,
           });
         });
       });
 
       if (historyRows.length > 0) {
-        const { error: histError } = await supabase
-          .from("exercise_history")
-          .insert(historyRows as any);
+        const { error: histError } = await supabase.from("exercise_history").insert(historyRows as any);
         if (histError) console.error("Error saving exercise history:", histError);
       }
-
       setShowCompletion(true);
     } catch {
       toast.error("Erro ao salvar sessão");
     }
   };
 
-  // Location-aware alternatives
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
-
   const toggleRestPause = () => setRestPaused(p => !p);
-  const resetRest = () => { setRestTime(restSeconds); setRestPaused(false); setRestActive(true); setRestFinished(false); };
-  const skipRest = () => { setRestActive(false); setRestTime(0); setRestFinished(false); };
+  const resetRest = () => { setRestTime(effectiveRestSeconds); setRestPaused(false); setPhase("resting"); };
+  const skipRest = () => { setPhase("input"); setRestTime(0); };
   const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
-  const dismissRestFinished = () => setRestFinished(false);
 
-  // Find matching exercise from library
   const libraryExercise = useMemo(() => {
     const name = currentEx.nome.toLowerCase();
-    return exerciseLibrary.find(e => 
+    return exerciseLibrary.find(e =>
       name.includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(name)
     ) || null;
   }, [currentEx.nome]);
@@ -403,8 +354,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       byDate.get(date)!.push(h);
     });
     return Array.from(byDate.entries()).slice(0, 3).map(([date, sets]) => ({
-      date,
-      maxWeight: Math.max(...sets.map(s => s.weight)),
+      date, maxWeight: Math.max(...sets.map(s => s.weight)),
       avgReps: Math.round(sets.reduce((a, s) => a + s.reps, 0) / sets.length),
       sets: sets.length,
     }));
@@ -416,29 +366,47 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     ? "text-destructive bg-destructive/10"
     : "text-muted-foreground bg-secondary/60";
 
-  // ===== COMPLETION CELEBRATION SCREEN =====
+  // Completion stats
   const totalSetsCompleted = Object.values(sets).reduce((a, exSets) => a + exSets.length, 0);
   const totalVolume = Object.values(sets).reduce((a, exSets) => a + exSets.reduce((b, s) => b + s.kg * s.reps, 0), 0);
 
+  // ===== SERIES DOTS COMPONENT =====
+  const SeriesDots = () => (
+    <div className="flex items-center justify-center gap-2 py-2">
+      {Array.from({ length: targetSeries }).map((_, i) => {
+        const done = i < currentSets.length;
+        return (
+          <div
+            key={i}
+            className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+              done
+                ? "bg-primary border-primary scale-110 shadow-[0_0_8px_hsl(var(--primary)/0.5)]"
+                : "border-muted-foreground/30 bg-transparent"
+            }`}
+            style={done ? { animationDelay: `${i * 100}ms` } : {}}
+          />
+        );
+      })}
+      <span className="text-[11px] text-muted-foreground ml-2 font-medium">
+        {currentSets.length}/{targetSeries}
+      </span>
+    </div>
+  );
+
+  // ===== COMPLETION CELEBRATION SCREEN =====
   if (showCompletion) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center animate-scale-in px-4">
-        {/* Celebration Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/5 blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full bg-chart-4/5 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
         </div>
-
         <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
-          {/* Trophy */}
           <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10 flex items-center justify-center mb-4 shadow-2xl border border-yellow-500/20">
             <Trophy className="w-12 h-12 text-yellow-500" />
           </div>
-
           <h1 className="font-display font-bold text-2xl text-center mb-1">Treino Concluído! 🎉</h1>
           <p className="text-muted-foreground text-sm text-center mb-6">Ótimo trabalho! Cada treino te deixa mais forte.</p>
-
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3 w-full mb-6">
             <div className="glass-card p-4 flex flex-col items-center">
               <Dumbbell className="w-5 h-5 text-primary mb-2" />
@@ -461,8 +429,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-[10px] text-muted-foreground">Volume (kg)</span>
             </div>
           </div>
-
-          {/* Workout details */}
           <div className="glass-card p-4 w-full mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold">{day.dia}</span>
@@ -473,11 +439,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             </div>
             <p className="text-[11px] text-muted-foreground mt-1.5">{completedCount} de {totalExercises} exercícios completados</p>
           </div>
-
-          {/* Continue Button */}
           <Button className="w-full h-12 text-base font-semibold" onClick={onFinish}>
-            <Home className="w-5 h-5 mr-2" />
-            Voltar ao Painel
+            <Home className="w-5 h-5 mr-2" /> Voltar ao Painel
           </Button>
         </div>
       </div>
@@ -499,7 +462,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             </div>
           </div>
         </div>
-
         <div className="glass-card p-6 flex flex-col items-center relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5 opacity-50" />
           <div className="relative z-10 flex flex-col items-center">
@@ -510,17 +472,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-xs text-muted-foreground text-center mt-1">3–5 minutos para preparar seus músculos</p>
           </div>
         </div>
-
         <div className="glass-card p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Alongamentos para {day.grupo}
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Alongamentos para {day.grupo}</h3>
           <div className="space-y-2.5">
             {stretching.map((s, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
-                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-sm">🧘</span>
-                </div>
+                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm">🧘</span></div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{s.nome}</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{s.desc}</p>
@@ -530,17 +487,11 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             ))}
           </div>
         </div>
-
-        {/* Cardio recommendation */}
         {cardioRec && (
           <div className="glass-card p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Cardio Sugerido
-            </h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Cardio Sugerido</h3>
             <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm">🏃</span>
-              </div>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm">🏃</span></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">{cardioRec.titulo}</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{cardioRec.desc}</p>
@@ -552,21 +503,15 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             </div>
           </div>
         )}
-
         {trainingLocation === "casa" && (
           <div className="glass-card p-3.5 flex items-center gap-3 border border-amber-500/20">
             <Home className="w-4 h-4 text-amber-500 shrink-0" />
-            <p className="text-[11px] text-muted-foreground">
-              Treino adaptado para <span className="font-semibold text-foreground">casa</span>. Exercícios de máquina serão substituídos automaticamente.
-            </p>
+            <p className="text-[11px] text-muted-foreground">Treino adaptado para <span className="font-semibold text-foreground">casa</span>.</p>
           </div>
         )}
-
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
           <div className="max-w-lg mx-auto flex gap-3">
-            <Button variant="outline" className="flex-1 h-11" onClick={() => setShowStretching(false)}>
-              Pular Aquecimento
-            </Button>
+            <Button variant="outline" className="flex-1 h-11" onClick={() => setShowStretching(false)}>Pular Aquecimento</Button>
             <Button className="flex-1 h-11" onClick={() => setShowStretching(false)}>
               <Play className="w-4 h-4 mr-2" /> Iniciar Treino
             </Button>
@@ -577,43 +522,58 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }
 
   return (
-    <div className="space-y-4 animate-slide-up pb-24">
-      {/* ===== HEADER ===== */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onBack}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-primary font-display font-bold text-sm">
-                {currentExIndex + 1}/{totalExercises}
-              </span>
-              <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-semibold">
+    <div className="space-y-4 animate-slide-up pb-28">
+      {/* ===== TOP PROGRESS BAR ===== */}
+      <div className="glass-card p-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <p className="text-xs font-display font-bold text-primary">
+                Exercício {currentExIndex + 1} de {totalExercises}
+              </p>
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                <Timer className="w-3 h-3" /> {formatTime(workoutSeconds)}
+                <span className="mx-1">•</span>
                 {day.grupo}
-              </span>
-              {trainingLocation === "casa" && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">🏠</span>
-              )}
+                {trainingLocation === "casa" && <span className="ml-1">🏠</span>}
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-              <Timer className="w-3 h-3" /> {formatTime(workoutSeconds)}
-            </p>
           </div>
+          <span className="text-xs font-bold text-primary">{progress}%</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground font-medium">{progress}%</span>
-          <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
+        {/* Full-width progress bar */}
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        {/* Mini exercise dots */}
+        <div className="flex gap-1 mt-2 justify-center">
+          {exercises.map((_, i) => {
+            const hasSets = (sets[i] || []).length > 0;
+            const isCurrent = i === currentExIndex;
+            return (
+              <button
+                key={i}
+                onClick={() => goToExercise(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  isCurrent ? "bg-primary scale-125 shadow-[0_0_6px_hsl(var(--primary)/0.5)]" :
+                  hasSets ? "bg-primary/50" : "bg-muted-foreground/20"
+                }`}
+              />
+            );
+          })}
         </div>
       </div>
 
-      {/* ===== EXERCISE HERO WITH ANIMATION ===== */}
+      {/* ===== EXERCISE HERO ===== */}
       <div className="glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
         <div className="relative z-10 flex flex-col items-center w-full">
-          {/* Exercise Animation */}
           {libraryExercise ? (
             <ExerciseAnimation exercise={libraryExercise} size="lg" className="mb-3" />
           ) : (
@@ -621,24 +581,17 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <Dumbbell className="w-10 h-10 text-primary" />
             </div>
           )}
-          
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
-          
-          {/* Muscle tags */}
           {libraryExercise && (
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
               <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
                 <Target className="w-3 h-3" /> {libraryExercise.musculos[0]}
               </span>
               {libraryExercise.musculos.slice(1).map((m, i) => (
-                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">
-                  {m}
-                </span>
+                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">{m}</span>
               ))}
             </div>
           )}
-
-          {/* Progression badge */}
           {currentProgression && currentProgression.feedback !== "first_time" && (
             <div className={`mt-2.5 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
@@ -657,20 +610,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
           </h3>
           <div className="flex flex-row items-center gap-4">
-            {/* Left: Compact body maps */}
             <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} />
-
-            {/* Right: Muscle info */}
             <div className="flex-1 min-w-0 space-y-2">
-              {/* Primary muscle */}
-              <div className="p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
                 <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
                   <Target className="w-3 h-3" /> Principal
                 </span>
                 <p className="text-sm font-semibold mt-0.5">{libraryExercise.musculos[0]}</p>
               </div>
-
-              {/* Secondary muscles */}
               {libraryExercise.musculos.length > 1 && (
                 <div className="p-2 rounded-lg bg-secondary/40 border border-border/30">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
@@ -681,8 +628,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                   </div>
                 </div>
               )}
-
-              {/* Equipment & difficulty */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30 flex items-center gap-1">
                   <Dumbbell className="w-2.5 h-2.5" /> {libraryExercise.equipamento}
@@ -700,113 +645,129 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       {currentProgression && currentProgression.feedback !== "first_time" && (
         <div className={`glass-card p-3.5 flex items-center gap-3 ${
           currentProgression.feedback === "increase" ? "border border-primary/20" :
-          currentProgression.feedback === "decrease" ? "border border-destructive/20" :
-          "border border-border/50"
+          currentProgression.feedback === "decrease" ? "border border-destructive/20" : "border border-border/50"
         }`}>
           <span className="text-lg">{currentProgression.feedbackEmoji}</span>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold truncate">{currentProgression.feedbackLabel}</p>
-            <p className="text-[10px] text-muted-foreground">
-              Último: {currentProgression.lastWeight}kg • Melhor: {currentProgression.bestWeight}kg
-            </p>
+            <p className="text-[10px] text-muted-foreground">Último: {currentProgression.lastWeight}kg • Melhor: {currentProgression.bestWeight}kg</p>
           </div>
         </div>
       )}
 
-      {/* ===== CIRCULAR INDICATORS ===== */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="glass-card p-3.5 flex flex-col items-center">
-          <div className="w-14 h-14 rounded-full border-[3px] border-primary/30 flex items-center justify-center mb-1.5 relative">
-            <span className="font-display font-bold text-base">{targetReps}</span>
+      {/* ===== SERIES DOTS + INDICATORS ===== */}
+      <div className="glass-card p-4">
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full border-[3px] border-primary/30 flex items-center justify-center mb-1">
+              <span className="font-display font-bold text-sm">{targetReps}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-medium">Reps</span>
           </div>
-          <span className="text-[10px] text-muted-foreground font-medium">Repetições</span>
+          <button onClick={() => setShowRestConfig(!showRestConfig)} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="w-12 h-12 rounded-full border-[3px] border-amber-500/30 flex items-center justify-center mb-1">
+              <span className="font-display font-bold text-sm">{effectiveRestSeconds}s</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-medium">Descanso ⚙️</span>
+          </button>
+          <div className="flex flex-col items-center">
+            <div className={`w-12 h-12 rounded-full border-[3px] flex items-center justify-center mb-1 ${
+              currentSets.length >= targetSeries ? "border-green-500/50 shadow-[0_0_10px_hsl(152_69%_46%/0.3)]" : "border-muted-foreground/20"
+            }`}>
+              <span className="font-display font-bold text-sm">{currentSets.length}/{targetSeries}</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-medium">Séries</span>
+          </div>
         </div>
-        <button onClick={() => setShowRestConfig(!showRestConfig)} className="glass-card p-3.5 flex flex-col items-center cursor-pointer hover:bg-secondary/60 transition-colors">
-          <div className="w-14 h-14 rounded-full border-[3px] border-amber-500/30 flex items-center justify-center mb-1.5">
-            <span className="font-display font-bold text-sm">{restSeconds}s</span>
-          </div>
-          <span className="text-[10px] text-muted-foreground font-medium">Descanso ⚙️</span>
-        </button>
-        <div className="glass-card p-3.5 flex flex-col items-center">
-          <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center mb-1.5 ${currentSets.length >= targetSeries ? "border-green-500/50" : "border-muted-foreground/20"}`}>
-            <span className="font-display font-bold text-base">{currentSets.length}/{targetSeries}</span>
-          </div>
-          <span className="text-[10px] text-muted-foreground font-medium">Séries</span>
-        </div>
+        {/* Series dots */}
+        <SeriesDots />
       </div>
 
-      {/* ===== REST TIME CONFIG ===== */}
+      {/* ===== REST CONFIG ===== */}
       {showRestConfig && (
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">⚙️ Tempo de Descanso</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowRestConfig(false)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowRestConfig(false)}><X className="w-4 h-4" /></Button>
           </div>
           <div className="grid grid-cols-5 gap-2 mb-3">
             {REST_OPTIONS.map(sec => (
-              <button
-                key={sec}
-                onClick={() => { setCustomRestSeconds(sec); setShowRestConfig(false); }}
+              <button key={sec} onClick={() => { setCustomRestSeconds(sec); setShowRestConfig(false); toast.success(`Descanso: ${sec}s`); }}
                 className={`p-2.5 rounded-xl text-center text-sm font-display font-bold transition-colors ${
-                  restSeconds === sec
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/50 text-foreground hover:bg-secondary"
-                }`}
-              >
-                {sec}s
-              </button>
+                  effectiveRestSeconds === sec ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-foreground hover:bg-secondary"
+                }`}>{sec}s</button>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              placeholder="Personalizado (s)"
-              className="h-9 bg-secondary/50 border-border/50 text-center text-sm"
+            <Input type="number" placeholder="Personalizado (s)" className="h-9 bg-secondary/50 border-border/50 text-center text-sm"
               onKeyDown={e => {
                 if (e.key === "Enter") {
                   const v = parseInt((e.target as HTMLInputElement).value);
-                  if (v > 0) { setCustomRestSeconds(v); setShowRestConfig(false); }
+                  if (v > 0) { setCustomRestSeconds(v); setShowRestConfig(false); toast.success(`Descanso: ${v}s`); }
                 }
-              }}
-            />
+              }} />
             <span className="text-xs text-muted-foreground shrink-0">segundos</span>
           </div>
         </div>
       )}
 
-      {/* ===== REST FINISHED ALERT ===== */}
-      {restFinished && !restActive && (
-        <div className="glass-card p-5 glow-border animate-slide-up border border-primary/30">
+      {/* ===== EXERCISE DONE CARD ===== */}
+      {phase === "exercise-done" && (
+        <div className="glass-card p-6 glow-border animate-scale-in border border-primary/20">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center mb-3">
+              <CheckCircle2 className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-bold text-lg">Exercício Concluído! ✅</h3>
+            <p className="text-sm text-muted-foreground mt-1">{currentEx.nome}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {currentSets.length} séries • {currentSets.reduce((a, s) => a + s.kg * s.reps, 0).toFixed(0)}kg volume
+            </p>
+            <div className="flex gap-3 mt-5 w-full">
+              {currentExIndex < totalExercises - 1 ? (
+                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                  Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                  <Trophy className="w-5 h-5 mr-2" /> Finalizar Treino
+                </Button>
+              )}
+            </div>
+            {currentSets.length < targetSeries && (
+              <button onClick={() => setPhase("input")} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
+                + Adicionar mais séries
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ===== REST DONE ALERT ===== */}
+      {phase === "rest-done" && (
+        <div className="glass-card p-5 glow-border animate-scale-in border border-primary/30">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
               <Zap className="w-8 h-8 text-primary" />
             </div>
             <h3 className="font-display font-bold text-lg">⏰ Descanso Finalizado!</h3>
-            <p className="text-sm text-muted-foreground mt-1">Hora da próxima série</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Série {currentSets.length + 1} de {targetSeries}
-            </p>
-            <Button onClick={dismissRestFinished} className="mt-4 h-11 px-8">
-              <Play className="w-4 h-4 mr-2" /> Iniciar Próxima Série
+            <p className="text-sm text-muted-foreground mt-1">Prepare-se para a próxima série 💪</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Série {currentSets.length + 1} de {targetSeries}</p>
+            <Button onClick={() => setPhase("input")} className="mt-4 h-12 px-8 text-base font-semibold">
+              <Play className="w-4 h-4 mr-2" /> Registrar Série
             </Button>
           </div>
         </div>
       )}
 
       {/* ===== REST TIMER ===== */}
-      {restActive && (
+      {phase === "resting" && (
         <div className="glass-card p-5 glow-border">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">⏱ Descanso</span>
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>
-                +15s
-              </Button>
-              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>
-                Pular
-              </Button>
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>+15s</Button>
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>Pular</Button>
             </div>
           </div>
           <div className="flex flex-col items-center">
@@ -816,16 +777,15 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                 <circle cx="60" cy="60" r="54" fill="none" stroke="hsl(var(--primary))" strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 54}`}
-                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - (restSeconds > 0 ? restTime / restSeconds : 0))}`}
+                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - (effectiveRestSeconds > 0 ? restTime / effectiveRestSeconds : 0))}`}
                   className="transition-all duration-1000" />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-display font-bold text-3xl tabular-nums text-foreground">
-                  {formatTime(restTime)}
-                </span>
+                <span className="font-display font-bold text-3xl tabular-nums text-foreground">{formatTime(restTime)}</span>
                 <span className="text-[10px] text-muted-foreground">restante</span>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mb-3">Prepare-se para a próxima série</p>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="icon" className="h-10 w-10 rounded-full" onClick={toggleRestPause}>
                 {restPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}
@@ -838,27 +798,37 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== SET REGISTRATION ===== */}
-      <div className="glass-card p-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Registrar Série</h3>
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <label className="text-[10px] text-muted-foreground mb-1 block">Quilos (kg)</label>
-            <Input type="number"
-              placeholder={currentProgression?.recommendedWeight ? String(currentProgression.recommendedWeight) : "0"}
-              value={inputKg} onChange={e => setInputKg(e.target.value)}
-              className="h-11 bg-secondary/50 border-border/50 text-center font-display font-bold text-lg" />
+      {/* ===== SET REGISTRATION (only in input phase) ===== */}
+      {(phase === "input" || phase === "rest-done") && (
+        <div className="glass-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            {currentSets.length === 0 ? "Registrar Primeira Série" : `Registrar Série ${currentSets.length + 1}`}
+          </h3>
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <label className="text-[10px] text-muted-foreground mb-1 block">Quilos (kg)</label>
+              <Input type="number"
+                placeholder={currentProgression?.recommendedWeight ? String(currentProgression.recommendedWeight) : "0"}
+                value={inputKg} onChange={e => setInputKg(e.target.value)}
+                className="h-12 bg-secondary/50 border-border/50 text-center font-display font-bold text-lg" />
+            </div>
+            <div className="flex-1">
+              <label className="text-[10px] text-muted-foreground mb-1 block">Repetições</label>
+              <Input type="number" placeholder="0" value={inputReps} onChange={e => setInputReps(e.target.value)}
+                className="h-12 bg-secondary/50 border-border/50 text-center font-display font-bold text-lg" />
+            </div>
+            <Button onClick={addSet} className="h-12 w-12 shrink-0" size="icon">
+              <Plus className="w-5 h-5" />
+            </Button>
           </div>
-          <div className="flex-1">
-            <label className="text-[10px] text-muted-foreground mb-1 block">Repetições</label>
-            <Input type="number" placeholder="0" value={inputReps} onChange={e => setInputReps(e.target.value)}
-              className="h-11 bg-secondary/50 border-border/50 text-center font-display font-bold text-lg" />
-          </div>
-          <Button onClick={addSet} className="h-11 w-11 shrink-0" size="icon">
-            <Plus className="w-5 h-5" />
-          </Button>
+          {/* Manual rest button */}
+          {currentSets.length > 0 && phase === "input" && currentSets.length < targetSeries && (
+            <Button variant="outline" onClick={startManualRest} className="w-full mt-3 h-10 text-sm">
+              <Timer className="w-4 h-4 mr-2" /> Iniciar Descanso ({effectiveRestSeconds}s)
+            </Button>
+          )}
         </div>
-      </div>
+      )}
 
       {/* ===== SET HISTORY ===== */}
       {currentSets.length > 0 && (
@@ -866,22 +836,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Séries Registradas</h3>
           <div className="space-y-2">
             {currentSets.map((s, idx) => (
-              <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40">
+              <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 animate-fade-in">
                 {editingSet?.exIdx === currentExIndex && editingSet?.setIdx === idx ? (
                   <div className="flex items-center gap-2 flex-1">
                     <span className="text-xs text-muted-foreground font-medium w-6">#{idx + 1}</span>
-                    <Input type="number" value={editKg} onChange={e => setEditKg(e.target.value)}
-                      className="h-8 w-16 text-center text-xs bg-secondary/60" />
+                    <Input type="number" value={editKg} onChange={e => setEditKg(e.target.value)} className="h-8 w-16 text-center text-xs bg-secondary/60" />
                     <span className="text-xs text-muted-foreground">kg ×</span>
-                    <Input type="number" value={editReps} onChange={e => setEditReps(e.target.value)}
-                      className="h-8 w-16 text-center text-xs bg-secondary/60" />
+                    <Input type="number" value={editReps} onChange={e => setEditReps(e.target.value)} className="h-8 w-16 text-center text-xs bg-secondary/60" />
                     <span className="text-xs text-muted-foreground">reps</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={saveEdit}>
-                      <Check className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSet(null)}>
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={saveEdit}><Check className="w-3.5 h-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSet(null)}><X className="w-3.5 h-3.5" /></Button>
                   </div>
                 ) : (
                   <>
@@ -890,12 +854,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                       <span className="text-sm font-medium">{s.kg} kg × {s.reps} reps</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(idx)}>
-                        <Pencil className="w-3 h-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSet(idx)}>
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(idx)}><Pencil className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSet(idx)}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   </>
                 )}
@@ -923,12 +883,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Histórico do Exercício</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}><X className="w-4 h-4" /></Button>
           </div>
           {recentSessions.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhum histórico encontrado para este exercício.</p>
+            <p className="text-xs text-muted-foreground">Nenhum histórico encontrado.</p>
           ) : (
             <div className="space-y-2">
               {recentSessions.map((session, i) => (
@@ -945,7 +903,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               ))}
               {currentProgression && currentProgression.feedback !== "first_time" && (
                 <div className="pt-2 border-t border-border/50 mt-2 flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">Melhor peso registrado</span>
+                  <span className="text-[10px] text-muted-foreground">Melhor peso</span>
                   <span className="text-sm font-display font-bold text-primary">{currentProgression.bestWeight} kg</span>
                 </div>
               )}
@@ -959,51 +917,33 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Sobre o exercício</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowInfo(false)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowInfo(false)}><X className="w-4 h-4" /></Button>
           </div>
-          
           {libraryExercise ? (
             <div className="space-y-4">
-              {/* Instructions */}
               <div>
                 <h4 className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-2">Execução Passo a Passo</h4>
                 <div className="space-y-2">
                   {libraryExercise.instrucoes.map((inst, i) => (
                     <div key={i} className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                       <p className="text-xs text-muted-foreground leading-relaxed">{inst}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              
-              {/* Tips */}
               <div>
-                <h4 className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-2">💡 Dicas Importantes</h4>
+                <h4 className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold mb-2">💡 Dicas</h4>
                 <div className="space-y-1.5">
                   {libraryExercise.dicas.map((dica, i) => (
-                    <p key={i} className="text-xs text-muted-foreground leading-relaxed pl-3 border-l-2 border-amber-500/30">
-                      {dica}
-                    </p>
+                    <p key={i} className="text-xs text-muted-foreground leading-relaxed pl-3 border-l-2 border-amber-500/30">{dica}</p>
                   ))}
                 </div>
               </div>
-
-              {/* Meta */}
               <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
-                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground">
-                  {libraryExercise.equipamento}
-                </span>
-                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">
-                  {libraryExercise.dificuldade}
-                </span>
-                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">
-                  {libraryExercise.tipo}
-                </span>
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground">{libraryExercise.equipamento}</span>
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">{libraryExercise.dificuldade}</span>
+                <span className="text-[10px] px-2 py-1 rounded-md bg-secondary/60 text-muted-foreground capitalize">{libraryExercise.tipo}</span>
               </div>
             </div>
           ) : (
@@ -1013,25 +953,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                 <span className="flex items-center gap-1 text-primary font-medium px-2 py-1 rounded-md bg-primary/8">
                   <Clock className="w-3 h-3" />{currentEx.series}x{currentEx.reps}
                 </span>
-                {currentEx.descanso && currentEx.descanso !== "—" && (
-                  <span className="flex items-center gap-1 text-muted-foreground px-2 py-1 rounded-md bg-secondary/50">
-                    <Timer className="w-3 h-3" />{currentEx.descanso} descanso
-                  </span>
-                )}
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* ===== ALTERNATIVES PANEL (Location-aware) ===== */}
+      {/* ===== ALTERNATIVES PANEL ===== */}
       {showAlternatives && (
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Exercícios Alternativos</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAlternatives(false)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAlternatives(false)}><X className="w-4 h-4" /></Button>
           </div>
           <div className="space-y-2">
             {alternatives.map((alt, i) => (
@@ -1043,9 +976,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{alt.nome}</span>
-                    {alt.tag && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/80 text-muted-foreground font-medium">{alt.tag}</span>
-                    )}
+                    {alt.tag && <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/80 text-muted-foreground font-medium">{alt.tag}</span>}
                   </div>
                   {alt.desc && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{alt.desc}</p>}
                 </div>
@@ -1055,15 +986,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== NAVIGATION ===== */}
+      {/* ===== BOTTOM NAVIGATION ===== */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goPrev} disabled={currentExIndex === 0}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          
           {currentExIndex === totalExercises - 1 && completedCount > 0 ? (
-            <Button onClick={handleFinish} className="flex-1 h-11">
+            <Button onClick={handleFinish} className="flex-1 h-11 font-semibold">
               <Trophy className="w-4 h-4 mr-2" /> Finalizar Treino
             </Button>
           ) : (
@@ -1071,7 +1001,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               Próximo Exercício <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           )}
-          
           <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goNext} disabled={currentExIndex >= totalExercises - 1}>
             <ChevronRight className="w-5 h-5" />
           </Button>
