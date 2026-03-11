@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod } from "@/lib/dietGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
+import FocusMode from "@/components/FocusMode";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
