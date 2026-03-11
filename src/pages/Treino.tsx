@@ -936,6 +936,77 @@ const Treino = () => {
           </div>
         </>
       )}
+
+      {/* Focus Mode for Workout Day */}
+      <FocusMode open={!!focusDay} onClose={() => setFocusDay(null)}>
+        {focusDay && (
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(225 16% 10%), hsl(225 16% 6%))' }}>
+            {/* Header */}
+            <div className="relative p-6 pb-5">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">FitPulse</span>
+                </div>
+                <div className="flex items-center gap-4 mt-4">
+                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getGradient(focusDay.grupo)} flex items-center justify-center border border-primary/10 shadow-lg`}>
+                    <span className="text-2xl">{getMuscleIcon(focusDay.grupo)}</span>
+                  </div>
+                  <div>
+                    <h2 className="font-display font-bold text-xl text-foreground">{focusDay.dia}</h2>
+                    <p className="text-sm text-muted-foreground">{focusDay.grupo}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-3 gap-0 border-y border-border/30">
+              <div className="p-3 text-center border-r border-border/20">
+                <p className="text-base font-display font-bold text-primary">{focusDay.exercicios.length}</p>
+                <p className="text-[10px] text-muted-foreground">Exercícios</p>
+              </div>
+              <div className="p-3 text-center border-r border-border/20">
+                <p className="text-base font-display font-bold text-chart-2">~{focusDay.exercicios.length * 5}min</p>
+                <p className="text-[10px] text-muted-foreground">Duração</p>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-base font-display font-bold text-chart-3">{focusDay.exercicios.reduce((a: number, ex: any) => a + (ex.series || 3), 0)}</p>
+                <p className="text-[10px] text-muted-foreground">Séries</p>
+              </div>
+            </div>
+
+            {/* Exercise list */}
+            <div className="p-5 space-y-2.5">
+              {focusDay.exercicios.map((ex: any, j: number) => (
+                <div key={j} className="flex items-center gap-3 py-3 px-4 rounded-xl bg-secondary/30 border border-border/20">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Dumbbell className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{ex.nome}</p>
+                    <p className="text-[11px] text-muted-foreground">{ex.series}x{ex.reps} {ex.descanso && ex.descanso !== "—" ? `• ${ex.descanso}` : ""}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Start button */}
+            <div className="px-5 pb-5 space-y-3">
+              <Button
+                onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { const idx = activePlanData.findIndex((d: any) => d.dia === focusDay.dia); startWorkout(activePlan, idx >= 0 ? idx : 0); } }}
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+              >
+                <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+              </Button>
+              <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
+                <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
+                <span className="text-[10px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </FocusMode>
     </div>
   );
 };
