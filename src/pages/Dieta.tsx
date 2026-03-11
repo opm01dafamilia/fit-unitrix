@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod } from "@/lib/dietGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
+import FocusMode from "@/components/FocusMode";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
@@ -20,12 +21,84 @@ const periodIcons: Record<PlanPeriod, typeof Calendar> = {
   mes: CalendarRange,
 };
 
-const MealCard = ({ meal, index }: { meal: MealPlan; index: number }) => {
+const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void }) => {
+  const MealIcon = iconMap[meal.iconName] || Coffee;
+  const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
+  const mealProt = meal.itens.reduce((a, i) => a + i.prot, 0);
+  const mealCarb = meal.itens.reduce((a, i) => a + i.carb, 0);
+  const mealGord = meal.itens.reduce((a, i) => a + i.gord, 0);
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(225 16% 10%), hsl(225 16% 6%))' }}>
+      {/* Header with gradient accent */}
+      <div className="relative p-6 pb-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">FitPulse</span>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
+              <MealIcon className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-xl text-foreground">{meal.refeicao}</h2>
+              <p className="text-sm text-muted-foreground">{meal.horario}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Macro summary bar */}
+      <div className="grid grid-cols-4 gap-0 border-y border-border/30">
+        {[
+          { label: "Cal", value: mealCal, unit: "kcal", color: "text-chart-3" },
+          { label: "Prot", value: mealProt, unit: "g", color: "text-chart-2" },
+          { label: "Carb", value: mealCarb, unit: "g", color: "text-primary" },
+          { label: "Gord", value: mealGord, unit: "g", color: "text-chart-4" },
+        ].map((m) => (
+          <div key={m.label} className="p-3 text-center border-r border-border/20 last:border-0">
+            <p className={`text-base font-display font-bold ${m.color}`}>{m.value}</p>
+            <p className="text-[10px] text-muted-foreground">{m.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Food items */}
+      <div className="p-5 space-y-2.5">
+        {meal.itens.map((item, j) => (
+          <div key={j} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-secondary/30 border border-border/20">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">{item.alimento}</p>
+              <p className="text-[11px] text-muted-foreground">{item.qtd}</p>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] shrink-0">
+              <span className="text-chart-3 font-medium">{item.cal}</span>
+              <span className="text-chart-2">{item.prot}g</span>
+              <span className="text-primary">{item.carb}g</span>
+              <span className="text-chart-4">{item.gord}g</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer branding */}
+      <div className="px-5 pb-5 pt-1">
+        <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
+          <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
+          <span className="text-[10px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MealCard = ({ meal, index, onFocus }: { meal: MealPlan; index: number; onFocus?: () => void }) => {
   const MealIcon = iconMap[meal.iconName] || Coffee;
   const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
 
   return (
-    <div className="glass-card p-4 lg:p-5">
+    <div className="glass-card p-4 lg:p-5 cursor-pointer hover:border-primary/15 transition-all" onClick={onFocus}>
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
           <MealIcon className="w-4.5 h-4.5 text-primary" />
@@ -69,7 +142,7 @@ const MealCard = ({ meal, index }: { meal: MealPlan; index: number }) => {
   );
 };
 
-const DayAccordion = ({ dayPlan, defaultOpen }: { dayPlan: DayPlan; defaultOpen?: boolean }) => {
+const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void }) => {
   const [open, setOpen] = useState(defaultOpen || false);
   const dayCal = dayPlan.refeicoes.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0);
 
@@ -93,7 +166,7 @@ const DayAccordion = ({ dayPlan, defaultOpen }: { dayPlan: DayPlan; defaultOpen?
       {open && (
         <div className="px-4 pb-4 lg:px-5 lg:pb-5 space-y-3">
           {dayPlan.refeicoes.map((meal, i) => (
-            <MealCard key={i} meal={meal} index={i} />
+            <MealCard key={i} meal={meal} index={i} onFocus={() => onMealFocus?.(meal)} />
           ))}
         </div>
       )}
@@ -137,7 +210,7 @@ const Dieta = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
   useEffect(() => {
     if (profile) {
       if (profile.weight) setPeso(String(profile.weight));
@@ -533,14 +606,14 @@ const Dieta = () => {
                 {planPeriod === "semana" ? "Plano Semanal" : "Plano Mensal"}
               </h3>
               {displayWeekPlan.map((dayPlan, i) => (
-                <DayAccordion key={i} dayPlan={dayPlan} defaultOpen={i === 0} />
+                <DayAccordion key={i} dayPlan={dayPlan} defaultOpen={i === 0} onMealFocus={(meal) => setFocusMeal(meal)} />
               ))}
             </div>
           ) : (
             <div className="space-y-3">
               <h3 className="font-display font-semibold text-xs text-muted-foreground uppercase tracking-widest">Refeições de Hoje</h3>
               {displayPlan.map((meal, i) => (
-                <MealCard key={i} meal={meal} index={i} />
+                <MealCard key={i} meal={meal} index={i} onFocus={() => setFocusMeal(meal)} />
               ))}
             </div>
           )}
@@ -555,6 +628,11 @@ const Dieta = () => {
           <p className="text-muted-foreground text-sm">Preencha seus dados e gere seu plano alimentar personalizado.</p>
         </div>
       )}
+
+      {/* Focus Mode for Meals */}
+      <FocusMode open={!!focusMeal} onClose={() => setFocusMeal(null)}>
+        {focusMeal && <MealFocusCard meal={focusMeal} onClose={() => setFocusMeal(null)} />}
+      </FocusMode>
     </div>
   );
 };
