@@ -14,6 +14,13 @@ export type MealPlan = {
   itens: MealItem[];
 };
 
+export type DayPlan = {
+  dia: string;
+  refeicoes: MealPlan[];
+};
+
+export type PlanPeriod = "hoje" | "semana" | "mes";
+
 type Objective = "emagrecer" | "massa" | "manter";
 type ActivityLevel = "sedentario" | "leve" | "moderado" | "intenso";
 
@@ -25,20 +32,33 @@ const activityMultiplier: Record<string, number> = {
 };
 
 function calcTDEE(weight: number, height: number, age: number, gender: string, activity: string): number {
-  // Mifflin-St Jeor
   const s = gender === "feminino" ? -161 : 5;
   const bmr = 10 * weight + 6.25 * height - 5 * (age || 25) + s;
   return Math.round(bmr * (activityMultiplier[activity] || 1.55));
 }
 
-function getCalorieTarget(tdee: number, objective: Objective): number {
-  if (objective === "emagrecer") return Math.round(tdee * 0.8);
-  if (objective === "massa") return Math.round(tdee * 1.15);
+function getCalorieTarget(tdee: number, objective: Objective, weightGoal?: number, currentWeight?: number): number {
+  if (objective === "emagrecer") {
+    // If weight goal is set and lower, use a slightly more aggressive deficit
+    if (weightGoal && currentWeight && weightGoal < currentWeight) {
+      const diff = currentWeight - weightGoal;
+      const deficitPct = diff > 15 ? 0.75 : diff > 5 ? 0.8 : 0.85;
+      return Math.round(tdee * deficitPct);
+    }
+    return Math.round(tdee * 0.8);
+  }
+  if (objective === "massa") {
+    if (weightGoal && currentWeight && weightGoal > currentWeight) {
+      const diff = weightGoal - currentWeight;
+      const surplusPct = diff > 10 ? 1.2 : diff > 5 ? 1.15 : 1.1;
+      return Math.round(tdee * surplusPct);
+    }
+    return Math.round(tdee * 1.15);
+  }
   return tdee;
 }
 
 function getMacroSplit(calories: number, objective: Objective, weight: number) {
-  // protein g/kg based on objective
   let protPerKg = objective === "massa" ? 2.0 : objective === "emagrecer" ? 2.2 : 1.6;
   let protGrams = Math.round(protPerKg * weight);
   let fatPct = objective === "emagrecer" ? 0.25 : 0.3;
@@ -46,6 +66,38 @@ function getMacroSplit(calories: number, objective: Objective, weight: number) {
   let carbGrams = Math.round((calories - protGrams * 4 - fatGrams * 9) / 4);
   if (carbGrams < 50) carbGrams = 50;
   return { protGrams, carbGrams, fatGrams };
+}
+
+// Variation helpers for weekly/monthly plans
+const proteinSwaps: Record<string, string[]> = {
+  "Frango grelhado": ["Peito de peru", "Filé de tilápia", "Frango desfiado", "Coxa de frango s/ pele"],
+  "Peixe grelhado": ["Tilápia grelhada", "Salmão grelhado", "Atum grelhado", "Filé de merluza"],
+  "Carne vermelha magra": ["Patinho grelhado", "Lagarto", "Alcatra grelhada", "Maminha grelhada"],
+  "Salmão grelhado": ["Truta grelhada", "Atum em posta", "Filé de tilápia", "Sardinha assada"],
+  "Ovos mexidos": ["Omelete", "Ovos cozidos", "Ovos pochê", "Crepioca"],
+};
+
+const carbSwaps: Record<string, string[]> = {
+  "Arroz integral": ["Quinoa", "Arroz 7 grãos", "Arroz integral", "Cuscuz"],
+  "Arroz branco": ["Arroz integral", "Macarrão integral", "Batata inglesa", "Mandioca cozida"],
+  "Batata doce": ["Inhame", "Mandioca cozida", "Batata inglesa", "Cará"],
+  "Pão integral": ["Tapioca", "Wrap integral", "Torrada integral", "Crepioca"],
+  "Macarrão integral": ["Nhoque de batata doce", "Espaguete de abobrinha", "Arroz integral", "Cuscuz"],
+};
+
+function varyMeal(meal: MealPlan, dayIndex: number): MealPlan {
+  const newItens = meal.itens.map((item) => {
+    const protSwap = proteinSwaps[item.alimento];
+    if (protSwap) {
+      return { ...item, alimento: protSwap[dayIndex % protSwap.length] };
+    }
+    const cSwap = carbSwaps[item.alimento];
+    if (cSwap) {
+      return { ...item, alimento: cSwap[dayIndex % cSwap.length] };
+    }
+    return item;
+  });
+  return { ...meal, itens: newItens };
 }
 
 // Meal templates for different objectives
@@ -151,18 +203,40 @@ const mealTemplates: Record<Objective, (macros: { protGrams: number; carbGrams: 
   ],
 };
 
+const weekDays = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
+
 export function generateDietPlan(
   objective: Objective,
   weight: number,
   height: number,
   activityLevel: ActivityLevel | string,
   age?: number,
-  gender?: string
-): { plan: MealPlan[]; totalCalories: number; macros: { protGrams: number; carbGrams: number; fatGrams: number } } {
+  gender?: string,
+  weightGoal?: number,
+  period?: PlanPeriod
+): { plan: MealPlan[]; weekPlan?: DayPlan[]; totalCalories: number; macros: { protGrams: number; carbGrams: number; fatGrams: number }; period: PlanPeriod } {
   const tdee = calcTDEE(weight, height, age || 25, gender || "masculino", activityLevel);
-  const targetCal = getCalorieTarget(tdee, objective);
+  const targetCal = getCalorieTarget(tdee, objective, weightGoal, weight);
   const macros = getMacroSplit(targetCal, objective, weight);
-  const plan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
+  const basePlan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
+  const usedPeriod = period || "hoje";
 
-  return { plan, totalCalories: targetCal, macros };
+  if (usedPeriod === "hoje") {
+    return { plan: basePlan, totalCalories: targetCal, macros, period: usedPeriod };
+  }
+
+  // Generate weekly plan with variations
+  const days = usedPeriod === "semana" ? 7 : 28;
+  const dayPlans: DayPlan[] = [];
+
+  for (let d = 0; d < days; d++) {
+    const dayLabel = usedPeriod === "semana"
+      ? weekDays[d]
+      : `Semana ${Math.floor(d / 7) + 1} — ${weekDays[d % 7]}`;
+    
+    const refeicoes = basePlan.map((meal) => varyMeal(meal, d));
+    dayPlans.push({ dia: dayLabel, refeicoes });
+  }
+
+  return { plan: basePlan, weekPlan: dayPlans, totalCalories: targetCal, macros, period: usedPeriod };
 }
