@@ -9,10 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/treino", icon: Dumbbell, label: "Treinos" },
-  { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
+  { to: "/treino", icon: Dumbbell, label: "Plano Ativo" },
   { to: "/acompanhamento", icon: Activity, label: "Corpo" },
   { to: "/metas", icon: Target, label: "Metas" },
+  { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
