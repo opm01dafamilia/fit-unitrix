@@ -210,7 +210,7 @@ const Dieta = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
   useEffect(() => {
     if (profile) {
       if (profile.weight) setPeso(String(profile.weight));
