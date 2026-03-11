@@ -202,6 +202,49 @@ const Treino = () => {
   const totalCompleted = sessions.length;
   const avgExercises = sessions.length > 0 ? Math.round(sessions.reduce((a, s) => a + s.exercises_completed, 0) / sessions.length) : 0;
 
+  // Check if a workout is "in progress" (started today but not finished all exercises)
+  const inProgressDay = useMemo(() => {
+    if (!activePlan || !activePlanData) return null;
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    const todaySess = sessions.find(s =>
+      s.workout_plan_id === activePlan.id &&
+      format(new Date(s.completed_at), "yyyy-MM-dd") === todayKey &&
+      s.exercises_completed < s.exercises_total
+    );
+    if (todaySess) return todaySess.day_index;
+    return null;
+  }, [activePlan, activePlanData, sessions]);
+
+  // Muscle group icons & gradients
+  const muscleGroupIcons: Record<string, string> = {
+    peito: "💪", costas: "🏋️", pernas: "🦵", ombros: "🎯",
+    biceps: "💪", triceps: "💪", abdomen: "🔥", hiit: "⚡",
+    cardio: "🏃", corpo: "🏆", full: "🏆",
+  };
+  const getMuscleIcon = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    for (const [key, icon] of Object.entries(muscleGroupIcons)) {
+      if (g.includes(key)) return icon;
+    }
+    return "💪";
+  };
+  const muscleGradients: Record<string, string> = {
+    peito: "from-red-500/20 to-red-600/5",
+    costas: "from-blue-500/20 to-blue-600/5",
+    pernas: "from-purple-500/20 to-purple-600/5",
+    ombros: "from-amber-500/20 to-amber-600/5",
+    biceps: "from-pink-500/20 to-pink-600/5",
+    triceps: "from-cyan-500/20 to-cyan-600/5",
+    abdomen: "from-green-500/20 to-green-600/5",
+  };
+  const getGradient = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    for (const [key, grad] of Object.entries(muscleGradients)) {
+      if (g.includes(key)) return grad;
+    }
+    return "from-primary/20 to-primary/5";
+  };
+
   // Handlers
   const handleGenerate = () => {
     if (!objetivo || !nivel || !dias) { toast.error("Preencha todos os campos"); return; }
@@ -495,13 +538,14 @@ const Treino = () => {
     );
   }
 
+
   // ==================== DASHBOARD VIEW ====================
   return (
     <div className="space-y-5 animate-slide-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Treinos</h1>
-          <p className="text-muted-foreground text-sm mt-1">Seu painel de treinos personalizado</p>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Plano Ativo</h1>
+          <p className="text-muted-foreground text-sm mt-1">Acesso rápido ao seu treino</p>
         </div>
         <Button onClick={() => setView("generator")} size="sm">
           <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
@@ -510,12 +554,35 @@ const Treino = () => {
 
       {loadingPlans || loadingSessions ? (
         <div className="space-y-4">
-          <Skeleton className="h-44 rounded-2xl" />
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-28 rounded-2xl" />
-            <Skeleton className="h-28 rounded-2xl" />
+          <div className="glass-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-14 h-14 rounded-2xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-40 rounded-lg" />
+                <Skeleton className="h-3 w-24 rounded-lg" />
+              </div>
+              <Skeleton className="h-10 w-28 rounded-xl" />
+            </div>
+            <Skeleton className="h-2 w-full rounded-full" />
           </div>
-          <Skeleton className="h-64 rounded-2xl" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass-card p-5 space-y-3">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <Skeleton className="h-7 w-16 rounded-lg" />
+              <Skeleton className="h-3 w-24 rounded-lg" />
+            </div>
+            <div className="glass-card p-5 space-y-3">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <Skeleton className="h-7 w-16 rounded-lg" />
+              <Skeleton className="h-3 w-24 rounded-lg" />
+            </div>
+          </div>
+          <div className="glass-card p-5 space-y-3">
+            <Skeleton className="h-4 w-32 rounded-lg" />
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} className="h-20 rounded-xl" />
+            ))}
+          </div>
         </div>
       ) : !activePlan ? (
         <div className="empty-state py-16">
@@ -528,36 +595,69 @@ const Treino = () => {
         </div>
       ) : (
         <>
-          {/* Next Workout Card */}
+          {/* Continue Workout Banner */}
+          {inProgressDay !== null && activePlanData && (
+            <div className="glass-card p-5 relative overflow-hidden border border-amber-500/20 animate-fade-in">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-orange-500/5" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center shadow-lg">
+                    <Play className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Treino em andamento</p>
+                    <p className="text-xs text-muted-foreground">{activePlanData[inProgressDay].dia} — {activePlanData[inProgressDay].grupo}</p>
+                  </div>
+                </div>
+                <Button onClick={() => startWorkout(activePlan, inProgressDay)} className="h-11 px-6 font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0">
+                  <Play className="w-4 h-4 mr-2" /> Continuar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Next Workout Hero Card */}
           {nextWorkout && (
-            <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-[0.06] pointer-events-none -translate-y-8 translate-x-8"
+            <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-[0.08] pointer-events-none -translate-y-10 translate-x-10"
                    style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">Próximo Treino</span>
-              </div>
-              <h2 className="font-display font-bold text-xl mb-1">{nextWorkout.dia}</h2>
-              <p className="text-sm text-muted-foreground mb-4">{nextWorkout.grupo}</p>
-
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-muted-foreground">Progresso</span>
-                  <span className="text-xs font-semibold text-primary">{todayProgress}%</span>
+              <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-[0.04] pointer-events-none translate-y-6 -translate-x-6"
+                   style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getGradient(nextWorkout.grupo)} flex items-center justify-center shadow-lg border border-primary/10`}>
+                      <span className="text-2xl">{getMuscleIcon(nextWorkout.grupo)}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Próximo Treino</span>
+                      </div>
+                      <h2 className="font-display font-bold text-xl">{nextWorkout.dia}</h2>
+                      <p className="text-sm text-muted-foreground">{nextWorkout.grupo} • {nextWorkout.exercicios.length} exercícios</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${todayProgress}%` }} />
-                </div>
-              </div>
 
-              <Button onClick={() => startWorkout(activePlan, nextDayIndex)} className="w-full sm:w-auto h-11">
-                <Play className="w-4 h-4 mr-2" /> Começar Treino
-              </Button>
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-muted-foreground">Progresso de hoje</span>
+                    <span className="text-xs font-bold text-primary">{todayProgress}%</span>
+                  </div>
+                  <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.3)]" style={{ width: `${todayProgress}%` }} />
+                  </div>
+                </div>
+
+                <Button onClick={() => startWorkout(activePlan, nextDayIndex)} className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+                  <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+                </Button>
+              </div>
             </div>
           )}
 
           {/* Streak + Stats Row */}
           <div className="grid grid-cols-2 gap-4">
-            {/* Streak */}
             <div className="glass-card p-4 lg:p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500/15 to-orange-500/5 flex items-center justify-center">
@@ -569,8 +669,6 @@ const Treino = () => {
                 {streak > 0 ? "Sequência ativa! 🔥" : "Treine hoje para iniciar sua sequência!"}
               </p>
             </div>
-
-            {/* Progress Stats */}
             <div className="glass-card p-4 lg:p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
@@ -598,6 +696,78 @@ const Treino = () => {
                     <Play className="w-3 h-3 mr-1" /> Treinar
                   </Button>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* ===== PREMIUM PLAN DAYS CARDS ===== */}
+          {activePlanData && (
+            <div>
+              <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Dumbbell className="w-4 h-4 text-primary" /> Dias do Plano
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {activePlanData.map((day: any, i: number) => {
+                  const isNext = i === nextDayIndex;
+                  const isCompleted = sessions.some(s =>
+                    s.workout_plan_id === activePlan.id &&
+                    s.day_index === i &&
+                    format(new Date(s.completed_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
+                  );
+                  return (
+                    <div
+                      key={i}
+                      className={`glass-card p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group ${
+                        isNext ? "border border-primary/20 shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]" :
+                        isCompleted ? "border border-green-500/20 opacity-80" : "border border-transparent"
+                      }`}
+                      onClick={() => startWorkout(activePlan, i)}
+                    >
+                      {isNext && (
+                        <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-[0.06] pointer-events-none -translate-y-6 translate-x-6"
+                             style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
+                      )}
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-md ${
+                              isNext ? "shadow-primary/10" : ""
+                            }`}>
+                              <span className="text-lg">{getMuscleIcon(day.grupo)}</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold">{day.dia}</p>
+                                {isNext && (
+                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-1.5 py-0.5 rounded bg-primary/10">Próximo</span>
+                                )}
+                                {isCompleted && (
+                                  <span className="text-[9px] uppercase tracking-wider text-green-500 font-bold px-1.5 py-0.5 rounded bg-green-500/10 flex items-center gap-0.5">
+                                    <Check className="w-2.5 h-2.5" /> Feito
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{day.grupo}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Dumbbell className="w-3 h-3" /> {day.exercicios.length} exercícios
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> ~{day.exercicios.length * 5}min
+                            </span>
+                          </div>
+                          <Button variant="ghost" size="sm" className={`text-xs opacity-0 group-hover:opacity-100 transition-opacity ${isNext ? "text-primary" : ""}`}>
+                            <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -659,8 +829,6 @@ const Treino = () => {
                 </div>
               </div>
             </div>
-
-            {/* Weekly Evolution Card */}
             {weeklyEvolution && (
               <div className="glass-card p-4 lg:p-5">
                 <div className="flex items-center gap-3 mb-3">
@@ -695,7 +863,9 @@ const Treino = () => {
           {/* Calendar */}
           <div className="glass-card p-5 lg:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wider">Calendário de Treinos</h3>
+              <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-primary" /> Calendário de Treinos
+              </h3>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1))}>
                   <ChevronDown className="w-4 h-4 rotate-90" />
@@ -708,17 +878,12 @@ const Treino = () => {
                 </Button>
               </div>
             </div>
-
-            {/* Weekday headers */}
             <div className="grid grid-cols-7 gap-1 mb-1">
               {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
                 <div key={i} className="text-center text-[10px] text-muted-foreground font-medium py-1">{d}</div>
               ))}
             </div>
-
-            {/* Days grid */}
             <div className="grid grid-cols-7 gap-1">
-              {/* Empty cells for offset */}
               {Array.from({ length: calendarDays[0]?.getDay() || 0 }).map((_, i) => (
                 <div key={`empty-${i}`} />
               ))}
@@ -727,33 +892,21 @@ const Treino = () => {
                 const hasSession = sessionDates.has(key);
                 const today = isToday(day);
                 const selected = selectedCalendarDay && isSameDay(day, selectedCalendarDay);
-
                 return (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedCalendarDay(selected ? null : day)}
+                  <button key={key} onClick={() => setSelectedCalendarDay(selected ? null : day)}
                     className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all relative
                       ${today ? "ring-1 ring-primary/40" : ""}
                       ${selected ? "bg-primary/15 ring-1 ring-primary/30" : "hover:bg-secondary/50"}
-                    `}
-                  >
-                    <span className={`${hasSession ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
-                      {format(day, "d")}
-                    </span>
-                    {hasSession && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary mt-0.5" />
-                    )}
+                    `}>
+                    <span className={`${hasSession ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{format(day, "d")}</span>
+                    {hasSession && <div className="w-1.5 h-1.5 rounded-full bg-primary mt-0.5" />}
                   </button>
                 );
               })}
             </div>
-
-            {/* Selected day details */}
             {selectedCalendarDay && (
               <div className="mt-4 pt-4 border-t border-border/50">
-                <p className="text-xs font-medium mb-2 capitalize">
-                  {format(selectedCalendarDay, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                </p>
+                <p className="text-xs font-medium mb-2 capitalize">{format(selectedCalendarDay, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
                 {selectedDaySessions.length === 0 ? (
                   <p className="text-[11px] text-muted-foreground">Nenhum treino neste dia.</p>
                 ) : (
@@ -774,31 +927,6 @@ const Treino = () => {
               </div>
             )}
           </div>
-
-          {/* All plan days quick access */}
-          {activePlanData && (
-            <div className="glass-card p-5 lg:p-6">
-              <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Plano Ativo</h3>
-              <div className="space-y-2">
-                {activePlanData.map((day: any, i: number) => (
-                  <div key={i} className="flex items-center justify-between p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${i === nextDayIndex ? "bg-primary/15" : "bg-secondary/60"}`}>
-                        <Dumbbell className={`w-4 h-4 ${i === nextDayIndex ? "text-primary" : "text-muted-foreground"}`} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{day.dia} <span className="text-muted-foreground">—</span> {day.grupo}</p>
-                        <p className="text-[11px] text-muted-foreground">{day.exercicios.length} exercícios</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => startWorkout(activePlan, i)}>
-                      <Play className="w-3.5 h-3.5 mr-1" /> Treinar
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
