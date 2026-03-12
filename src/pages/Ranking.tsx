@@ -183,9 +183,9 @@ const Ranking = () => {
   }, [rankings, user]);
 
   const getMedalIcon = (pos: number) => {
-    if (pos === 1) return <Crown className="w-5 h-5 text-yellow-400" />;
-    if (pos === 2) return <Medal className="w-5 h-5 text-gray-300" />;
-    if (pos === 3) return <Medal className="w-5 h-5 text-amber-600" />;
+    if (pos === 1) return <Crown className="w-5 h-5 text-chart-3" />;
+    if (pos === 2) return <Medal className="w-5 h-5 text-muted-foreground" />;
+    if (pos === 3) return <Medal className="w-5 h-5 text-chart-4" />;
     return <span className="text-xs font-bold text-muted-foreground w-5 text-center">{pos}</span>;
   };
 
