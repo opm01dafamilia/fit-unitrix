@@ -376,39 +376,48 @@ export type Database = {
           achievements_count: number
           diet_streak: number
           id: string
+          rank_tier: string
           ranking_score: number
           total_series: number
           total_workouts: number
+          total_xp: number
           updated_at: string
           user_id: string
           user_name: string
           week_start: string
+          weekly_xp: number
           workout_streak: number
         }
         Insert: {
           achievements_count?: number
           diet_streak?: number
           id?: string
+          rank_tier?: string
           ranking_score?: number
           total_series?: number
           total_workouts?: number
+          total_xp?: number
           updated_at?: string
           user_id: string
           user_name?: string
           week_start?: string
+          weekly_xp?: number
           workout_streak?: number
         }
         Update: {
           achievements_count?: number
           diet_streak?: number
           id?: string
+          rank_tier?: string
           ranking_score?: number
           total_series?: number
           total_workouts?: number
+          total_xp?: number
           updated_at?: string
           user_id?: string
           user_name?: string
           week_start?: string
+          weekly_xp?: number
           workout_streak?: number
         }
         Relationships: []
