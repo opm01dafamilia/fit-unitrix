@@ -207,7 +207,7 @@ export function getAlternatives(exerciseName: string, trainingLocation?: string)
     results.push({ nome: "Exercício alternativo 1" }, { nome: "Exercício alternativo 2" });
   }
 
-  return results.slice(0, 4);
+  return results.slice(0, 5);
 }
 
 // Get stretching exercises for a workout day
