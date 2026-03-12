@@ -515,17 +515,25 @@ const WeightGoalBanner = ({ meta, isGain, realWeight, weeklyAdherence }: { meta:
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="weightAdjustedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                 <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} unit="kg" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
-                  formatter={(value: number) => [`${value}kg`, 'Peso estimado']}
+                  formatter={(value: number, name: string) => [`${value}kg`, name === 'pesoAjustado' ? 'Com aderência atual' : 'Peso planejado']}
                 />
                 {realWeight && (
                   <ReferenceLine y={realWeight} stroke="hsl(var(--chart-2))" strokeDasharray="4 4" label={{ value: `Atual: ${realWeight}kg`, fontSize: 10, fill: 'hsl(var(--chart-2))' }} />
                 )}
-                <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightGradient)" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} />
+                <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightGradient)" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} name="Planejado" />
+                {adherenceFactor < 1 && chartData.some(d => d.pesoAjustado !== undefined && d.pesoAjustado !== d.peso) && (
+                  <Area type="monotone" dataKey="pesoAjustado" stroke="hsl(var(--chart-4))" fill="url(#weightAdjustedGradient)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: 'hsl(var(--chart-4))' }} name="Com aderência atual" />
+                )}
+              </AreaChart>
               </AreaChart>
             </ResponsiveContainer>
           </div>
