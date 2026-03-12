@@ -159,6 +159,9 @@ const Conquistas = () => {
   }, [achievements, filter]);
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
+  const totalXP = useMemo(() => stats ? calculateTotalXP(stats) : 0, [stats]);
+  const currentRank = getRankForXP(totalXP);
+  const nextRankInfo = getNextRank(totalXP);
 
   if (loading) {
     return (
