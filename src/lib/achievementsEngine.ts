@@ -375,6 +375,7 @@ export const categoryLabels: Record<string, string> = {
   progression: "Progressão",
   milestone: "Marco",
   diet: "Dieta",
+  social: "Social",
 };
 
 export const categoryIcons: Record<string, string> = {
@@ -383,4 +384,5 @@ export const categoryIcons: Record<string, string> = {
   progression: "📈",
   milestone: "🎯",
   diet: "🍽️",
+  social: "👥",
 };
