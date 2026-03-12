@@ -14,7 +14,9 @@ import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type We
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { format, subDays } from "date-fns";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from "recharts";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
