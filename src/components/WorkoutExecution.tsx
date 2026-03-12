@@ -294,7 +294,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       }
       setPhase("exercise-done");
     } else {
-      // Auto-start rest
+      // Auto-start rest with wall-clock
+      restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
       setRestTime(effectiveRestSeconds);
       setRestPaused(false);
       setPhase("resting");
