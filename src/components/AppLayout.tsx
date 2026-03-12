@@ -115,7 +115,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen">
+      <main className="flex-1 min-h-screen pb-16 lg:pb-0">
         <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3.5 bg-background/70 backdrop-blur-xl border-b border-border/50 lg:hidden">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-1">
             <Menu className="w-5 h-5" />
@@ -129,10 +129,36 @@ const AppLayout = () => {
           </div>
           <div className="w-7" />
         </header>
-        <div className="p-5 lg:p-8 max-w-7xl mx-auto">
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border/50 lg:hidden safe-area-pb">
+        <div className="flex items-center justify-around px-2 py-1.5">
+          {[
+            { to: "/", icon: LayoutDashboard, label: "Home" },
+            { to: "/treino", icon: Dumbbell, label: "Treino" },
+            { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
+            { to: "/ranking", icon: Crown, label: "Ranking" },
+            { to: "/perfil", icon: User, label: "Perfil" },
+          ].map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all
+                ${isActive ? "text-primary" : "text-muted-foreground"}`
+              }
+            >
+              <item.icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 };
