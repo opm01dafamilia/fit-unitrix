@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
+import { generateDietPlan, getPreferenceWarning, type MealPlan, type DayPlan, type PlanPeriod, type MealStyle, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
