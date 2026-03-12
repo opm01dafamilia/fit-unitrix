@@ -293,12 +293,17 @@ const Treino = () => {
     } catch { toast.error("Erro ao excluir plano"); }
   };
 
-  const startWorkout = (plan: any, dayIndex: number) => {
+  const startWorkout = useCallback((plan: any, dayIndex: number) => {
+    // Force a clean remount of WorkoutExecution by incrementing key
+    setExecutionKey(k => k + 1);
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
-    setView("execution");
-  };
+    // Use a microtask to ensure state is set before switching view
+    Promise.resolve().then(() => {
+      setView("execution");
+    });
+  }, []);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
