@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateWorkoutPlan, BodyFocus } from "@/lib/workoutGenerator";
+import { generateWorkoutPlan, BodyFocus, DayIntensity } from "@/lib/workoutGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -248,7 +248,23 @@ const Treino = () => {
     return "from-primary/20 to-primary/5";
   };
 
-  // Handlers
+  // Intensity badge helper
+  const getIntensityBadge = (intensidade?: DayIntensity) => {
+    if (!intensidade) return null;
+    const config = {
+      pesado: { icon: "🔥", label: "Pesado", className: "text-orange-400 bg-orange-500/15 border-orange-500/20" },
+      moderado: { icon: "⚡", label: "Moderado", className: "text-amber-400 bg-amber-500/15 border-amber-500/20" },
+      leve: { icon: "🌿", label: "Leve", className: "text-emerald-400 bg-emerald-500/15 border-emerald-500/20" },
+    };
+    const c = config[intensidade];
+    return (
+      <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${c.className}`}>
+        {c.icon} {c.label}
+      </span>
+    );
+  };
+
+
   const handleGenerate = () => {
     if (!objetivo || !nivel || !dias) { toast.error("Preencha todos os campos"); return; }
     setGenerating(true);
@@ -426,6 +442,7 @@ const Treino = () => {
                   <SelectItem value="4">4 dias</SelectItem>
                   <SelectItem value="5">5 dias</SelectItem>
                   <SelectItem value="6">6 dias</SelectItem>
+                  <SelectItem value="7">7 dias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -508,7 +525,10 @@ const Treino = () => {
                       <Dumbbell className="w-4.5 h-4.5 text-primary" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-sm">{day.dia}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{day.dia}</p>
+                        {getIntensityBadge(day.intensidade)}
+                      </div>
                       <p className="text-xs text-muted-foreground">{day.grupo}</p>
                     </div>
                   </div>
@@ -641,6 +661,7 @@ const Treino = () => {
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Próximo Treino</span>
+                        {getIntensityBadge(nextWorkout.intensidade)}
                       </div>
                       <h2 className="font-display font-bold text-xl">{nextWorkout.dia}</h2>
                       <p className="text-sm text-muted-foreground">{nextWorkout.grupo} • {nextWorkout.exercicios.length} exercícios</p>
@@ -758,6 +779,7 @@ const Treino = () => {
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold text-foreground">{day.dia}</p>
+                                {getIntensityBadge(day.intensidade)}
                                 {isNext && (
                                   <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
                                 )}
