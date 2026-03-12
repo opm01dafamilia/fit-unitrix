@@ -1233,6 +1233,18 @@ const Dieta = () => {
               meta={displayMeta}
               isGain={displayMeta.weightGoal > displayMeta.currentWeight}
               realWeight={latestWeight}
+              weeklyAdherence={weeklyAdherence}
+            />
+          )}
+
+          {/* Weekly Adherence Feedback */}
+          {weeklyMealsTotal > 0 && displayMeta && (
+            <WeeklyAdherenceFeedback
+              weeklyAdherence={weeklyAdherence}
+              weeklyMealsDone={weeklyMealsDone}
+              weeklyMealsTotal={weeklyMealsTotal}
+              dietMeta={displayMeta}
+              isGain={displayMeta.weightGoal ? displayMeta.weightGoal > displayMeta.currentWeight : objetivo === "massa"}
             />
           )}
 
