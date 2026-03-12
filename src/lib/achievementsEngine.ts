@@ -236,6 +236,25 @@ const achievementDefs: AchievementDef[] = [
     requirement: 90,
     getValue: (s) => s.dietWeeklyAdherence,
   },
+  // Body progression achievements
+  {
+    id: "rhythm_above_2w",
+    title: "Evolução Acelerada",
+    description: "Ritmo acima do esperado por 2 semanas",
+    icon: "🚀",
+    category: "progression",
+    requirement: 2,
+    getValue: (s) => s.weeksAboveRhythm || 0,
+  },
+  {
+    id: "rhythm_above_4w",
+    title: "Máquina de Resultados",
+    description: "Ritmo acima do esperado por 4 semanas",
+    icon: "⚡",
+    category: "progression",
+    requirement: 4,
+    getValue: (s) => s.weeksAboveRhythm || 0,
+  },
 ];
 
 export function calculateAchievements(stats: UserStats): Achievement[] {
