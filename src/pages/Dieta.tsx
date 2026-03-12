@@ -13,7 +13,7 @@ import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
-import FocusMode from "@/components/FocusMode";
+import DietFocusMode from "@/components/DietFocusMode";
 import { format, subDays } from "date-fns";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
@@ -417,7 +417,7 @@ const Dieta = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
+  const [focusMealIndex, setFocusMealIndex] = useState<number | null>(null);
   const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
   
   // Streak & gamification state
@@ -730,6 +730,9 @@ const Dieta = () => {
   ];
 
   const weightDiff = metaPeso && peso ? Number(metaPeso) - Number(peso) : null;
+  const currentGoal = metaPeso && peso
+    ? `${peso}kg → ${metaPeso}kg${prazo !== "none" ? ` em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` : ""}`
+    : objetivo ? `Objetivo: ${objetivo}` : undefined;
 
   // Meal progress stats
   const totalMealsCount = displayPlan?.length || 0;
@@ -1091,7 +1094,7 @@ const Dieta = () => {
                   key={i}
                   block={block}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => setFocusMeal(meal)}
+                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
@@ -1107,7 +1110,7 @@ const Dieta = () => {
                   key={i}
                   dayPlan={dayPlan}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => setFocusMeal(meal)}
+                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
@@ -1121,7 +1124,7 @@ const Dieta = () => {
                   key={i}
                   meal={meal}
                   index={i}
-                  onFocus={() => setFocusMeal(meal)}
+                  onFocus={() => setFocusMealIndex(i)}
                   status={mealStatuses[`today-${i}`] || null}
                   onSetStatus={(s) => setMealStatus(`today-${i}`, s)}
                 />
@@ -1141,9 +1144,16 @@ const Dieta = () => {
       )}
 
       {/* Focus Mode for Meals */}
-      <FocusMode open={!!focusMeal} onClose={() => setFocusMeal(null)}>
-        {focusMeal && <MealFocusCard meal={focusMeal} onClose={() => setFocusMeal(null)} />}
-      </FocusMode>
+      <DietFocusMode
+        open={focusMealIndex !== null}
+        onClose={() => setFocusMealIndex(null)}
+        meals={displayPlan || []}
+        initialIndex={focusMealIndex ?? 0}
+        mealStatuses={mealStatuses}
+        onSetMealStatus={(idx, s) => setMealStatus(`today-${idx}`, s)}
+        userName={profile?.full_name || undefined}
+        currentGoal={currentGoal}
+      />
     </div>
   );
 };
