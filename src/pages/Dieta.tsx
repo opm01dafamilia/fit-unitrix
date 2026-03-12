@@ -1135,6 +1135,7 @@ const Dieta = () => {
             <WeightGoalBanner
               meta={displayMeta}
               isGain={displayMeta.weightGoal > displayMeta.currentWeight}
+              realWeight={latestWeight}
             />
           )}
 
