@@ -474,7 +474,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   // ===== STRETCHING PRE-WORKOUT SCREEN =====
   if (showStretching && stretching.length > 0) {
     return (
-      <div className="space-y-4 animate-slide-up pb-24">
+      <div className="space-y-4 animate-slide-up pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onBack}>
