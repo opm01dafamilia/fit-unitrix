@@ -426,6 +426,7 @@ const Treino = () => {
                   <SelectItem value="4">4 dias</SelectItem>
                   <SelectItem value="5">5 dias</SelectItem>
                   <SelectItem value="6">6 dias</SelectItem>
+                  <SelectItem value="7">7 dias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
