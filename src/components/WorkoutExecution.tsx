@@ -533,14 +533,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-[11px] text-muted-foreground">Treino adaptado para <span className="font-semibold text-foreground">casa</span>.</p>
           </div>
         )}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
-          <div className="max-w-lg mx-auto flex gap-3">
-            <Button variant="outline" className="flex-1 h-11" onClick={() => setShowStretching(false)}>Pular Aquecimento</Button>
-            <Button className="flex-1 h-11" onClick={() => setShowStretching(false)}>
-              <Play className="w-4 h-4 mr-2" /> Iniciar Treino
-            </Button>
-          </div>
+        {/* Inline buttons - no fixed positioning issues */}
+        <div className="mt-2 space-y-3">
+          <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20" onClick={() => setShowStretching(false)}>
+            <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+          </Button>
+          <Button variant="outline" className="w-full h-11" onClick={() => setShowStretching(false)}>
+            Pular Aquecimento
+          </Button>
         </div>
+        <div className="h-4" />
       </div>
     );
   }
