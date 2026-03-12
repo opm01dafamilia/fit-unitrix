@@ -35,6 +35,8 @@ export type UserStats = {
   dietMaxStreak: number;
   dietPerfectDays: number;
   dietWeeklyAdherence: number; // 0-100
+  // Body progression stats
+  weeksAboveRhythm?: number;
 };
 
 const achievementDefs: AchievementDef[] = [

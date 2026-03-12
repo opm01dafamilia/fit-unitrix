@@ -14,6 +14,7 @@ const navItems = [
   { to: "/metas", icon: Target, label: "Metas" },
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/historico", icon: History, label: "Histórico" },
+  { to: "/analise", icon: BarChart3, label: "Análise" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
   { to: "/perfil", icon: User, label: "Perfil" },
