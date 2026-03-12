@@ -807,6 +807,10 @@ const Treino = () => {
               totalProgressions: 0,
               totalExercisesCompleted: totalExCompleted,
               daysActive: new Set(sessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))).size,
+              dietStreak: 0,
+              dietMaxStreak: 0,
+              dietPerfectDays: 0,
+              dietWeeklyAdherence: 0,
             };
             const achievements = calculateAchievements(quickStats);
             const unlocked = achievements.filter(a => a.unlocked).length;

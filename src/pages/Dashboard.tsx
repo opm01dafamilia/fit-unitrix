@@ -131,6 +131,10 @@ const Dashboard = () => {
     totalProgressions,
     totalExercisesCompleted: sessions.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0),
     daysActive: uniqueDays.length,
+    dietStreak: 0,
+    dietMaxStreak: 0,
+    dietPerfectDays: 0,
+    dietWeeklyAdherence: 0,
   };
   const achievements = calculateAchievements(userStats);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
