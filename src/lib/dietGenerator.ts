@@ -19,6 +19,23 @@ export type DayPlan = {
   refeicoes: MealPlan[];
 };
 
+export type WeekBlock = {
+  weekNumber: number;
+  label: string;
+  targetCalories: number;
+  estimatedWeight: number;
+  days: DayPlan[];
+};
+
+export type DietMeta = {
+  currentWeight: number;
+  weightGoal: number | null;
+  deadlineMonths: number | null;
+  preferencias: string | null;
+  weeklyTargets?: { week: number; calories: number; estimatedWeight: number }[];
+  monthlyRate?: number;
+};
+
 export type PlanPeriod = "hoje" | "semana" | "mes";
 
 type Objective = "emagrecer" | "massa" | "manter";
@@ -37,12 +54,6 @@ function calcTDEE(weight: number, height: number, age: number, gender: string, a
   return Math.round(bmr * (activityMultiplier[activity] || 1.55));
 }
 
-/**
- * Calculate calorie target based on weight goal, deadline, and objective.
- * Uses the energy balance: 1 kg of body weight ≈ 7700 kcal.
- * Calculates the daily surplus/deficit needed to reach the goal in the given deadline,
- * clamped to safe ranges.
- */
 function getCalorieTarget(
   tdee: number,
   objective: Objective,
@@ -51,17 +62,14 @@ function getCalorieTarget(
   deadlineMonths?: number
 ): number {
   if (!weightGoal || !currentWeight || weightGoal === currentWeight) {
-    // No specific goal — use simple percentage
     if (objective === "emagrecer") return Math.round(tdee * 0.8);
     if (objective === "massa") return Math.round(tdee * 1.15);
     return tdee;
   }
 
-  const weightDiff = weightGoal - currentWeight; // negative = lose, positive = gain
+  const weightDiff = weightGoal - currentWeight;
   
-  // If no deadline provided, use moderate defaults based on objective
   if (!deadlineMonths || deadlineMonths <= 0) {
-    // Use a comfortable rate: ~0.5kg/week for loss, ~0.3kg/week for gain
     const weeklyRate = weightDiff < 0 ? -0.5 : 0.3;
     const dailyChange = Math.round((weeklyRate * 7700) / 7);
     const clampedDaily = Math.max(-800, Math.min(700, dailyChange));
@@ -69,20 +77,49 @@ function getCalorieTarget(
     return Math.max(1200, Math.round(target));
   }
   
-  const months = deadlineMonths;
-  const days = months * 30;
-
-  // 1 kg ≈ 7700 kcal
+  const days = deadlineMonths * 30;
   const totalKcalChange = weightDiff * 7700;
   const dailyChange = Math.round(totalKcalChange / days);
-
-  // Clamp to safe ranges: max deficit -1200 kcal/day, max surplus +1000 kcal/day
   const clampedDaily = Math.max(-1200, Math.min(1000, dailyChange));
-
   const target = tdee + clampedDaily;
-
-  // Never go below 1200 kcal (safety floor)
   return Math.max(1200, Math.round(target));
+}
+
+/**
+ * Calculate progressive weekly calorie targets.
+ * Instead of one flat target, each week ramps up (or down) progressively.
+ */
+function getProgressiveWeeklyTargets(
+  tdee: number,
+  objective: Objective,
+  currentWeight: number,
+  weightGoal: number,
+  deadlineMonths: number,
+  totalWeeks: number
+): { week: number; calories: number; estimatedWeight: number }[] {
+  const weightDiff = weightGoal - currentWeight;
+  const weeklyWeightChange = weightDiff / totalWeeks;
+  
+  // Progressive: start closer to TDEE and ramp toward full target
+  const finalDailyChange = (weightDiff * 7700) / (deadlineMonths * 30);
+  const clampedFinal = Math.max(-1200, Math.min(1000, finalDailyChange));
+  
+  // Start at 40% intensity, end at 130% intensity (average ~85% = close to flat)
+  // This creates a natural ramp
+  const targets: { week: number; calories: number; estimatedWeight: number }[] = [];
+  
+  for (let w = 0; w < totalWeeks; w++) {
+    // Linear ramp from 50% to 150% of average change
+    const progressRatio = totalWeeks > 1 ? w / (totalWeeks - 1) : 1;
+    const intensityFactor = 0.5 + progressRatio * 1.0; // 0.5 → 1.5
+    const weeklyDailyChange = clampedFinal * intensityFactor;
+    const weekCalories = Math.max(1200, Math.round(tdee + weeklyDailyChange));
+    const estimatedWeight = Math.round((currentWeight + weeklyWeightChange * (w + 1)) * 10) / 10;
+    
+    targets.push({ week: w + 1, calories: weekCalories, estimatedWeight });
+  }
+  
+  return targets;
 }
 
 function getMacroSplit(calories: number, objective: Objective, weight: number) {
@@ -112,6 +149,57 @@ const carbSwaps: Record<string, string[]> = {
   "Macarrão integral": ["Nhoque de batata doce", "Espaguete de abobrinha", "Arroz integral", "Cuscuz"],
 };
 
+// Preference-based exclusion keywords
+const preferenceExclusions: Record<string, string[]> = {
+  "ovo": ["Ovos mexidos", "Omelete", "Ovos cozidos", "Ovos pochê", "Crepioca"],
+  "peixe": ["Peixe grelhado", "Tilápia grelhada", "Salmão grelhado", "Atum grelhado", "Filé de merluza", "Salmão grelhado", "Truta grelhada", "Atum em posta", "Sardinha assada", "Filé de tilápia"],
+  "carne vermelha": ["Carne vermelha magra", "Patinho grelhado", "Lagarto", "Alcatra grelhada", "Maminha grelhada"],
+  "leite": ["Leite integral", "Café com leite", "Iogurte natural", "Iogurte grego zero"],
+  "amendoim": ["Pasta de amendoim"],
+  "glúten": ["Pão integral", "Macarrão integral", "Torrada integral", "Wrap integral", "Granola"],
+};
+
+const preferenceReplacements: Record<string, { alimento: string; cal: number; prot: number; carb: number; gord: number }> = {
+  "Ovos mexidos": { alimento: "Frango desfiado", cal: 180, prot: 28, carb: 0, gord: 7 },
+  "Peixe grelhado": { alimento: "Frango grelhado", cal: 165, prot: 31, carb: 0, gord: 4 },
+  "Salmão grelhado": { alimento: "Frango grelhado", cal: 165, prot: 31, carb: 0, gord: 4 },
+  "Carne vermelha magra": { alimento: "Peito de peru", cal: 135, prot: 30, carb: 0, gord: 2 },
+  "Leite integral": { alimento: "Bebida vegetal", cal: 60, prot: 2, carb: 8, gord: 2 },
+  "Iogurte natural": { alimento: "Iogurte de coco", cal: 100, prot: 1, carb: 12, gord: 5 },
+  "Iogurte grego zero": { alimento: "Iogurte de coco", cal: 100, prot: 1, carb: 12, gord: 5 },
+  "Pasta de amendoim": { alimento: "Pasta de castanha", cal: 100, prot: 3, carb: 5, gord: 8 },
+  "Pão integral": { alimento: "Tapioca", cal: 68, prot: 0, carb: 17, gord: 0 },
+  "Macarrão integral": { alimento: "Arroz integral", cal: 111, prot: 3, carb: 23, gord: 1 },
+};
+
+function applyPreferences(meals: MealPlan[], preferencias: string): MealPlan[] {
+  if (!preferencias) return meals;
+  const lower = preferencias.toLowerCase();
+  
+  // Find which foods to exclude
+  const excludedFoods = new Set<string>();
+  for (const [keyword, foods] of Object.entries(preferenceExclusions)) {
+    if (lower.includes(keyword)) {
+      foods.forEach(f => excludedFoods.add(f));
+    }
+  }
+  
+  if (excludedFoods.size === 0) return meals;
+  
+  return meals.map(meal => ({
+    ...meal,
+    itens: meal.itens.map(item => {
+      if (excludedFoods.has(item.alimento)) {
+        const replacement = preferenceReplacements[item.alimento];
+        if (replacement) {
+          return { ...item, ...replacement };
+        }
+      }
+      return item;
+    }),
+  }));
+}
+
 function varyMeal(meal: MealPlan, dayIndex: number): MealPlan {
   const newItens = meal.itens.map((item) => {
     const protSwap = proteinSwaps[item.alimento];
@@ -127,13 +215,10 @@ function varyMeal(meal: MealPlan, dayIndex: number): MealPlan {
   return { ...meal, itens: newItens };
 }
 
-/**
- * Scale meal item quantities proportionally to match a calorie target.
- */
 function scaleMeals(baseMeals: MealPlan[], baseCal: number, targetCal: number): MealPlan[] {
   if (baseCal <= 0 || targetCal <= 0) return baseMeals;
   const ratio = targetCal / baseCal;
-  if (Math.abs(ratio - 1) < 0.03) return baseMeals; // within 3%, no change
+  if (Math.abs(ratio - 1) < 0.03) return baseMeals;
 
   return baseMeals.map((meal) => ({
     ...meal,
@@ -150,7 +235,6 @@ function scaleMeals(baseMeals: MealPlan[], baseCal: number, targetCal: number): 
 
 function scaleQtd(qtd: string, ratio: number): string {
   if (qtd === "à vontade") return qtd;
-  // Try to scale numeric portion
   const match = qtd.match(/^(\d+(?:\.\d+)?)\s*(.*)/);
   if (match) {
     const num = parseFloat(match[1]);
@@ -275,6 +359,16 @@ const mealTemplates: Record<Objective, (macros: { protGrams: number; carbGrams: 
 
 const weekDays = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"];
 
+export type DietPlanResult = {
+  plan: MealPlan[];
+  weekPlan?: DayPlan[];
+  weekBlocks?: WeekBlock[];
+  totalCalories: number;
+  macros: { protGrams: number; carbGrams: number; fatGrams: number };
+  period: PlanPeriod;
+  meta: DietMeta;
+};
+
 export function generateDietPlan(
   objective: Objective,
   weight: number,
@@ -284,30 +378,110 @@ export function generateDietPlan(
   gender?: string,
   weightGoal?: number,
   period?: PlanPeriod,
-  deadlineMonths?: number
-): { plan: MealPlan[]; weekPlan?: DayPlan[]; totalCalories: number; macros: { protGrams: number; carbGrams: number; fatGrams: number }; period: PlanPeriod } {
+  deadlineMonths?: number,
+  preferencias?: string
+): DietPlanResult {
   const tdee = calcTDEE(weight, height, age || 25, gender || "masculino", activityLevel);
   const targetCal = getCalorieTarget(tdee, objective, weightGoal, weight, deadlineMonths);
   const macros = getMacroSplit(targetCal, objective, weight);
-  const basePlan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
+  let basePlan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
   const usedPeriod = period || "hoje";
 
-  if (usedPeriod === "hoje") {
-    return { plan: basePlan, totalCalories: targetCal, macros, period: usedPeriod };
+  // Apply preference-based food swaps
+  if (preferencias) {
+    basePlan = applyPreferences(basePlan, preferencias);
   }
 
-  // Generate weekly plan with variations
-  const days = usedPeriod === "semana" ? 7 : 28;
-  const dayPlans: DayPlan[] = [];
+  const meta: DietMeta = {
+    currentWeight: weight,
+    weightGoal: weightGoal || null,
+    deadlineMonths: deadlineMonths || null,
+    preferencias: preferencias || null,
+  };
 
-  for (let d = 0; d < days; d++) {
-    const dayLabel = usedPeriod === "semana"
-      ? weekDays[d]
-      : `Semana ${Math.floor(d / 7) + 1} — ${weekDays[d % 7]}`;
-    
+  // Calculate progressive weekly targets if we have a weight goal + deadline
+  const hasProgressive = weightGoal && weightGoal !== weight && deadlineMonths && deadlineMonths > 0;
+  
+  if (usedPeriod === "hoje") {
+    if (hasProgressive) {
+      const totalWeeks = deadlineMonths * 4;
+      meta.weeklyTargets = getProgressiveWeeklyTargets(tdee, objective, weight, weightGoal, deadlineMonths, totalWeeks);
+      meta.monthlyRate = Math.round(((weightGoal - weight) / deadlineMonths) * 10) / 10;
+    }
+    return { plan: basePlan, totalCalories: targetCal, macros, period: usedPeriod, meta };
+  }
+
+  if (usedPeriod === "semana") {
+    // Simple week — use current target (week 1 of progressive plan)
+    const dayPlans: DayPlan[] = [];
+    for (let d = 0; d < 7; d++) {
+      const refeicoes = basePlan.map((meal) => varyMeal(meal, d));
+      dayPlans.push({ dia: weekDays[d], refeicoes });
+    }
+    if (hasProgressive) {
+      const totalWeeks = deadlineMonths * 4;
+      meta.weeklyTargets = getProgressiveWeeklyTargets(tdee, objective, weight, weightGoal, deadlineMonths, totalWeeks);
+      meta.monthlyRate = Math.round(((weightGoal - weight) / deadlineMonths) * 10) / 10;
+    }
+    return { plan: basePlan, weekPlan: dayPlans, totalCalories: targetCal, macros, period: usedPeriod, meta };
+  }
+
+  // Monthly plan — generate progressive weekly blocks
+  if (hasProgressive) {
+    const totalWeeks = deadlineMonths * 4;
+    const weeklyTargets = getProgressiveWeeklyTargets(tdee, objective, weight, weightGoal, deadlineMonths, totalWeeks);
+    meta.weeklyTargets = weeklyTargets;
+    meta.monthlyRate = Math.round(((weightGoal - weight) / deadlineMonths) * 10) / 10;
+
+    // Generate 4 week blocks (for first month) with progressive calories
+    const weekBlocks: WeekBlock[] = [];
+    const allDays: DayPlan[] = [];
+
+    for (let w = 0; w < 4; w++) {
+      const weekTarget = weeklyTargets[w] || weeklyTargets[weeklyTargets.length - 1];
+      const weekMacros = getMacroSplit(weekTarget.calories, objective, weight);
+      let weekBasePlan = mealTemplates[objective]?.(weekMacros, weekTarget.calories) || mealTemplates.manter(weekMacros, weekTarget.calories);
+      
+      if (preferencias) {
+        weekBasePlan = applyPreferences(weekBasePlan, preferencias);
+      }
+
+      const days: DayPlan[] = [];
+      for (let d = 0; d < 7; d++) {
+        const dayLabel = `Semana ${w + 1} — ${weekDays[d]}`;
+        const refeicoes = weekBasePlan.map((meal) => varyMeal(meal, w * 7 + d));
+        const dayPlan = { dia: dayLabel, refeicoes };
+        days.push(dayPlan);
+        allDays.push(dayPlan);
+      }
+
+      weekBlocks.push({
+        weekNumber: w + 1,
+        label: `Semana ${w + 1}`,
+        targetCalories: weekTarget.calories,
+        estimatedWeight: weekTarget.estimatedWeight,
+        days,
+      });
+    }
+
+    return {
+      plan: basePlan,
+      weekPlan: allDays,
+      weekBlocks,
+      totalCalories: targetCal,
+      macros,
+      period: usedPeriod,
+      meta,
+    };
+  }
+
+  // Non-progressive month plan (no weight goal or no deadline)
+  const dayPlans: DayPlan[] = [];
+  for (let d = 0; d < 28; d++) {
+    const dayLabel = `Semana ${Math.floor(d / 7) + 1} — ${weekDays[d % 7]}`;
     const refeicoes = basePlan.map((meal) => varyMeal(meal, d));
     dayPlans.push({ dia: dayLabel, refeicoes });
   }
 
-  return { plan: basePlan, weekPlan: dayPlans, totalCalories: targetCal, macros, period: usedPeriod };
+  return { plan: basePlan, weekPlan: dayPlans, totalCalories: targetCal, macros, period: usedPeriod, meta };
 }
