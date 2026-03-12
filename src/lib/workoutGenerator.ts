@@ -555,19 +555,174 @@ function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number 
   return base + 1; // pesado: allow more
 }
 
-export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number, bodyFocus: BodyFocus = "completo"): WorkoutDay[] {
+export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
+export type IntensityLevel = "moderado" | "intenso";
+
+// Determine which days get cardio based on frequency and total training days
+function applyCardioToWeek(
+  plan: WorkoutDay[],
+  cardioFreq: CardioFrequency,
+  level: Level
+): WorkoutDay[] {
+  if (cardioFreq === "0") return plan;
+
+  const cardioPool = exerciseDB.cardio?.[level] || exerciseDB.cardio?.intermediario || [];
+  const cardioExercise = cardioPool[0];
+  if (!cardioExercise) return plan;
+
+  const totalDays = plan.length;
+
+  // Determine how many days get cardio
+  let cardioDays: number;
+  switch (cardioFreq) {
+    case "1-2": cardioDays = Math.min(2, totalDays); break;
+    case "3-4": cardioDays = Math.min(4, totalDays); break;
+    case "daily": cardioDays = totalDays; break;
+    default: cardioDays = 0;
+  }
+
+  if (cardioDays === 0) return plan;
+
+  // For "daily", add light cardio to every day
+  if (cardioFreq === "daily") {
+    return plan.map(day => {
+      const hasCardio = day.exercicios.some(e => e.nome.toLowerCase().includes("cardio") || e.nome.toLowerCase().includes("corrida") || e.nome.toLowerCase().includes("caminhada") || e.nome.toLowerCase().includes("hiit cardio"));
+      if (hasCardio) return day;
+      // Add light cardio at the end, reduce volume slightly
+      const lightCardio: Exercise = {
+        ...cardioExercise,
+        series: "1",
+        reps: "15min",
+        desc: "Cardio leve pós-treino para condicionamento.",
+        descanso: "—",
+      };
+      // Reduce volume: remove last exercise if day has 5+ exercises
+      const exercicios = day.exercicios.length >= 5
+        ? [...day.exercicios.slice(0, -1), lightCardio]
+        : [...day.exercicios, lightCardio];
+      return { ...day, exercicios };
+    });
+  }
+
+  // For 1-2 or 3-4: pick specific days that are NOT heavy muscle days
+  // Prefer days with lighter intensity or rest-like days
+  const dayPriority = plan.map((day, idx) => ({
+    idx,
+    intensity: day.intensidade || "moderado",
+    hasCardio: day.grupo.toLowerCase().includes("cardio") || day.grupo.toLowerCase().includes("hiit"),
+  }));
+
+  // Sort by priority: already has cardio first, then leve/moderado, then pesado
+  const sorted = [...dayPriority]
+    .filter(d => !d.hasCardio)
+    .sort((a, b) => {
+      const order: Record<DayIntensity, number> = { leve: 0, moderado: 1, pesado: 2 };
+      return (order[a.intensity] || 1) - (order[b.intensity] || 1);
+    });
+
+  // Add cardio to the selected days
+  const indicesToAddCardio = sorted.slice(0, cardioDays).map(d => d.idx);
+
+  return plan.map((day, idx) => {
+    if (!indicesToAddCardio.includes(idx)) return day;
+    const cardioForDay: Exercise = {
+      ...cardioExercise,
+      series: "1",
+      reps: cardioFreq === "3-4" ? "20min" : "25min",
+      desc: "Cardio dedicado para condicionamento cardiovascular.",
+      descanso: "—",
+    };
+    return {
+      ...day,
+      grupo: day.grupo + " + Cardio",
+      exercicios: [...day.exercicios, cardioForDay],
+    };
+  });
+}
+
+// Apply global intensity level adjustments
+function applyIntensityLevel(plan: WorkoutDay[], intensityLevel: IntensityLevel): WorkoutDay[] {
+  if (intensityLevel === "moderado") {
+    // Moderate: reduce pesado to moderado, keep others
+    return plan.map(day => {
+      const newIntensity: DayIntensity = day.intensidade === "pesado" ? "moderado" : day.intensidade || "moderado";
+      const exercicios = day.exercicios.map(ex => {
+        // Reduce volume slightly for moderate
+        const series = Math.max(2, Number(ex.series) - (day.intensidade === "pesado" ? 1 : 0));
+        return adjustRestForIntensity({ ...ex, series: String(series) }, newIntensity);
+      });
+      return { ...day, exercicios, intensidade: newIntensity };
+    });
+  }
+
+  // Intenso: boost pesado days, convert moderado to pesado, keep leve
+  return plan.map(day => {
+    if (day.intensidade === "leve") return day;
+    const newIntensity: DayIntensity = "pesado";
+    const exercicios = day.exercicios.map(ex => {
+      // Increase volume for intense
+      const series = Math.min(6, Number(ex.series) + (day.intensidade === "moderado" ? 1 : 0));
+      return adjustRestForIntensity({ ...ex, series: String(series) }, newIntensity);
+    });
+    return { ...day, exercicios, intensidade: newIntensity };
+  });
+}
+
+// Ensure no consecutive heavy days for the same area (superior/inferior)
+function ensureNoConsecutiveHeavy(plan: WorkoutDay[]): WorkoutDay[] {
+  const isUpperGroup = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    return g.includes("peito") || g.includes("costas") || g.includes("ombro") || g.includes("bíceps") || g.includes("tríceps");
+  };
+  const isLowerGroup = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo") || g.includes("panturrilha");
+  };
+
+  const result = [...plan];
+  for (let i = 1; i < result.length; i++) {
+    const prev = result[i - 1];
+    const curr = result[i];
+
+    const prevIsUpperHeavy = isUpperGroup(prev.grupo) && prev.intensidade === "pesado";
+    const currIsUpperHeavy = isUpperGroup(curr.grupo) && curr.intensidade === "pesado";
+    const prevIsLowerHeavy = isLowerGroup(prev.grupo) && prev.intensidade === "pesado";
+    const currIsLowerHeavy = isLowerGroup(curr.grupo) && curr.intensidade === "pesado";
+
+    // If same area is heavy on consecutive days, downgrade current to moderado
+    if ((prevIsUpperHeavy && currIsUpperHeavy) || (prevIsLowerHeavy && currIsLowerHeavy)) {
+      result[i] = {
+        ...curr,
+        intensidade: "moderado",
+        exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
+      };
+    }
+  }
+  return result;
+}
+
+export function generateWorkoutPlan(
+  objective: Objective,
+  level: Level,
+  daysPerWeek: number,
+  bodyFocus: BodyFocus = "completo",
+  cardioFreq: CardioFrequency = "0",
+  intensityLevel: IntensityLevel = "intenso"
+): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
 
   // Track used exercise names to avoid repetition on adjacent days
   const prevDayExercises: Set<string> = new Set();
 
+  let plan: WorkoutDay[];
+
   // 7-day uses special templates with intensity metadata
   if (days === 7) {
     const focusTemplates7 = focusSplitTemplates7[bodyFocus] || focusSplitTemplates7.completo;
     const split7 = focusTemplates7[objective] || splitTemplates7[objective];
 
-    return split7.map((entry, i) => {
+    plan = split7.map((entry, i) => {
       const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
       const exercicios: Exercise[] = [];
       const volumeMultiplier = entry.intensity === "leve" ? 0.5 : entry.intensity === "moderado" ? 0.75 : 1;
@@ -583,7 +738,6 @@ export function generateWorkoutPlan(objective: Objective, level: Level, daysPerW
         });
       });
 
-      // Update adjacency tracker: clear previous, set current
       prevDayExercises.clear();
       exercicios.forEach(ex => prevDayExercises.add(ex.nome));
 
@@ -594,45 +748,51 @@ export function generateWorkoutPlan(objective: Objective, level: Level, daysPerW
         intensidade: entry.intensity,
       };
     });
+  } else {
+    // 3-6 day standard generation with rotation
+    const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
+    const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+
+    const intensityPatterns: Record<number, DayIntensity[]> = {
+      3: ["pesado", "moderado", "pesado"],
+      4: ["pesado", "moderado", "pesado", "moderado"],
+      5: ["pesado", "moderado", "pesado", "moderado", "pesado"],
+      6: ["pesado", "moderado", "pesado", "moderado", "pesado", "moderado"],
+    };
+    const intensities = intensityPatterns[days] || intensityPatterns[3];
+
+    plan = split.map((muscleGroups, i) => {
+      const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
+      const exercicios: Exercise[] = [];
+      const dayIntensity = intensities[i] || "pesado";
+      const maxPerGroup = getMaxExercisesPerGroup(dayIntensity, level);
+
+      muscleGroups.forEach(group => {
+        const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+        const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises);
+        selected.forEach(ex => {
+          const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
+          const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, dayIntensity);
+          exercicios.push(adjusted);
+        });
+      });
+
+      prevDayExercises.clear();
+      exercicios.forEach(ex => prevDayExercises.add(ex.nome));
+
+      return {
+        dia: diasSemana[i] || `Dia ${i + 1}`,
+        grupo,
+        exercicios,
+        intensidade: dayIntensity,
+      };
+    });
   }
 
-  // 3-6 day standard generation with rotation
-  const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
-  const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+  // Post-processing pipeline
+  plan = applyIntensityLevel(plan, intensityLevel);
+  plan = applyCardioToWeek(plan, cardioFreq, level);
+  plan = ensureNoConsecutiveHeavy(plan);
 
-  // Determine intensity pattern for 3-6 day plans
-  const intensityPatterns: Record<number, DayIntensity[]> = {
-    3: ["pesado", "moderado", "pesado"],
-    4: ["pesado", "moderado", "pesado", "moderado"],
-    5: ["pesado", "moderado", "pesado", "moderado", "pesado"],
-    6: ["pesado", "moderado", "pesado", "moderado", "pesado", "moderado"],
-  };
-  const intensities = intensityPatterns[days] || intensityPatterns[3];
-
-  return split.map((muscleGroups, i) => {
-    const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
-    const exercicios: Exercise[] = [];
-    const dayIntensity = intensities[i] || "pesado";
-    const maxPerGroup = getMaxExercisesPerGroup(dayIntensity, level);
-
-    muscleGroups.forEach(group => {
-      const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-      const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises);
-      selected.forEach(ex => {
-        const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
-        const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, dayIntensity);
-        exercicios.push(adjusted);
-      });
-    });
-
-    prevDayExercises.clear();
-    exercicios.forEach(ex => prevDayExercises.add(ex.nome));
-
-    return {
-      dia: diasSemana[i] || `Dia ${i + 1}`,
-      grupo,
-      exercicios,
-      intensidade: dayIntensity,
-    };
-  });
+  return plan;
 }
