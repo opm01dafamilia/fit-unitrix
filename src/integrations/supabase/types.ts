@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
+      activity_reactions: {
+        Row: {
+          activity_id: string
+          created_at: string
+          emoji: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_reactions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activity_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       body_tracking: {
         Row: {
           arm: number | null
@@ -215,6 +277,7 @@ export type Database = {
         Row: {
           activity_level: string | null
           age: number | null
+          avatar_url: string | null
           created_at: string
           experience_level: string | null
           full_name: string | null
@@ -223,6 +286,7 @@ export type Database = {
           id: string
           objective: string | null
           onboarding_completed: boolean
+          privacy_level: string
           training_location: string | null
           updated_at: string
           user_id: string
@@ -231,6 +295,7 @@ export type Database = {
         Insert: {
           activity_level?: string | null
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
@@ -239,6 +304,7 @@ export type Database = {
           id?: string
           objective?: string | null
           onboarding_completed?: boolean
+          privacy_level?: string
           training_location?: string | null
           updated_at?: string
           user_id: string
@@ -247,6 +313,7 @@ export type Database = {
         Update: {
           activity_level?: string | null
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
@@ -255,10 +322,127 @@ export type Database = {
           id?: string
           objective?: string | null
           onboarding_completed?: boolean
+          privacy_level?: string
           training_location?: string | null
           updated_at?: string
           user_id?: string
           weight?: number | null
+        }
+        Relationships: []
+      }
+      user_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_ranking_stats: {
+        Row: {
+          achievements_count: number
+          diet_streak: number
+          id: string
+          ranking_score: number
+          total_series: number
+          total_workouts: number
+          updated_at: string
+          user_id: string
+          user_name: string
+          week_start: string
+          workout_streak: number
+        }
+        Insert: {
+          achievements_count?: number
+          diet_streak?: number
+          id?: string
+          ranking_score?: number
+          total_series?: number
+          total_workouts?: number
+          updated_at?: string
+          user_id: string
+          user_name?: string
+          week_start?: string
+          workout_streak?: number
+        }
+        Update: {
+          achievements_count?: number
+          diet_streak?: number
+          id?: string
+          ranking_score?: number
+          total_series?: number
+          total_workouts?: number
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+          week_start?: string
+          workout_streak?: number
+        }
+        Relationships: []
+      }
+      weekly_challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          target_value: number
+          title: string
+          week_start: string
+        }
+        Insert: {
+          challenge_type: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          target_value?: number
+          title: string
+          week_start?: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          target_value?: number
+          title?: string
+          week_start?: string
         }
         Relationships: []
       }
