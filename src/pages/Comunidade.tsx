@@ -363,7 +363,7 @@ const Comunidade = () => {
         )}
       </div>
     </div>
-    </PremiumGate>
+    
   );
 };
 

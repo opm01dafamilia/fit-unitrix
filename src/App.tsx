@@ -171,7 +171,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
-          </SubscriptionProvider>
+          
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
