@@ -300,10 +300,15 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           {achievement.unlocked ? achievement.icon : <Lock className="w-5 h-5 text-muted-foreground/50" />}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold truncate">{achievement.title}</p>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/80 text-muted-foreground font-medium shrink-0">
               {categoryIcons[achievement.category]} {categoryLabels[achievement.category]}
+            </span>
+            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
+              achievement.unlocked ? "bg-chart-3/15 text-chart-3" : "bg-secondary/60 text-muted-foreground"
+            }`}>
+              +{achievement.xp} XP
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground mt-0.5">{achievement.description}</p>
