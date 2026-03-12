@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import PremiumGate from "@/components/PremiumGate";
 import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
