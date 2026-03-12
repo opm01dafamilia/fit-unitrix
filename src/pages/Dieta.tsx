@@ -551,7 +551,8 @@ const Dieta = () => {
     Promise.all([
       supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("diet_tracking").select("*").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(60),
-    ]).then(([plansRes, trackingRes]) => {
+      supabase.from("body_tracking").select("weight, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+    ]).then(([plansRes, trackingRes, bodyRes]) => {
       if (plansRes.error) toast.error("Erro ao carregar planos salvos");
       setSavedPlans(plansRes.data || []);
       
