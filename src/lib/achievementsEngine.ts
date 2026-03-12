@@ -257,6 +257,34 @@ const achievementDefs: AchievementDef[] = [
     requirement: 4,
     getValue: (s) => s.weeksAboveRhythm || 0,
   },
+  // Social achievements
+  {
+    id: "social_first_week",
+    title: "Primeiro da Semana",
+    description: "Complete o primeiro treino da semana",
+    icon: "🌅",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.firstWeekWorkout ? 1 : 0,
+  },
+  {
+    id: "social_top10",
+    title: "Top 10",
+    description: "Fique entre os 10 primeiros do ranking",
+    icon: "🏅",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.isTop10 ? 1 : 0,
+  },
+  {
+    id: "social_challenge_complete",
+    title: "Desafio Completo",
+    description: "Complete um desafio semanal",
+    icon: "⭐",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.challengesCompleted || 0,
+  },
 ];
 
 export function calculateAchievements(stats: UserStats): Achievement[] {
