@@ -222,7 +222,7 @@ const Ranking = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-yellow-500" />
+          <Trophy className="w-7 h-7 text-chart-3" />
           Ranking Fitness
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Compete, evolua e conquiste seu lugar no topo</p>
