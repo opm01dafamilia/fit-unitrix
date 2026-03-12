@@ -19,6 +19,7 @@ const navItems = [
   { to: "/ranking", icon: Crown, label: "Ranking" },
   { to: "/comunidade", icon: Users, label: "Comunidade" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
+  { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
