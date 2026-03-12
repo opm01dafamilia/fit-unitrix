@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,8 +11,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
+import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import FocusMode from "@/components/FocusMode";
+import { format, subDays } from "date-fns";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
