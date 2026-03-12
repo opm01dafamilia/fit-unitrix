@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
+import { fetchExerciseGifByName } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
@@ -44,6 +45,47 @@ type Props = {
 
 // === Phase enum for auto-flow ===
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
+
+// Mini component for alternative exercise GIF preview (by name)
+function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchExerciseGifByName(name).then(url => {
+      if (!cancelled) setGifUrl(url);
+    });
+    return () => { cancelled = true; };
+  }, [name]);
+
+  if (gifUrl) {
+    return (
+      <>
+        <img
+          src={gifUrl}
+          alt={name}
+          className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          style={{ objectFit: "contain", padding: "2px" }}
+          onLoad={() => setLoaded(true)}
+          onError={() => setGifUrl(null)}
+          loading="eager"
+        />
+        {!loaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center">
+      {isHome ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
+    </div>
+  );
+}
 
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
@@ -346,7 +388,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const toggleRestPause = () => setRestPaused(p => !p);
   const resetRest = () => { setRestTime(effectiveRestSeconds); setRestPaused(false); setPhase("resting"); };
   const skipRest = () => { setPhase("input"); setRestTime(0); };
-  const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
+  const addRestTime = (seconds: number) => setRestTime(t => Math.max(5, t + seconds));
 
   const libraryExercise = useMemo(() => {
     const name = currentEx.nome.toLowerCase();
@@ -868,6 +910,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">⏱ Descanso</span>
             <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(-15)}>-15s</Button>
               <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>+15s</Button>
               <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>Pular</Button>
             </div>
@@ -1081,9 +1124,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                     {altLibrary ? (
                       <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
                     ) : (
-                      <div className="flex flex-col items-center">
-                        {alt.tag?.includes("Casa") ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
-                      </div>
+                      <AltGifPreview name={alt.nome} isHome={!!alt.tag?.includes("Casa")} />
                     )}
                   </div>
                   {/* Exercise details */}

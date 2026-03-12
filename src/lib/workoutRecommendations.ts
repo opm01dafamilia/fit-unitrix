@@ -117,56 +117,57 @@ export const homeAlternatives: Record<string, { nome: string; desc: string }> = 
 
 // === Enhanced alternative exercises with home/gym awareness ===
 export const gymAlternatives: Record<string, string[]> = {
-  "Supino Reto": ["Supino com Halteres", "Supino Máquina", "Supino Inclinado"],
-  "Supino Reto Máquina": ["Supino Reto", "Supino com Halteres", "Supino Smith"],
-  "Supino Inclinado Halteres": ["Supino Inclinado Barra", "Supino Inclinado Máquina", "Crucifixo Inclinado"],
-  "Crucifixo": ["Crucifixo Máquina", "Cross Over", "Peck Deck"],
-  "Crucifixo Máquina": ["Crucifixo", "Cross Over", "Peck Deck"],
-  "Cross Over": ["Crucifixo", "Crucifixo Máquina", "Peck Deck"],
-  "Crucifixo Inclinado": ["Crucifixo", "Cross Over", "Supino Inclinado Halteres"],
-  "Flexão de Braço": ["Supino Reto", "Supino Máquina", "Flexão Inclinada"],
-  "Flexão com Peso": ["Flexão de Braço", "Supino Reto", "Supino com Halteres"],
-  "Pulldown": ["Barra Fixa", "Pulldown Pegada Fechada", "Remada Alta"],
-  "Barra Fixa": ["Pulldown", "Pulldown Pegada Fechada", "Barra Fixa Supinada"],
-  "Barra Fixa com Peso": ["Barra Fixa", "Pulldown", "Pulldown Pegada Fechada"],
-  "Remada Curvada": ["Remada Máquina", "Remada Unilateral", "Remada Baixa"],
-  "Remada Máquina": ["Remada Curvada", "Remada Unilateral", "Remada Baixa"],
-  "Remada Unilateral": ["Remada Curvada", "Remada Máquina", "Remada Baixa"],
-  "Remada Baixa": ["Remada Curvada", "Remada Máquina", "Remada Unilateral"],
-  "Remada Cavaleiro": ["Remada Curvada", "Remada Máquina", "Remada Baixa"],
-  "Remada Curvada Pronada": ["Remada Curvada", "Remada Cavaleiro", "Remada Máquina"],
-  "Pulldown Pegada Fechada": ["Pulldown", "Barra Fixa", "Pullover Cabo"],
-  "Pullover Cabo": ["Pulldown", "Pulldown Pegada Fechada", "Remada Alta"],
-  "Agachamento Livre": ["Leg Press", "Agachamento Smith", "Agachamento Búlgaro"],
-  "Agachamento Búlgaro": ["Agachamento Livre", "Leg Press", "Avanço"],
-  "Leg Press": ["Leg Press 45°", "Agachamento Livre", "Agachamento Smith"],
-  "Leg Press 45°": ["Leg Press", "Agachamento Livre", "Agachamento Smith"],
-  "Cadeira Extensora": ["Extensão de Pernas", "Agachamento Livre", "Leg Press"],
-  "Mesa Flexora": ["Stiff", "Flexão de Pernas em Pé", "Boa Manhã"],
-  "Stiff": ["Mesa Flexora", "Levantamento Terra", "Boa Manhã"],
+  "Supino Reto": ["Supino com Halteres", "Supino Máquina", "Supino Inclinado", "Supino Smith", "Flexão com Peso"],
+  "Supino Reto Máquina": ["Supino Reto", "Supino com Halteres", "Supino Smith", "Supino Inclinado"],
+  "Supino Inclinado Halteres": ["Supino Inclinado Barra", "Supino Inclinado Máquina", "Crucifixo Inclinado", "Supino Reto"],
+  "Crucifixo": ["Crucifixo Máquina", "Cross Over", "Peck Deck", "Crucifixo Inclinado"],
+  "Crucifixo Máquina": ["Crucifixo", "Cross Over", "Peck Deck", "Crucifixo Inclinado"],
+  "Cross Over": ["Crucifixo", "Crucifixo Máquina", "Peck Deck", "Crucifixo Inclinado"],
+  "Crucifixo Inclinado": ["Crucifixo", "Cross Over", "Supino Inclinado Halteres", "Peck Deck"],
+  "Flexão de Braço": ["Supino Reto", "Supino Máquina", "Flexão Inclinada", "Flexão Diamante", "Flexão com Peso"],
+  "Flexão com Peso": ["Flexão de Braço", "Supino Reto", "Supino com Halteres", "Flexão Diamante", "Supino Máquina"],
+  "Pulldown": ["Barra Fixa", "Pulldown Pegada Fechada", "Remada Alta", "Pullover Cabo"],
+  "Barra Fixa": ["Pulldown", "Pulldown Pegada Fechada", "Barra Fixa Supinada", "Remada Alta"],
+  "Barra Fixa com Peso": ["Barra Fixa", "Pulldown", "Pulldown Pegada Fechada", "Barra Fixa Supinada"],
+  "Remada Curvada": ["Remada Máquina", "Remada Unilateral", "Remada Baixa", "Remada Cavaleiro"],
+  "Remada Máquina": ["Remada Curvada", "Remada Unilateral", "Remada Baixa", "Remada Cavaleiro"],
+  "Remada Unilateral": ["Remada Curvada", "Remada Máquina", "Remada Baixa", "Remada Cavaleiro"],
+  "Remada Baixa": ["Remada Curvada", "Remada Máquina", "Remada Unilateral", "Remada Cavaleiro"],
+  "Remada Cavaleiro": ["Remada Curvada", "Remada Máquina", "Remada Baixa", "Remada Unilateral"],
+  "Remada Curvada Pronada": ["Remada Curvada", "Remada Cavaleiro", "Remada Máquina", "Remada Baixa"],
+  "Pulldown Pegada Fechada": ["Pulldown", "Barra Fixa", "Pullover Cabo", "Barra Fixa Supinada"],
+  "Pullover Cabo": ["Pulldown", "Pulldown Pegada Fechada", "Remada Alta", "Barra Fixa"],
+  "Agachamento Livre": ["Leg Press", "Agachamento Smith", "Agachamento Búlgaro", "Agachamento Goblet", "Hack Squat"],
+  "Agachamento Búlgaro": ["Agachamento Livre", "Leg Press", "Avanço", "Agachamento Goblet"],
+  "Agachamento Goblet": ["Agachamento Livre", "Leg Press", "Agachamento Búlgaro", "Avanço"],
+  "Leg Press": ["Leg Press 45°", "Agachamento Livre", "Agachamento Smith", "Hack Squat"],
+  "Leg Press 45°": ["Leg Press", "Agachamento Livre", "Agachamento Smith", "Hack Squat"],
+  "Cadeira Extensora": ["Extensão de Pernas", "Agachamento Livre", "Leg Press", "Agachamento Goblet"],
+  "Mesa Flexora": ["Stiff", "Flexão de Pernas em Pé", "Boa Manhã", "Elevação Pélvica"],
+  "Stiff": ["Mesa Flexora", "Levantamento Terra", "Boa Manhã", "Elevação Pélvica"],
   "Panturrilha em Pé": ["Panturrilha Sentado", "Panturrilha no Leg Press", "Elevação de Panturrilha"],
   "Panturrilha Sentado": ["Panturrilha em Pé", "Panturrilha no Leg Press", "Elevação de Panturrilha"],
-  "Desenvolvimento Máquina": ["Desenvolvimento Militar", "Desenvolvimento Arnold", "Desenvolvimento Halteres"],
-  "Desenvolvimento Militar": ["Desenvolvimento Máquina", "Desenvolvimento Arnold", "Desenvolvimento Halteres"],
-  "Desenvolvimento Arnold": ["Desenvolvimento Militar", "Desenvolvimento Máquina", "Desenvolvimento Halteres"],
-  "Elevação Lateral": ["Elevação Lateral Cabo", "Elevação Lateral Máquina", "Crucifixo Inverso"],
-  "Elevação Frontal": ["Elevação Frontal Alternada", "Elevação Frontal com Barra", "Desenvolvimento Frontal"],
-  "Elevação Frontal Alternada": ["Elevação Frontal", "Elevação Frontal com Barra", "Desenvolvimento Frontal"],
-  "Face Pull": ["Crucifixo Inverso", "Remada Alta", "Elevação Lateral"],
-  "Rosca Direta": ["Rosca Direta Barra", "Rosca Alternada", "Rosca Scott"],
-  "Rosca Direta Barra": ["Rosca Alternada", "Rosca Scott", "Rosca Martelo"],
-  "Rosca Martelo": ["Rosca Alternada", "Rosca Concentrada", "Rosca Direta"],
-  "Rosca Scott": ["Rosca Direta", "Rosca Concentrada", "Rosca Alternada"],
-  "Tríceps Testa": ["Tríceps Corda", "Tríceps Francês", "Tríceps Barra"],
-  "Tríceps Corda": ["Tríceps Testa", "Tríceps Barra", "Tríceps Francês"],
-  "Mergulho Paralelas": ["Tríceps Banco", "Tríceps Corda", "Tríceps Testa"],
-  "Prancha Frontal": ["Prancha Lateral", "Prancha Dinâmica", "Abdominal Crunch"],
-  "Abdominal Crunch": ["Abdominal Bicicleta", "Prancha Frontal", "Abdominal Infra"],
-  "Abdominal Bicicleta": ["Abdominal Crunch", "Prancha Frontal", "Abdominal na Roldana"],
-  "Elevação de Pernas": ["Abdominal Infra", "Abdominal Bicicleta", "Prancha Frontal"],
-  "Abdominal na Roldana": ["Abdominal Crunch", "Abdominal Bicicleta", "Prancha Frontal"],
-  "Prancha Dinâmica": ["Prancha Frontal", "Prancha Lateral", "Abdominal Bicicleta"],
-  "Dragon Flag": ["Abdominal na Roldana", "Elevação de Pernas", "Prancha Dinâmica"],
+  "Desenvolvimento Máquina": ["Desenvolvimento Militar", "Desenvolvimento Arnold", "Desenvolvimento Halteres", "Elevação Frontal"],
+  "Desenvolvimento Militar": ["Desenvolvimento Máquina", "Desenvolvimento Arnold", "Desenvolvimento Halteres", "Elevação Frontal"],
+  "Desenvolvimento Arnold": ["Desenvolvimento Militar", "Desenvolvimento Máquina", "Desenvolvimento Halteres", "Elevação Frontal"],
+  "Elevação Lateral": ["Elevação Lateral Cabo", "Elevação Lateral Máquina", "Crucifixo Inverso", "Elevação Frontal"],
+  "Elevação Frontal": ["Elevação Frontal Alternada", "Elevação Frontal com Barra", "Elevação Lateral", "Desenvolvimento Halteres"],
+  "Elevação Frontal Alternada": ["Elevação Frontal", "Elevação Frontal com Barra", "Elevação Lateral", "Desenvolvimento Halteres"],
+  "Face Pull": ["Crucifixo Inverso", "Remada Alta", "Elevação Lateral", "Elevação Lateral Cabo"],
+  "Rosca Direta": ["Rosca Direta Barra", "Rosca Alternada", "Rosca Scott", "Rosca Martelo", "Rosca Concentrada"],
+  "Rosca Direta Barra": ["Rosca Alternada", "Rosca Scott", "Rosca Martelo", "Rosca Concentrada"],
+  "Rosca Martelo": ["Rosca Alternada", "Rosca Concentrada", "Rosca Direta", "Rosca Scott"],
+  "Rosca Scott": ["Rosca Direta", "Rosca Concentrada", "Rosca Alternada", "Rosca Martelo"],
+  "Tríceps Testa": ["Tríceps Corda", "Tríceps Francês", "Tríceps Barra", "Mergulho Paralelas"],
+  "Tríceps Corda": ["Tríceps Testa", "Tríceps Barra", "Tríceps Francês", "Mergulho Paralelas"],
+  "Mergulho Paralelas": ["Tríceps Banco", "Tríceps Corda", "Tríceps Testa", "Tríceps Francês"],
+  "Prancha Frontal": ["Prancha Lateral", "Prancha Dinâmica", "Abdominal Crunch", "Abdominal Bicicleta"],
+  "Abdominal Crunch": ["Abdominal Bicicleta", "Prancha Frontal", "Abdominal Infra", "Elevação de Pernas"],
+  "Abdominal Bicicleta": ["Abdominal Crunch", "Prancha Frontal", "Abdominal na Roldana", "Elevação de Pernas"],
+  "Elevação de Pernas": ["Abdominal Infra", "Abdominal Bicicleta", "Prancha Frontal", "Abdominal na Roldana"],
+  "Abdominal na Roldana": ["Abdominal Crunch", "Abdominal Bicicleta", "Prancha Frontal", "Elevação de Pernas"],
+  "Prancha Dinâmica": ["Prancha Frontal", "Prancha Lateral", "Abdominal Bicicleta", "Abdominal Crunch"],
+  "Dragon Flag": ["Abdominal na Roldana", "Elevação de Pernas", "Prancha Dinâmica", "Abdominal Bicicleta"],
 };
 
 // Get alternatives based on training location
@@ -190,7 +191,7 @@ export function getAlternatives(exerciseName: string, trainingLocation?: string)
   });
 
   // If training at home, also add other home alternatives from same muscle group
-  if (trainingLocation === "casa" && results.length < 4) {
+  if (trainingLocation === "casa" && results.length < 5) {
     Object.entries(homeAlternatives).forEach(([key, val]) => {
       if (key !== exerciseName && !results.find(r => r.nome === val.nome) && results.length < 4) {
         // Only add if it's roughly the same muscle group area
@@ -206,7 +207,7 @@ export function getAlternatives(exerciseName: string, trainingLocation?: string)
     results.push({ nome: "Exercício alternativo 1" }, { nome: "Exercício alternativo 2" });
   }
 
-  return results.slice(0, 4);
+  return results.slice(0, 5);
 }
 
 // Get stretching exercises for a workout day

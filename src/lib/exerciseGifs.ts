@@ -81,6 +81,74 @@ export const exerciseSearchMap: Record<string, string> = {
   "mob-coluna": "thoracic rotation",
 };
 
+// Name-based search map for exercises not in the library by ID
+// Maps exercise display names to ExerciseDB search queries
+export const exerciseNameSearchMap: Record<string, string> = {
+  // Peito extras
+  "Flexão com Peso": "weighted push up",
+  "Flexão de Braço": "push up",
+  "Flexão Inclinada": "incline push up",
+  "Flexão Diamante": "diamond push up",
+  "Flexão Aberta": "wide grip push up",
+  "Flexão Declinada": "decline push up",
+  "Supino com Halteres": "dumbbell bench press",
+  "Supino Inclinado Barra": "barbell incline bench press",
+  "Supino Inclinado Máquina": "machine incline chest press",
+  "Supino Smith": "smith machine bench press",
+  "Peck Deck": "pec deck fly",
+  "Crucifixo Inclinado": "dumbbell incline fly",
+
+  // Costas extras
+  "Barra Fixa Supinada": "chin up",
+  "Remada Alta": "barbell upright row",
+  "Remada Cavaleiro": "t bar row",
+  "Remada Curvada Pronada": "barbell pronated bent over row",
+  "Pullover Cabo": "cable pullover",
+  "Remada Invertida": "inverted row",
+
+  // Pernas extras
+  "Agachamento Smith": "smith machine squat",
+  "Avanço": "dumbbell lunge",
+  "Flexão de Pernas em Pé": "standing leg curl",
+  "Boa Manhã": "barbell good morning",
+  "Levantamento Terra": "barbell deadlift",
+  "Hack Squat": "hack squat",
+  "Panturrilha no Leg Press": "calf press on leg press",
+  "Extensão de Pernas": "leg extension",
+  "Agachamento Isométrico": "wall sit",
+  "Elevação Pélvica": "barbell hip thrust",
+
+  // Ombros extras
+  "Desenvolvimento Halteres": "dumbbell shoulder press",
+  "Elevação Lateral Cabo": "cable lateral raise",
+  "Elevação Lateral Máquina": "machine lateral raise",
+  "Crucifixo Inverso": "reverse machine fly",
+  "Elevação Frontal com Barra": "barbell front raise",
+  "Elevação Frontal Alternada": "dumbbell alternate front raise",
+
+  // Bíceps extras
+  "Rosca Alternada": "dumbbell alternate bicep curl",
+  "Rosca Concentrada": "dumbbell concentration curl",
+  "Rosca Direta Barra": "ez bar curl",
+
+  // Tríceps extras
+  "Tríceps Francês": "dumbbell overhead triceps extension",
+  "Tríceps Barra": "cable straight bar pushdown",
+  "Tríceps Banco": "bench dip",
+
+  // Abdômen extras
+  "Prancha Lateral": "side plank",
+  "Prancha Dinâmica": "dynamic plank",
+  "Abdominal Infra": "reverse crunch",
+  "Abdominal na Roldana": "cable crunch",
+  "Dragon Flag": "dragon flag",
+
+  // Home alternatives
+  "Pike Push-Up": "pike push up",
+  "Remada com Elástico": "resistance band bent over row",
+  "Ponte de Glúteo": "glute bridge",
+};
+
 interface CachedGif {
   gifUrl: string;
   exerciseName: string;
@@ -153,6 +221,46 @@ export async function fetchExerciseGif(exerciseId: string): Promise<string | nul
     return gifUrl || null;
   } catch (error) {
     console.error(`Failed to fetch GIF for ${exerciseId}:`, error);
+    return null;
+  }
+}
+
+// Fetch GIF by exercise display name (for alternatives not in the library by ID)
+export async function fetchExerciseGifByName(exerciseName: string): Promise<string | null> {
+  const cacheKey = `name_${exerciseName}`;
+  const cache = getCache();
+  if (cache[cacheKey]) {
+    return cache[cacheKey].gifUrl;
+  }
+
+  const searchTerm = exerciseNameSearchMap[exerciseName];
+  if (!searchTerm) return null;
+
+  try {
+    const response = await fetch(
+      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (!data.success || !data.data?.length) return null;
+
+    const exercise = data.data[0];
+    const gifUrl = exercise.gifUrl;
+
+    if (gifUrl) {
+      cache[cacheKey] = {
+        gifUrl,
+        exerciseName: exercise.name,
+        timestamp: Date.now(),
+      };
+      setCache(cache);
+    }
+
+    return gifUrl || null;
+  } catch (error) {
+    console.error(`Failed to fetch GIF for ${exerciseName}:`, error);
     return null;
   }
 }
