@@ -90,6 +90,43 @@ const Conquistas = () => {
 
       const totalExercisesCompleted = sessions.reduce((a, s) => a + s.exercises_completed, 0);
 
+      // Fetch diet tracking for diet achievements
+      const dietRes = await supabase.from("diet_tracking").select("*")
+        .eq("user_id", user.id).order("tracked_date", { ascending: false });
+      const dietDays = (dietRes.data || []) as any[];
+      const perfectDietDays = dietDays.filter(d => d.all_completed).length;
+
+      // Diet streak
+      let dietCurrentStreak = 0;
+      const dietDates = dietDays.filter(d => d.all_completed).map(d => d.tracked_date).sort().reverse();
+      if (dietDates.length > 0) {
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
+        if (dietDates[0] === todayStr || dietDates[0] === yesterdayStr) {
+          for (let i = 0; i < dietDates.length; i++) {
+            const expected = format(subDays(new Date(), i + (dietDates[0] === todayStr ? 0 : 1)), "yyyy-MM-dd");
+            if (dietDates[i] === expected) dietCurrentStreak++;
+            else break;
+          }
+        }
+      }
+      let dietMaxStreak = dietCurrentStreak;
+      if (dietDates.length > 1) {
+        let ts = 1;
+        for (let i = 1; i < dietDates.length; i++) {
+          const diff = Math.round((new Date(dietDates[i-1]).getTime() - new Date(dietDates[i]).getTime()) / 86400000);
+          if (diff === 1) { ts++; dietMaxStreak = Math.max(dietMaxStreak, ts); }
+          else ts = 1;
+        }
+      }
+
+      // Weekly adherence
+      const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
+      const weekDays = dietDays.filter(d => d.tracked_date >= weekAgo);
+      const weeklyAdherence = weekDays.length > 0
+        ? Math.round(weekDays.reduce((a: number, d: any) => a + (d.adherence_pct || 0), 0) / weekDays.length)
+        : 0;
+
       setStats({
         totalWorkouts: sessions.length,
         currentStreak,
@@ -97,6 +134,10 @@ const Conquistas = () => {
         totalProgressions,
         totalExercisesCompleted,
         daysActive: uniqueDays.length,
+        dietStreak: dietCurrentStreak,
+        dietMaxStreak,
+        dietPerfectDays: perfectDietDays,
+        dietWeeklyAdherence: weeklyAdherence,
       });
       setLoading(false);
     };

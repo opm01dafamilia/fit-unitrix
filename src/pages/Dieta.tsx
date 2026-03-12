@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,8 +11,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
+import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import FocusMode from "@/components/FocusMode";
+import { format, subDays } from "date-fns";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
@@ -417,6 +419,22 @@ const Dieta = () => {
   const [saving, setSaving] = useState(false);
   const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
   const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
+  
+  // Streak & gamification state
+  const [dietStreak, setDietStreak] = useState(0);
+  const [weeklyAdherence, setWeeklyAdherence] = useState(0);
+  const [weeklyMealsDone, setWeeklyMealsDone] = useState(0);
+  const [weeklyMealsTotal, setWeeklyMealsTotal] = useState(0);
+  const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+
+  // Streak achievements thresholds
+  const streakMilestones = [
+    { days: 1, title: "Dia Perfeito", icon: "🍽️" },
+    { days: 3, title: "Consistência", icon: "🥗" },
+    { days: 7, title: "Foco Extremo", icon: "🔥" },
+    { days: 15, title: "Máquina", icon: "⚡" },
+    { days: 30, title: "Transformação", icon: "🏆" },
+  ];
 
   useEffect(() => {
     if (profile) {
@@ -427,23 +445,134 @@ const Dieta = () => {
     }
   }, [profile]);
 
+  // Load saved plans and streak data
   useEffect(() => {
     if (!user) return;
     setLoadingPlans(true);
-    supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) toast.error("Erro ao carregar planos salvos");
-        setSavedPlans(data || []);
-        setLoadingPlans(false);
-      });
+    
+    Promise.all([
+      supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("diet_tracking").select("*").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(60),
+    ]).then(([plansRes, trackingRes]) => {
+      if (plansRes.error) toast.error("Erro ao carregar planos salvos");
+      setSavedPlans(plansRes.data || []);
+      
+      // Calculate streak from tracking data
+      const tracking = (trackingRes.data || []) as any[];
+      const completedDates = tracking.filter(t => t.all_completed).map(t => t.tracked_date).sort().reverse();
+      
+      let streak = 0;
+      if (completedDates.length > 0) {
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
+        if (completedDates[0] === todayStr || completedDates[0] === yesterdayStr) {
+          for (let i = 0; i < completedDates.length; i++) {
+            const expected = format(subDays(new Date(), i + (completedDates[0] === todayStr ? 0 : 1)), "yyyy-MM-dd");
+            if (completedDates[i] === expected) streak++;
+            else break;
+          }
+        }
+      }
+      setDietStreak(streak);
+
+      // Weekly stats
+      const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
+      const weekData = tracking.filter(t => t.tracked_date >= weekAgo);
+      const wDone = weekData.reduce((a: number, t: any) => a + (t.meals_done || 0), 0);
+      const wTotal = weekData.reduce((a: number, t: any) => a + (t.meals_total || 0), 0);
+      setWeeklyMealsDone(wDone);
+      setWeeklyMealsTotal(wTotal);
+      setWeeklyAdherence(wTotal > 0 ? Math.round((wDone / wTotal) * 100) : 0);
+      
+      setLoadingPlans(false);
+    });
   }, [user]);
 
+  // Save daily tracking when all meals are marked
+  const saveDayTracking = useCallback(async (statuses: Record<string, MealStatus>, totalMeals: number) => {
+    if (!user || totalMeals === 0) return;
+    
+    const done = Object.values(statuses).filter(s => s === "done").length;
+    const failed = Object.values(statuses).filter(s => s === "failed").length;
+    const allMarked = done + failed >= totalMeals;
+    
+    if (!allMarked) return;
+    
+    const allCompleted = done >= totalMeals;
+    const adherence = Math.round((done / totalMeals) * 100);
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    
+    try {
+      // Upsert tracking record
+      const { data: existing } = await supabase.from("diet_tracking")
+        .select("id").eq("user_id", user.id).eq("tracked_date", todayStr).maybeSingle();
+      
+      if (existing) {
+        await supabase.from("diet_tracking").update({
+          meals_total: totalMeals,
+          meals_done: done,
+          meals_failed: failed,
+          all_completed: allCompleted,
+          adherence_pct: adherence,
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("diet_tracking").insert({
+          user_id: user.id,
+          tracked_date: todayStr,
+          meals_total: totalMeals,
+          meals_done: done,
+          meals_failed: failed,
+          all_completed: allCompleted,
+          adherence_pct: adherence,
+        });
+      }
+      
+      if (allCompleted) {
+        const newStreak = dietStreak + 1;
+        setDietStreak(newStreak);
+        setShowStreakAnimation(true);
+        setTimeout(() => setShowStreakAnimation(false), 2000);
+        
+        // Check milestone
+        const milestone = streakMilestones.find(m => m.days === newStreak);
+        if (milestone) {
+          setTimeout(() => {
+            toast.success(`${milestone.icon} Conquista: ${milestone.title}!`, {
+              description: `${newStreak} dia${newStreak > 1 ? "s" : ""} seguido${newStreak > 1 ? "s" : ""} com dieta completa!`,
+            });
+          }, 500);
+        }
+      }
+    } catch (err) {
+      console.error("Error saving diet tracking:", err);
+    }
+  }, [user, dietStreak, streakMilestones]);
+
   const setMealStatus = (key: string, status: MealStatus) => {
-    setMealStatuses((prev) => ({ ...prev, [key]: status }));
+    const newStatuses = { ...mealStatuses, [key]: status };
+    setMealStatuses(newStatuses);
+    
     if (status === "done") {
-      toast.success("Refeição marcada como feita! 💪");
+      const msg = getDietMotivationalMessage();
+      toast.success(`${msg.emoji} ${msg.text}`);
+      // Haptic feedback on mobile
+      if (navigator.vibrate) navigator.vibrate(50);
     } else if (status === "failed") {
-      toast("Refeição marcada como falha", { description: "Tente manter o foco na próxima!" });
+      const failMsg = getDietFailMessage();
+      toast(failMsg, { 
+        description: "Continue firme nas próximas refeições!",
+        icon: "💪",
+      });
+    }
+    
+    // Check if all meals are now marked (for today's plan)
+    if (planPeriod === "hoje" && displayPlan) {
+      const totalMeals = displayPlan.length;
+      const markedCount = Object.values(newStatuses).filter(s => s !== null).length;
+      if (markedCount >= totalMeals) {
+        saveDayTracking(newStatuses, totalMeals);
+      }
     }
   };
 
@@ -607,6 +736,11 @@ const Dieta = () => {
   const doneCount = Object.values(mealStatuses).filter((s) => s === "done").length;
   const failedCount = Object.values(mealStatuses).filter((s) => s === "failed").length;
 
+  // Next streak milestone
+  const nextMilestone = useMemo(() => {
+    return streakMilestones.find(m => m.days > dietStreak) || streakMilestones[streakMilestones.length - 1];
+  }, [dietStreak, streakMilestones]);
+
   return (
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
@@ -614,6 +748,68 @@ const Dieta = () => {
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Dieta Inteligente</h1>
         <p className="text-muted-foreground text-sm mt-1">Plano alimentar progressivo e personalizado para seu perfil e objetivos</p>
       </div>
+
+      {/* Streak & Weekly Stats Bar */}
+      {(dietStreak > 0 || weeklyMealsTotal > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Streak Card */}
+          <div className={`glass-card p-4 border-chart-3/15 transition-all ${showStreakAnimation ? "animate-scale-in" : ""}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${
+                dietStreak >= 7 
+                  ? "bg-gradient-to-br from-chart-3/25 to-chart-3/5 border-chart-3/20" 
+                  : dietStreak >= 3 
+                    ? "bg-gradient-to-br from-primary/20 to-primary/5 border-primary/15"
+                    : "bg-gradient-to-br from-chart-4/15 to-chart-4/5 border-chart-4/15"
+              }`}>
+                <Flame className={`w-6 h-6 ${dietStreak >= 7 ? "text-chart-3" : dietStreak >= 3 ? "text-primary" : "text-chart-4"}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-display font-bold text-foreground">{dietStreak}</p>
+                  <p className="text-xs text-muted-foreground font-medium">dia{dietStreak !== 1 ? "s" : ""} seguido{dietStreak !== 1 ? "s" : ""}</p>
+                </div>
+                {nextMilestone && dietStreak < nextMilestone.days && (
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-muted-foreground">Próxima: {nextMilestone.icon} {nextMilestone.title}</span>
+                      <span className="text-[10px] text-foreground font-medium">{dietStreak}/{nextMilestone.days}</span>
+                    </div>
+                    <Progress value={(dietStreak / nextMilestone.days) * 100} className="h-1.5" />
+                  </div>
+                )}
+                {dietStreak >= 30 && (
+                  <p className="text-[11px] text-chart-3 font-semibold mt-0.5">🏆 Transformação atingida!</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Adherence Card */}
+          {weeklyMealsTotal > 0 && (
+            <div className="glass-card p-4 border-chart-2/15">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-chart-2/20 to-chart-2/5 flex items-center justify-center border border-chart-2/15 shrink-0">
+                  <BarChart3 className="w-6 h-6 text-chart-2" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-display font-bold text-foreground">{weeklyAdherence}%</p>
+                    <p className="text-xs text-muted-foreground font-medium">aderência semanal</p>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-muted-foreground">{weeklyMealsDone}/{weeklyMealsTotal} refeições</span>
+                      {weeklyAdherence >= 90 && <span className="text-[10px] text-chart-2 font-bold">💯 Excelente!</span>}
+                    </div>
+                    <Progress value={weeklyAdherence} className="h-1.5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Form */}
       <div className="glass-card p-5 lg:p-7 space-y-6">

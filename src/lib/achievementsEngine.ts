@@ -5,7 +5,7 @@ export type Achievement = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet";
   requirement: number; // threshold value
   unlocked: boolean;
   unlockedAt?: string;
@@ -18,7 +18,7 @@ type AchievementDef = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet";
   requirement: number;
   getValue: (stats: UserStats) => number;
 };
@@ -27,9 +27,14 @@ export type UserStats = {
   totalWorkouts: number;
   currentStreak: number;
   maxStreak: number;
-  totalProgressions: number; // exercises that had weight increase
+  totalProgressions: number;
   totalExercisesCompleted: number;
   daysActive: number;
+  // Diet stats
+  dietStreak: number;
+  dietMaxStreak: number;
+  dietPerfectDays: number;
+  dietWeeklyAdherence: number; // 0-100
 };
 
 const achievementDefs: AchievementDef[] = [
@@ -175,6 +180,62 @@ const achievementDefs: AchievementDef[] = [
     requirement: 500,
     getValue: (s) => s.totalExercisesCompleted,
   },
+
+  // Diet achievements
+  {
+    id: "diet_first_day",
+    title: "Dia Perfeito",
+    description: "Complete todas as refeições de um dia",
+    icon: "🍽️",
+    category: "diet",
+    requirement: 1,
+    getValue: (s) => s.dietPerfectDays,
+  },
+  {
+    id: "diet_streak_3",
+    title: "Consistência Alimentar",
+    description: "3 dias seguidos com dieta completa",
+    icon: "🥗",
+    category: "diet",
+    requirement: 3,
+    getValue: (s) => s.dietMaxStreak,
+  },
+  {
+    id: "diet_streak_7",
+    title: "Foco Extremo",
+    description: "7 dias seguidos com dieta completa",
+    icon: "🔥",
+    category: "diet",
+    requirement: 7,
+    getValue: (s) => s.dietMaxStreak,
+  },
+  {
+    id: "diet_streak_15",
+    title: "Máquina da Dieta",
+    description: "15 dias seguidos com dieta completa",
+    icon: "⚡",
+    category: "diet",
+    requirement: 15,
+    getValue: (s) => s.dietMaxStreak,
+  },
+  {
+    id: "diet_streak_30",
+    title: "Transformação",
+    description: "30 dias seguidos com dieta completa",
+    icon: "🏆",
+    category: "diet",
+    requirement: 30,
+    getValue: (s) => s.dietMaxStreak,
+  },
+  {
+    id: "diet_adherence_90",
+    title: "Aderência 90%",
+    description: "Atinja 90% de aderência na semana",
+    icon: "💯",
+    category: "diet",
+    requirement: 90,
+    getValue: (s) => s.dietWeeklyAdherence,
+  },
 ];
 
 export function calculateAchievements(stats: UserStats): Achievement[] {
@@ -230,11 +291,37 @@ export function getMotivationalMessage(streak: number): { emoji: string; text: s
   return { ...msg, streakText };
 }
 
+// Diet-specific motivational messages
+const dietMotivationalMessages = [
+  { emoji: "🍽️", text: "Refeição feita! Seu corpo agradece!" },
+  { emoji: "💪", text: "Alimentação é 70% do resultado!" },
+  { emoji: "🔥", text: "Cada refeição te aproxima do objetivo!" },
+  { emoji: "⚡", text: "Nutrição em dia! Resultados vêm!" },
+  { emoji: "🥗", text: "Dieta certa = evolução garantida!" },
+];
+
+const dietFailMessages = [
+  "Não desista hoje. Um erro não cancela sua evolução.",
+  "Amanhã é uma nova oportunidade. Continue firme!",
+  "Ninguém é perfeito. O importante é não parar.",
+  "Uma refeição não define sua jornada. Siga em frente!",
+  "Tropeçar faz parte. Levantar é o que importa.",
+];
+
+export function getDietMotivationalMessage(): { emoji: string; text: string } {
+  return dietMotivationalMessages[Math.floor(Math.random() * dietMotivationalMessages.length)];
+}
+
+export function getDietFailMessage(): string {
+  return dietFailMessages[Math.floor(Math.random() * dietFailMessages.length)];
+}
+
 export const categoryLabels: Record<string, string> = {
   streak: "Sequência",
   volume: "Volume",
   progression: "Progressão",
   milestone: "Marco",
+  diet: "Dieta",
 };
 
 export const categoryIcons: Record<string, string> = {
@@ -242,4 +329,5 @@ export const categoryIcons: Record<string, string> = {
   volume: "🏋️",
   progression: "📈",
   milestone: "🎯",
+  diet: "🍽️",
 };
