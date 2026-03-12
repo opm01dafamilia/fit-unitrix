@@ -1124,21 +1124,21 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       )}
 
       {/* ===== BOTTOM NAVIGATION ===== */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goPrev} disabled={currentExIndex === 0}>
+      <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50 safe-area-inset-bottom">
+        <div className="max-w-2xl mx-auto flex items-center gap-2 sm:gap-3">
+          <Button variant="outline" size="icon" className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl" onClick={goPrev} disabled={currentExIndex === 0}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
           {currentExIndex === totalExercises - 1 && completedCount > 0 ? (
-            <Button onClick={handleFinish} className="flex-1 h-11 font-semibold">
+            <Button onClick={handleFinish} className="flex-1 h-10 sm:h-11 font-semibold text-sm sm:text-base">
               <Trophy className="w-4 h-4 mr-2" /> Finalizar Treino
             </Button>
           ) : (
-            <Button onClick={goNext} className="flex-1 h-11" disabled={currentExIndex >= totalExercises - 1}>
+            <Button onClick={goNext} className="flex-1 h-10 sm:h-11 text-sm sm:text-base" disabled={currentExIndex >= totalExercises - 1}>
               Próximo Exercício <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           )}
-          <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goNext} disabled={currentExIndex >= totalExercises - 1}>
+          <Button variant="outline" size="icon" className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl" onClick={goNext} disabled={currentExIndex >= totalExercises - 1}>
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
