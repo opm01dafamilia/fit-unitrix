@@ -37,6 +37,10 @@ export type UserStats = {
   dietWeeklyAdherence: number; // 0-100
   // Body progression stats
   weeksAboveRhythm?: number;
+  // Social stats
+  firstWeekWorkout?: boolean;
+  isTop10?: boolean;
+  challengesCompleted?: number;
 };
 
 const achievementDefs: AchievementDef[] = [
