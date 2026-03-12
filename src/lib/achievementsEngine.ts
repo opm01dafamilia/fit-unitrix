@@ -5,7 +5,7 @@ export type Achievement = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone" | "diet";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
   requirement: number; // threshold value
   unlocked: boolean;
   unlockedAt?: string;
