@@ -142,6 +142,39 @@ const Treino = () => {
     return count;
   }, [sessions]);
 
+  // Check if user already completed a workout today
+  const todayCompleted = useMemo(() => {
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    return sessions.some(s => 
+      format(new Date(s.completed_at), "yyyy-MM-dd") === todayKey &&
+      s.exercises_completed >= s.exercises_total &&
+      s.exercises_total > 0
+    );
+  }, [sessions]);
+
+  // Weekly consistency counter
+  const weeklyConsistency = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const weekDays = new Set(
+      sessions
+        .filter(s => new Date(s.completed_at) >= startOfWeek)
+        .map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))
+    );
+    return { done: weekDays.size, target: 5 };
+  }, [sessions]);
+
+  // Consistency feedback
+  const consistencyFeedback = useMemo(() => {
+    const pct = weeklyConsistency.target > 0 ? (weeklyConsistency.done / weeklyConsistency.target) * 100 : 0;
+    if (pct >= 100) return { emoji: "🏆", text: "Excelente consistência!", color: "text-primary" };
+    if (pct >= 60) return { emoji: "💪", text: "Você está evoluindo!", color: "text-chart-2" };
+    if (pct >= 30) return { emoji: "🔥", text: "Continue firme!", color: "text-amber-400" };
+    return { emoji: "🚀", text: "Continue amanhã!", color: "text-muted-foreground" };
+  }, [weeklyConsistency]);
+
   // Inactivity suggestion
   const inactivitySuggestion = useMemo((): InactivitySuggestion | null => {
     if (sessions.length === 0) return getInactivitySuggestion(999);
