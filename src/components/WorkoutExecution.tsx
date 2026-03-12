@@ -804,6 +804,15 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
+      {/* ===== REST CONFIG TOGGLE (small link) ===== */}
+      {!showRestConfig && phase !== "resting" && (
+        <div className="flex justify-center -mt-2">
+          <button onClick={() => setShowRestConfig(true)} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            ⚙️ Configurar descanso
+          </button>
+        </div>
+      )}
+
       {/* ===== EXERCISE DONE CARD ===== */}
       {phase === "exercise-done" && (
         <div className="glass-card p-6 glow-border animate-scale-in border border-primary/20">
