@@ -863,16 +863,15 @@ const Treino = () => {
                         boxShadow: isNext
                           ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
                           : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
-                      }}
-                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
-                      style={{
                         opacity: todayCompleted && !isCompleted ? 0.6 : 1,
                         cursor: todayCompleted ? 'default' : 'pointer',
+                      }}
+                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
+                    >
+                      {isNext && (
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
                              style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
                       )}
-                      <div className="relative z-10 p-4">
-                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
                               isNext ? "border-primary/20 shadow-primary/10" : "border-border/30"
