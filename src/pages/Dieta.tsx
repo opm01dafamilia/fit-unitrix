@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
+import { generateDietPlan, getPreferenceWarning, type MealPlan, type DayPlan, type PlanPeriod, type MealStyle, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
@@ -599,6 +599,8 @@ const Dieta = () => {
   const [metaPeso, setMetaPeso] = useState("");
   const [prazo, setPrazo] = useState("none");
   const [preferencias, setPreferencias] = useState("");
+  const [excludedCategories, setExcludedCategories] = useState<string[]>([]);
+  const [mealStyle, setMealStyle] = useState<MealStyle>("completa");
   const [periodo, setPeriodo] = useState<PlanPeriod>("hoje");
   const [plan, setPlan] = useState<MealPlan[] | null>(null);
   const [weekPlan, setWeekPlan] = useState<DayPlan[] | null>(null);
@@ -805,7 +807,9 @@ const Dieta = () => {
           metaPeso ? Number(metaPeso) : undefined,
           periodo,
           deadlineValue,
-          preferencias || undefined
+          preferencias || undefined,
+          excludedCategories.length > 0 ? excludedCategories : undefined,
+          mealStyle
         );
         setPlan(result.plan);
         setWeekPlan(result.weekPlan || null);
@@ -1132,20 +1136,101 @@ const Dieta = () => {
         <div>
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <span className="w-5 h-5 rounded-md bg-chart-4/10 flex items-center justify-center text-[10px] font-bold text-chart-4">3</span>
-            Descrição Alimentar
+            Preferências Alimentares
           </h3>
-          <div className="relative">
-            <Textarea
-              placeholder="Ex: Não gosto de ovo, prefiro frango e arroz, sem lactose..."
-              value={preferencias}
-              onChange={(e) => setPreferencias(e.target.value.slice(0, 100))}
-              maxLength={100}
-              rows={2}
-              className="bg-secondary/50 border-border/50 resize-none text-sm"
-            />
-            <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{preferencias.length}/100</span>
+
+          {/* Food exclusion chips */}
+          <div className="mb-4">
+            <label className="text-xs font-medium text-muted-foreground mb-2.5 block">Quais alimentos você <span className="text-destructive/80">não</span> consome?</label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "ovo", label: "🥚 Ovo", desc: "Ovos e derivados" },
+                { key: "peixe", label: "🐟 Peixe", desc: "Peixes e frutos do mar" },
+                { key: "carne vermelha", label: "🥩 Carne Vermelha", desc: "Bovina, suína" },
+                { key: "leite", label: "🥛 Lactose", desc: "Leite e derivados" },
+                { key: "amendoim", label: "🥜 Amendoim", desc: "Pasta e grãos" },
+                { key: "glúten", label: "🌾 Glúten", desc: "Trigo, aveia, centeio" },
+              ].map((item) => {
+                const isExcluded = excludedCategories.includes(item.key);
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => {
+                      setExcludedCategories(prev =>
+                        isExcluded ? prev.filter(c => c !== item.key) : [...prev, item.key]
+                      );
+                    }}
+                    className={`px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
+                      isExcluded
+                        ? "bg-destructive/10 border-destructive/25 text-destructive"
+                        : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary/60 hover:border-border/60"
+                    }`}
+                    title={item.desc}
+                  >
+                    {item.label}
+                    {isExcluded && <XIcon className="w-3 h-3 ml-1.5 inline" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1.5">Opcional — a dieta será adaptada às suas preferências</p>
+
+          {/* Preference warning */}
+          {(() => {
+            const warning = getPreferenceWarning(excludedCategories);
+            if (!warning) return null;
+            return (
+              <Alert variant={excludedCategories.length >= 4 ? "destructive" : "default"} className={`mb-4 ${excludedCategories.length < 4 ? "border-chart-4/40 bg-chart-4/5" : ""}`}>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle className="text-[13px]">{excludedCategories.length >= 4 ? "Restrições excessivas" : "Atenção"}</AlertTitle>
+                <AlertDescription className="text-[11px]">{warning}</AlertDescription>
+              </Alert>
+            );
+          })()}
+
+          {/* Meal style selector */}
+          <div className="mb-4">
+            <label className="text-xs font-medium text-muted-foreground mb-2.5 block">Estilo das refeições</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { value: "rapida" as MealStyle, label: "⚡ Rápida", desc: "Menos itens, preparo veloz" },
+                { value: "completa" as MealStyle, label: "🍽️ Completa", desc: "Refeições equilibradas" },
+                { value: "simples" as MealStyle, label: "🥄 Simples", desc: "Ingredientes básicos" },
+              ]).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setMealStyle(opt.value)}
+                  className={`p-3 rounded-xl text-center transition-all border-2 ${
+                    mealStyle === opt.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border/40 bg-secondary/30 hover:border-border/60 hover:bg-secondary/50"
+                  }`}
+                >
+                  <p className={`text-sm font-semibold ${mealStyle === opt.value ? "text-primary" : "text-foreground"}`}>{opt.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Free text */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Outras preferências <span className="text-muted-foreground/60">(opcional)</span></label>
+            <div className="relative">
+              <Textarea
+                placeholder="Ex: Prefiro frango e arroz, gosto de banana, sem lactose..."
+                value={preferencias}
+                onChange={(e) => setPreferencias(e.target.value.slice(0, 100))}
+                maxLength={100}
+                rows={2}
+                className="bg-secondary/50 border-border/50 resize-none text-sm"
+              />
+              <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{preferencias.length}/100</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">A dieta será adaptada mas mantendo equilíbrio nutricional e meta calórica</p>
+          </div>
         </div>
 
         <div className="border-t border-border/40" />

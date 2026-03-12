@@ -37,6 +37,7 @@ export type DietMeta = {
 };
 
 export type PlanPeriod = "hoje" | "semana" | "mes";
+export type MealStyle = "rapida" | "completa" | "simples";
 
 type Objective = "emagrecer" | "massa" | "manter";
 type ActivityLevel = "sedentario" | "leve" | "moderado" | "intenso";
@@ -172,24 +173,24 @@ const preferenceReplacements: Record<string, { alimento: string; cal: number; pr
   "Macarrão integral": { alimento: "Arroz integral", cal: 111, prot: 3, carb: 23, gord: 1 },
 };
 
-function applyPreferences(meals: MealPlan[], preferencias: string): MealPlan[] {
-  if (!preferencias) return meals;
-  const lower = preferencias.toLowerCase();
+function applyPreferences(meals: MealPlan[], preferencias: string, excludedFoods?: Set<string>): MealPlan[] {
+  const excluded = excludedFoods ? new Set(excludedFoods) : new Set<string>();
   
-  // Find which foods to exclude
-  const excludedFoods = new Set<string>();
-  for (const [keyword, foods] of Object.entries(preferenceExclusions)) {
-    if (lower.includes(keyword)) {
-      foods.forEach(f => excludedFoods.add(f));
+  if (preferencias) {
+    const lower = preferencias.toLowerCase();
+    for (const [keyword, foods] of Object.entries(preferenceExclusions)) {
+      if (lower.includes(keyword)) {
+        foods.forEach(f => excluded.add(f));
+      }
     }
   }
   
-  if (excludedFoods.size === 0) return meals;
+  if (excluded.size === 0) return meals;
   
   return meals.map(meal => ({
     ...meal,
     itens: meal.itens.map(item => {
-      if (excludedFoods.has(item.alimento)) {
+      if (excluded.has(item.alimento)) {
         const replacement = preferenceReplacements[item.alimento];
         if (replacement) {
           return { ...item, ...replacement };
@@ -198,6 +199,64 @@ function applyPreferences(meals: MealPlan[], preferencias: string): MealPlan[] {
       return item;
     }),
   }));
+}
+
+// Meal style adjustments
+function applyMealStyle(meals: MealPlan[], style: MealStyle): MealPlan[] {
+  if (style === "completa") return meals; // default already
+  
+  if (style === "rapida") {
+    // Reduce items per meal, keep macros by scaling remaining items up
+    return meals.map(meal => {
+      if (meal.itens.length <= 2) return meal;
+      const totalCal = meal.itens.reduce((a, i) => a + i.cal, 0);
+      // Keep first 2-3 items (protein + carb priority)
+      const kept = meal.itens.slice(0, Math.min(3, meal.itens.length));
+      const keptCal = kept.reduce((a, i) => a + i.cal, 0);
+      if (keptCal <= 0) return { ...meal, itens: kept };
+      const ratio = totalCal / keptCal;
+      return {
+        ...meal,
+        itens: kept.map(item => ({
+          ...item,
+          cal: Math.round(item.cal * ratio),
+          prot: Math.round(item.prot * ratio),
+          carb: Math.round(item.carb * ratio),
+          gord: Math.round(item.gord * ratio),
+          qtd: scaleQtd(item.qtd, ratio),
+        })),
+      };
+    });
+  }
+  
+  // "simples" — replace complex items with simpler alternatives
+  const simpleSwaps: Record<string, { alimento: string; cal: number; prot: number; carb: number; gord: number }> = {
+    "Salmão grelhado": { alimento: "Frango grelhado", cal: 165, prot: 31, carb: 0, gord: 4 },
+    "Truta grelhada": { alimento: "Frango grelhado", cal: 165, prot: 31, carb: 0, gord: 4 },
+    "Nhoque de batata doce": { alimento: "Batata doce", cal: 86, prot: 2, carb: 20, gord: 0 },
+    "Espaguete de abobrinha": { alimento: "Arroz integral", cal: 111, prot: 3, carb: 23, gord: 1 },
+    "Quinoa": { alimento: "Arroz integral", cal: 111, prot: 3, carb: 23, gord: 1 },
+  };
+  
+  return meals.map(meal => ({
+    ...meal,
+    itens: meal.itens.map(item => {
+      const swap = simpleSwaps[item.alimento];
+      if (swap) return { ...item, ...swap };
+      return item;
+    }),
+  }));
+}
+
+// Check if preferences are too restrictive
+export function getPreferenceWarning(excludedCategories: string[]): string | null {
+  if (excludedCategories.length >= 4) {
+    return "Muitas restrições podem dificultar atingir sua meta nutricional. Considere ser mais flexível em algumas escolhas.";
+  }
+  if (excludedCategories.length >= 3) {
+    return "Algumas escolhas podem dificultar atingir sua meta. O plano foi adaptado, mas a variedade nutricional pode ser limitada.";
+  }
+  return null;
 }
 
 function varyMeal(meal: MealPlan, dayIndex: number): MealPlan {
@@ -379,7 +438,9 @@ export function generateDietPlan(
   weightGoal?: number,
   period?: PlanPeriod,
   deadlineMonths?: number,
-  preferencias?: string
+  preferencias?: string,
+  excludedCategories?: string[],
+  mealStyle?: MealStyle
 ): DietPlanResult {
   const tdee = calcTDEE(weight, height, age || 25, gender || "masculino", activityLevel);
   const targetCal = getCalorieTarget(tdee, objective, weightGoal, weight, deadlineMonths);
@@ -387,9 +448,21 @@ export function generateDietPlan(
   let basePlan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
   const usedPeriod = period || "hoje";
 
-  // Apply preference-based food swaps
-  if (preferencias) {
-    basePlan = applyPreferences(basePlan, preferencias);
+  // Build excluded foods from categories
+  const excludedFoods = new Set<string>();
+  if (excludedCategories && excludedCategories.length > 0) {
+    for (const cat of excludedCategories) {
+      const foods = preferenceExclusions[cat];
+      if (foods) foods.forEach(f => excludedFoods.add(f));
+    }
+  }
+
+  // Apply preference-based food swaps (text + category exclusions)
+  basePlan = applyPreferences(basePlan, preferencias || "", excludedFoods);
+
+  // Apply meal style
+  if (mealStyle && mealStyle !== "completa") {
+    basePlan = applyMealStyle(basePlan, mealStyle);
   }
 
   const meta: DietMeta = {
@@ -442,8 +515,9 @@ export function generateDietPlan(
       const weekMacros = getMacroSplit(weekTarget.calories, objective, weight);
       let weekBasePlan = mealTemplates[objective]?.(weekMacros, weekTarget.calories) || mealTemplates.manter(weekMacros, weekTarget.calories);
       
-      if (preferencias) {
-        weekBasePlan = applyPreferences(weekBasePlan, preferencias);
+      weekBasePlan = applyPreferences(weekBasePlan, preferencias || "", excludedFoods);
+      if (mealStyle && mealStyle !== "completa") {
+        weekBasePlan = applyMealStyle(weekBasePlan, mealStyle);
       }
 
       const days: DayPlan[] = [];
