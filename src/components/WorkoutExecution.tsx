@@ -46,9 +46,10 @@ type Props = {
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
-  const planData = plan.plan_data as WorkoutDay[];
-  const day = planData[dayIndex];
-  const [exercises, setExercises] = useState<Exercise[]>(day.exercicios);
+  const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
+  const day = useMemo(() => planData[dayIndex], [planData, dayIndex]);
+  const [isReady, setIsReady] = useState(false);
+  const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
