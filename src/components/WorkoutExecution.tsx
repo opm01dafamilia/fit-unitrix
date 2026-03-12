@@ -302,6 +302,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   };
 
   const startManualRest = () => {
+    restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
     setRestTime(effectiveRestSeconds);
     setRestPaused(false);
     setPhase("resting");
