@@ -694,6 +694,12 @@ const AnatomicalBody = ({
   );
 };
 
+const sizePixels = {
+  sm: { w: 96, h: 96 },
+  md: { w: 160, h: 160 },
+  lg: { w: 224, h: 224 },
+};
+
 const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAnimationProps) => {
   const [animTime, setAnimTime] = useState(0);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
@@ -702,6 +708,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
   const config = useMemo(() => getExerciseConfig(exercise.id), [exercise.id]);
   const activeMuscles = useMemo(() => getActiveMuscles(exercise.id), [exercise.id]);
   const sizes = sizeMap[size];
+  const px = sizePixels[size];
 
   // Fetch GIF from ExerciseDB
   useEffect(() => {
@@ -736,7 +743,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
 
   // SVG animation (used as fallback)
   useEffect(() => {
-    if (gifUrl && !gifError) return; // Don't run SVG animation if GIF is available
+    if (gifUrl && !gifError) return;
     let raf: number;
     let start: number | null = null;
     const duration = 2400;
@@ -774,10 +781,14 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
 
   return (
     <div
-      className={`relative ${sizes.container} rounded-2xl flex items-center justify-center overflow-hidden ${className}`}
+      className={`relative rounded-2xl flex items-center justify-center overflow-hidden ${className}`}
       style={{
+        width: px.w,
+        height: px.h,
+        minWidth: px.w,
+        minHeight: px.h,
         background: showGif 
-          ? "hsl(var(--background))" 
+          ? "hsl(var(--secondary) / 0.3)" 
           : "linear-gradient(180deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 100%)",
         border: "1px solid hsl(var(--border) / 0.5)",
       }}
@@ -787,17 +798,24 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
         <img
           src={gifUrl}
           alt={exercise.nome}
-          className={`absolute inset-0 w-full h-full object-contain p-1 transition-opacity duration-500 ${gifLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-500 ${gifLoading ? 'opacity-0' : 'opacity-100'}`}
+          style={{
+            objectFit: "contain",
+            objectPosition: "center",
+            padding: size === "lg" ? "8px" : "4px",
+            imageRendering: "auto",
+          }}
           onLoad={handleGifLoad}
           onError={handleGifError}
-          loading="lazy"
+          loading="eager"
         />
       )}
 
       {/* Loading state */}
       {gifLoading && gifUrl && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <span className="text-[9px] text-muted-foreground">Carregando...</span>
         </div>
       )}
 
@@ -810,18 +828,28 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
               backgroundSize: "8px 8px",
             }}
           />
-          <svg viewBox={sizes.viewBox} className="absolute inset-0 w-full h-full p-1">
+          <svg viewBox={sizes.viewBox} className="absolute inset-0 w-full h-full p-1" preserveAspectRatio="xMidYMid meet">
             <AnatomicalBody
               transform={interpolatedTransform}
               activeMuscles={activeMuscles}
               progress={cyclePos}
             />
           </svg>
+          {/* Fallback label */}
+          <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] font-medium whitespace-nowrap"
+            style={{
+              backgroundColor: "hsl(var(--secondary) / 0.9)",
+              color: "hsl(var(--muted-foreground))",
+              border: "1px solid hsl(var(--border) / 0.5)",
+            }}
+          >
+            Animação ilustrativa
+          </div>
         </>
       )}
 
       {/* Active muscle indicators */}
-      {activeMuscles.length > 0 && (
+      {activeMuscles.length > 0 && !showGif && (
         <div className="absolute top-1.5 right-1.5 flex gap-0.5">
           {activeMuscles.slice(0, 4).map((_, i) => (
             <div
@@ -835,20 +863,6 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
           ))}
         </div>
       )}
-
-      {/* Label */}
-      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] font-medium whitespace-nowrap"
-        style={{
-          backgroundColor: "hsl(var(--secondary) / 0.9)",
-          color: "hsl(var(--muted-foreground))",
-          border: "1px solid hsl(var(--border) / 0.5)",
-        }}
-      >
-        {exercise.tipoExercicio === "musculação" && "Execução"}
-        {exercise.tipoExercicio === "cardio" && "Movimento"}
-        {exercise.tipoExercicio === "alongamento" && "Posição"}
-        {exercise.tipoExercicio === "mobilidade" && "Mobilidade"}
-      </div>
     </div>
   );
 };
