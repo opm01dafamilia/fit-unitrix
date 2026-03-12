@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_tracking: {
+        Row: {
+          adherence_pct: number
+          all_completed: boolean
+          created_at: string
+          id: string
+          meals_done: number
+          meals_failed: number
+          meals_total: number
+          tracked_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adherence_pct?: number
+          all_completed?: boolean
+          created_at?: string
+          id?: string
+          meals_done?: number
+          meals_failed?: number
+          meals_total?: number
+          tracked_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adherence_pct?: number
+          all_completed?: boolean
+          created_at?: string
+          id?: string
+          meals_done?: number
+          meals_failed?: number
+          meals_total?: number
+          tracked_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_history: {
         Row: {
           created_at: string
