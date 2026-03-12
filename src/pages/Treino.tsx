@@ -248,7 +248,23 @@ const Treino = () => {
     return "from-primary/20 to-primary/5";
   };
 
-  // Handlers
+  // Intensity badge helper
+  const getIntensityBadge = (intensidade?: DayIntensity) => {
+    if (!intensidade) return null;
+    const config = {
+      pesado: { icon: "🔥", label: "Pesado", className: "text-orange-400 bg-orange-500/15 border-orange-500/20" },
+      moderado: { icon: "⚡", label: "Moderado", className: "text-amber-400 bg-amber-500/15 border-amber-500/20" },
+      leve: { icon: "🌿", label: "Leve", className: "text-emerald-400 bg-emerald-500/15 border-emerald-500/20" },
+    };
+    const c = config[intensidade];
+    return (
+      <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${c.className}`}>
+        {c.icon} {c.label}
+      </span>
+    );
+  };
+
+
   const handleGenerate = () => {
     if (!objetivo || !nivel || !dias) { toast.error("Preencha todos os campos"); return; }
     setGenerating(true);
