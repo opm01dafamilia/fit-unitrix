@@ -872,6 +872,8 @@ const Treino = () => {
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
                              style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
                       )}
+                      <div className="relative z-10 p-4">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
                               isNext ? "border-primary/20 shadow-primary/10" : "border-border/30"
@@ -882,12 +884,17 @@ const Treino = () => {
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold text-foreground">{day.dia}</p>
                                 {getIntensityBadge(day.intensidade)}
-                                {isNext && (
+                                {isNext && !todayCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
                                 )}
                                 {isCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
                                     <Check className="w-2.5 h-2.5" /> Feito
+                                  </span>
+                                )}
+                                {todayCompleted && !isCompleted && (
+                                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-0.5 rounded-md bg-muted/50 border border-border/30">
+                                    Amanhã
                                   </span>
                                 )}
                               </div>
@@ -908,9 +915,11 @@ const Treino = () => {
                             <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
                               <Eye className="w-3.5 h-3.5 mr-1" /> Ver
                             </Button>
-                            <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
-                              <Play className="w-3.5 h-3.5 mr-1" /> Treinar
-                            </Button>
+                            {!todayCompleted && (
+                              <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
+                                <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
