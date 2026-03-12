@@ -178,6 +178,37 @@ const exerciseDB: Record<string, Record<string, Exercise[]>> = {
       { nome: "HIIT Cardio", series: "1", reps: "30min", desc: "30s sprint + 30s descanso. Bike ou esteira.", descanso: "—" },
     ],
   },
+  mobilidade: {
+    iniciante: [
+      { nome: "Alongamento Dinâmico", series: "1", reps: "10min", desc: "Movimentos articulares amplos para todo o corpo.", descanso: "—" },
+      { nome: "Foam Roller", series: "1", reps: "10min", desc: "Liberação miofascial em quadríceps, costas e glúteos.", descanso: "—" },
+      { nome: "Yoga Flow Básico", series: "1", reps: "10min", desc: "Sequência suave: gato-vaca, cachorro olhando para baixo, guerreiro.", descanso: "—" },
+    ],
+    intermediario: [
+      { nome: "Mobilidade Articular", series: "1", reps: "12min", desc: "Círculos de ombro, quadril e tornozelo com progressão.", descanso: "—" },
+      { nome: "Foam Roller Profundo", series: "1", reps: "12min", desc: "Liberação miofascial detalhada em todos os grupos.", descanso: "—" },
+      { nome: "Yoga Flow", series: "1", reps: "15min", desc: "Sequência intermediária com foco em flexibilidade.", descanso: "—" },
+    ],
+    avancado: [
+      { nome: "Mobilidade Avançada", series: "1", reps: "15min", desc: "Rotinas de mobilidade com banda elástica e progressão.", descanso: "—" },
+      { nome: "Foam Roller + Lacrosse Ball", series: "1", reps: "12min", desc: "Liberação profunda com bola de lacrosse nos pontos-gatilho.", descanso: "—" },
+      { nome: "Yoga Flow Avançado", series: "1", reps: "15min", desc: "Sequência avançada com inversões leves e torções.", descanso: "—" },
+    ],
+  },
+  recuperacao: {
+    iniciante: [
+      { nome: "Caminhada Leve", series: "1", reps: "15min", desc: "Caminhada em ritmo confortável para circulação.", descanso: "—" },
+      { nome: "Alongamento Estático", series: "1", reps: "10min", desc: "Segure cada posição por 30s nos principais grupos.", descanso: "—" },
+    ],
+    intermediario: [
+      { nome: "Cardio Leve", series: "1", reps: "15min", desc: "Bike ou caminhada inclinada em ritmo leve.", descanso: "—" },
+      { nome: "Alongamento Profundo", series: "1", reps: "12min", desc: "Foco em posterior de coxa, quadril e ombros.", descanso: "—" },
+    ],
+    avancado: [
+      { nome: "Cardio Regenerativo", series: "1", reps: "20min", desc: "Bike leve ou natação com foco em recuperação.", descanso: "—" },
+      { nome: "Alongamento + Respiração", series: "1", reps: "15min", desc: "Técnicas de respiração com alongamento profundo.", descanso: "—" },
+    ],
+  },
 };
 
 type Objective = "emagrecer" | "massa" | "condicionamento";
