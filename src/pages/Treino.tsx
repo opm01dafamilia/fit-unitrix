@@ -778,6 +778,7 @@ const Treino = () => {
                             <div>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold text-foreground">{day.dia}</p>
+                                {getIntensityBadge(day.intensidade)}
                                 {isNext && (
                                   <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
                                 )}
