@@ -864,9 +864,10 @@ const Treino = () => {
                           ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
                           : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
                       }}
-                      onClick={() => startWorkout(activePlan, i)}
-                    >
-                      {isNext && (
+                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
+                      style={{
+                        opacity: todayCompleted && !isCompleted ? 0.6 : 1,
+                        cursor: todayCompleted ? 'default' : 'pointer',
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
                              style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
                       )}
