@@ -1,11 +1,15 @@
 // Achievement definitions and unlock logic
 
+export type AchievementTier = "small" | "medium" | "large" | "extreme";
+
 export type Achievement = {
   id: string;
   title: string;
   description: string;
   icon: string;
   category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
+  tier: AchievementTier;
+  xp: number;
   requirement: number; // threshold value
   unlocked: boolean;
   unlockedAt?: string;
@@ -19,9 +23,39 @@ type AchievementDef = {
   description: string;
   icon: string;
   category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
+  tier: AchievementTier;
   requirement: number;
   getValue: (stats: UserStats) => number;
 };
+
+// XP per tier
+export const XP_PER_TIER: Record<AchievementTier, number> = {
+  small: 10,
+  medium: 25,
+  large: 50,
+  extreme: 150,
+};
+
+// Rank tiers
+export type RankTier = "bronze" | "prata" | "ouro" | "elite";
+
+export const RANK_THRESHOLDS: { tier: RankTier; minXP: number; label: string; icon: string; color: string }[] = [
+  { tier: "elite", minXP: 2500, label: "Elite", icon: "👑", color: "text-purple-400" },
+  { tier: "ouro", minXP: 1000, label: "Ouro", icon: "🥇", color: "text-yellow-400" },
+  { tier: "prata", minXP: 300, label: "Prata", icon: "🥈", color: "text-gray-300" },
+  { tier: "bronze", minXP: 0, label: "Bronze", icon: "🥉", color: "text-amber-600" },
+];
+
+export function getRankForXP(xp: number): typeof RANK_THRESHOLDS[0] {
+  return RANK_THRESHOLDS.find(r => xp >= r.minXP) || RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1];
+}
+
+export function getNextRank(xp: number): { nextRank: typeof RANK_THRESHOLDS[0]; xpNeeded: number } | null {
+  const currentIdx = RANK_THRESHOLDS.findIndex(r => xp >= r.minXP);
+  if (currentIdx <= 0) return null; // already elite
+  const next = RANK_THRESHOLDS[currentIdx - 1];
+  return { nextRank: next, xpNeeded: next.minXP - xp };
+}
 
 export type UserStats = {
   totalWorkouts: number;
