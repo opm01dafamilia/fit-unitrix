@@ -150,6 +150,7 @@ const App = () => (
       <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
+          <SubscriptionProvider>
           <Routes>
             <Route path="/auth" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Auth /></Suspense></PublicRoute>} />
             <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
