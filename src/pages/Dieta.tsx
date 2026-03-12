@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, MessageSquare } from "lucide-react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,8 @@ const periodIcons: Record<PlanPeriod, typeof Calendar> = {
   mes: CalendarRange,
 };
 
+type MealStatus = "done" | "failed" | null;
+
 const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void }) => {
   const MealIcon = iconMap[meal.iconName] || Coffee;
   const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
@@ -30,7 +32,6 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(225 16% 10%), hsl(225 16% 6%))' }}>
-      {/* Header with gradient accent */}
       <div className="relative p-6 pb-5">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent" />
         <div className="relative z-10">
@@ -49,7 +50,6 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
         </div>
       </div>
 
-      {/* Macro summary bar */}
       <div className="grid grid-cols-4 gap-0 border-y border-border/30">
         {[
           { label: "Cal", value: mealCal, unit: "kcal", color: "text-chart-3" },
@@ -64,7 +64,6 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
         ))}
       </div>
 
-      {/* Food items */}
       <div className="p-5 space-y-2.5">
         {meal.itens.map((item, j) => (
           <div key={j} className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-secondary/30 border border-border/20">
@@ -82,7 +81,6 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
         ))}
       </div>
 
-      {/* Footer branding */}
       <div className="px-5 pb-5 pt-1">
         <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
           <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
@@ -93,23 +91,87 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
   );
 };
 
-const MealCard = ({ meal, index, onFocus }: { meal: MealPlan; index: number; onFocus?: () => void }) => {
+const MealStatusButtons = ({ status, onSetStatus }: { status: MealStatus; onSetStatus: (s: MealStatus) => void }) => {
+  if (status === "done") {
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); onSetStatus(null); }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-chart-2/15 border border-chart-2/25 text-chart-2 text-xs font-semibold transition-all hover:bg-chart-2/20"
+      >
+        <Check className="w-3.5 h-3.5" />
+        Feito
+      </button>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); onSetStatus(null); }}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/15 border border-destructive/25 text-destructive text-xs font-semibold transition-all hover:bg-destructive/20"
+      >
+        <XIcon className="w-3.5 h-3.5" />
+        Falhou
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <button
+        onClick={() => onSetStatus("done")}
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-chart-2/8 border border-chart-2/15 text-chart-2/70 text-[11px] font-medium transition-all hover:bg-chart-2/15 hover:text-chart-2 hover:border-chart-2/25"
+      >
+        <Check className="w-3 h-3" />
+        Feito
+      </button>
+      <button
+        onClick={() => onSetStatus("failed")}
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-destructive/8 border border-destructive/15 text-destructive/70 text-[11px] font-medium transition-all hover:bg-destructive/15 hover:text-destructive hover:border-destructive/25"
+      >
+        <XIcon className="w-3 h-3" />
+        Falhou
+      </button>
+    </div>
+  );
+};
+
+const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPlan; index: number; onFocus?: () => void; status?: MealStatus; onSetStatus?: (s: MealStatus) => void }) => {
   const MealIcon = iconMap[meal.iconName] || Coffee;
   const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
 
+  const borderClass = status === "done"
+    ? "border-chart-2/20 bg-chart-2/3"
+    : status === "failed"
+      ? "border-destructive/20 bg-destructive/3"
+      : "hover:border-primary/15";
+
   return (
-    <div className="glass-card p-4 lg:p-5 cursor-pointer hover:border-primary/15 transition-all" onClick={onFocus}>
+    <div className={`glass-card p-4 lg:p-5 cursor-pointer transition-all ${borderClass}`} onClick={onFocus}>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-          <MealIcon className="w-4.5 h-4.5 text-primary" />
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+          status === "done"
+            ? "bg-gradient-to-br from-chart-2/20 to-chart-2/5"
+            : status === "failed"
+              ? "bg-gradient-to-br from-destructive/20 to-destructive/5"
+              : "bg-gradient-to-br from-primary/15 to-primary/5"
+        }`}>
+          {status === "done" ? (
+            <Check className="w-4.5 h-4.5 text-chart-2" />
+          ) : status === "failed" ? (
+            <XIcon className="w-4.5 h-4.5 text-destructive" />
+          ) : (
+            <MealIcon className="w-4.5 h-4.5 text-primary" />
+          )}
         </div>
         <div className="flex-1">
           <p className="font-semibold text-sm">{meal.refeicao}</p>
           <p className="text-[11px] text-muted-foreground">{meal.horario}</p>
         </div>
-        <div className="text-right">
-          <p className="text-sm font-semibold text-chart-3">{mealCal}</p>
-          <p className="text-[10px] text-muted-foreground">kcal</p>
+        <div className="flex items-center gap-3">
+          {onSetStatus && <MealStatusButtons status={status || null} onSetStatus={onSetStatus} />}
+          <div className="text-right">
+            <p className="text-sm font-semibold text-chart-3">{mealCal}</p>
+            <p className="text-[10px] text-muted-foreground">kcal</p>
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -142,9 +204,11 @@ const MealCard = ({ meal, index, onFocus }: { meal: MealPlan; index: number; onF
   );
 };
 
-const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void }) => {
+const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void; mealStatuses?: Record<string, MealStatus>; onSetMealStatus?: (key: string, s: MealStatus) => void }) => {
   const [open, setOpen] = useState(defaultOpen || false);
   const dayCal = dayPlan.refeicoes.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0);
+  const doneCount = dayPlan.refeicoes.filter((_, i) => mealStatuses?.[`${dayPlan.dia}-${i}`] === "done").length;
+  const totalMeals = dayPlan.refeicoes.length;
 
   return (
     <div className="glass-card overflow-hidden">
@@ -158,16 +222,29 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus }: { dayPlan: DayPlan;
           </div>
           <div className="text-left">
             <p className="font-semibold text-sm">{dayPlan.dia}</p>
-            <p className="text-[11px] text-muted-foreground">{dayPlan.refeicoes.length} refeições • {dayCal} kcal</p>
+            <p className="text-[11px] text-muted-foreground">
+              {totalMeals} refeições • {dayCal} kcal
+              {doneCount > 0 && <span className="text-chart-2 ml-1.5">• {doneCount}/{totalMeals} feitas</span>}
+            </p>
           </div>
         </div>
         {open ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
       </button>
       {open && (
         <div className="px-4 pb-4 lg:px-5 lg:pb-5 space-y-3">
-          {dayPlan.refeicoes.map((meal, i) => (
-            <MealCard key={i} meal={meal} index={i} onFocus={() => onMealFocus?.(meal)} />
-          ))}
+          {dayPlan.refeicoes.map((meal, i) => {
+            const key = `${dayPlan.dia}-${i}`;
+            return (
+              <MealCard
+                key={i}
+                meal={meal}
+                index={i}
+                onFocus={() => onMealFocus?.(meal)}
+                status={mealStatuses?.[key] || null}
+                onSetStatus={(s) => onSetMealStatus?.(key, s)}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -175,6 +252,7 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus }: { dayPlan: DayPlan;
 };
 
 const deadlineOptions = [
+  { value: "none", label: "Sem prazo" },
   { value: "1", label: "1 mês" },
   { value: "2", label: "2 meses" },
   { value: "3", label: "3 meses" },
@@ -187,8 +265,10 @@ function buildMetaDescription(sp: any): string | null {
   if (!meta) return null;
   const { currentWeight, weightGoal, deadlineMonths } = meta;
   if (!weightGoal || !currentWeight) return null;
-  const months = deadlineMonths || 3;
-  return `De ${currentWeight}kg para ${weightGoal}kg em ${months} ${months === 1 ? "mês" : "meses"}`;
+  if (deadlineMonths) {
+    return `De ${currentWeight}kg para ${weightGoal}kg em ${deadlineMonths} ${deadlineMonths === 1 ? "mês" : "meses"}`;
+  }
+  return `De ${currentWeight}kg para ${weightGoal}kg`;
 }
 
 const Dieta = () => {
@@ -198,7 +278,7 @@ const Dieta = () => {
   const [altura, setAltura] = useState("");
   const [atividade, setAtividade] = useState("");
   const [metaPeso, setMetaPeso] = useState("");
-  const [prazo, setPrazo] = useState("3");
+  const [prazo, setPrazo] = useState("none");
   const [preferencias, setPreferencias] = useState("");
   const [periodo, setPeriodo] = useState<PlanPeriod>("hoje");
   const [plan, setPlan] = useState<MealPlan[] | null>(null);
@@ -211,6 +291,8 @@ const Dieta = () => {
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
   const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
+  const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
+
   useEffect(() => {
     if (profile) {
       if (profile.weight) setPeso(String(profile.weight));
@@ -231,6 +313,15 @@ const Dieta = () => {
       });
   }, [user]);
 
+  const setMealStatus = (key: string, status: MealStatus) => {
+    setMealStatuses((prev) => ({ ...prev, [key]: status }));
+    if (status === "done") {
+      toast.success("Refeição marcada como feita! 💪");
+    } else if (status === "failed") {
+      toast("Refeição marcada como falha", { description: "Tente manter o foco na próxima!" });
+    }
+  };
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!objetivo) e.objetivo = "Selecione um objetivo";
@@ -245,8 +336,10 @@ const Dieta = () => {
   const handleGenerate = () => {
     if (!validate()) return;
     setGenerating(true);
+    setMealStatuses({});
     setTimeout(() => {
       try {
+        const deadlineValue = prazo === "none" ? undefined : Number(prazo);
         const result = generateDietPlan(
           objetivo as any,
           Number(peso),
@@ -256,7 +349,7 @@ const Dieta = () => {
           profile?.gender || undefined,
           metaPeso ? Number(metaPeso) : undefined,
           periodo,
-          Number(prazo)
+          deadlineValue
         );
         setPlan(result.plan);
         setWeekPlan(result.weekPlan || null);
@@ -276,10 +369,11 @@ const Dieta = () => {
     if (!user || !plan) return;
     setSaving(true);
     try {
+      const deadlineValue = prazo === "none" ? null : Number(prazo);
       const meta = {
         currentWeight: Number(peso),
         weightGoal: metaPeso ? Number(metaPeso) : null,
-        deadlineMonths: Number(prazo),
+        deadlineMonths: deadlineValue,
         preferencias: preferencias || null,
       };
       const planData = weekPlan
@@ -295,7 +389,15 @@ const Dieta = () => {
         plan_data: planData,
       });
       if (error) throw error;
-      toast.success("Plano salvo!");
+
+      // Show meta description in toast
+      const metaMsg = metaPeso
+        ? deadlineValue
+          ? `Meta: ${peso}kg → ${metaPeso}kg em ${deadlineValue} ${deadlineValue === 1 ? "mês" : "meses"}`
+          : `Meta: ${peso}kg → ${metaPeso}kg`
+        : null;
+      toast.success(metaMsg ? `Plano salvo! ${metaMsg}` : "Plano salvo!");
+
       const { data } = await supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
     } catch {
@@ -321,6 +423,7 @@ const Dieta = () => {
     setViewingSaved(sp);
     setPlan(null);
     setWeekPlan(null);
+    setMealStatuses({});
     
     const data = sp.plan_data;
     if (data && typeof data === "object" && "weekPlan" in data) {
@@ -356,6 +459,11 @@ const Dieta = () => {
   ];
 
   const weightDiff = metaPeso && peso ? Number(metaPeso) - Number(peso) : null;
+
+  // Meal progress stats
+  const totalMealsCount = displayPlan?.length || 0;
+  const doneCount = Object.values(mealStatuses).filter((s) => s === "done").length;
+  const failedCount = Object.values(mealStatuses).filter((s) => s === "failed").length;
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -412,7 +520,6 @@ const Dieta = () => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-border/40" />
 
         {/* Section: Meta de Peso + Prazo */}
@@ -437,7 +544,7 @@ const Dieta = () => {
               {errors.metaPeso && <p className="text-[11px] text-destructive mt-1">{errors.metaPeso}</p>}
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Prazo</label>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Prazo <span className="text-muted-foreground/60">(opcional)</span></label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Select value={prazo} onValueChange={setPrazo}>
@@ -449,6 +556,7 @@ const Dieta = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Sem prazo = ritmo moderado e sustentável</p>
             </div>
             {weightDiff !== null && peso && metaPeso && (
               <div className="flex items-center gap-2 sm:mt-7">
@@ -462,8 +570,8 @@ const Dieta = () => {
                   {weightDiff === 0 
                     ? "Manutenção" 
                     : weightDiff < 0 
-                      ? `↓ ${Math.abs(weightDiff).toFixed(1)}kg em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` 
-                      : `↑ ${weightDiff.toFixed(1)}kg em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}`
+                      ? `↓ ${Math.abs(weightDiff).toFixed(1)}kg${prazo !== "none" ? ` em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` : ""}` 
+                      : `↑ ${weightDiff.toFixed(1)}kg${prazo !== "none" ? ` em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` : ""}`
                   }
                 </div>
               </div>
@@ -471,7 +579,6 @@ const Dieta = () => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-border/40" />
 
         {/* Section: Preferências Alimentares */}
@@ -494,7 +601,6 @@ const Dieta = () => {
           <p className="text-[11px] text-muted-foreground mt-1.5">Opcional — ajuda a personalizar melhor seu plano</p>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-border/40" />
 
         {/* Section: Período */}
@@ -574,12 +680,51 @@ const Dieta = () => {
       {/* Plan Display */}
       {displayPlan && (
         <>
+          {/* Save button + Meta banner */}
           {!viewingSaved && plan && (
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
-                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {saving ? "Salvando..." : "Salvar Plano"}
-              </Button>
+            <div className="space-y-3">
+              {metaPeso && (
+                <div className="glass-card p-4 flex items-center gap-3 border-primary/15">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Target className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      Meta: {peso}kg → {metaPeso}kg
+                      {prazo !== "none" && <span className="text-muted-foreground font-normal"> em {prazo} {Number(prazo) === 1 ? "mês" : "meses"}</span>}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {planPeriod === "semana" ? "Plano semanal" : planPeriod === "mes" ? "Plano mensal" : "Plano diário"} gerado com base nessa meta
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {saving ? "Salvando..." : "Salvar Plano"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Meal progress bar */}
+          {(doneCount > 0 || failedCount > 0) && planPeriod === "hoje" && (
+            <div className="glass-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Progresso do Dia</p>
+                <p className="text-sm font-bold text-foreground">{doneCount}/{totalMealsCount}</p>
+              </div>
+              <div className="w-full h-2 rounded-full bg-secondary/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-chart-2 to-primary transition-all duration-500"
+                  style={{ width: `${totalMealsCount > 0 ? (doneCount / totalMealsCount) * 100 : 0}%` }}
+                />
+              </div>
+              <div className="flex items-center gap-4 mt-2">
+                <span className="text-[11px] text-chart-2 flex items-center gap-1"><Check className="w-3 h-3" /> {doneCount} feitas</span>
+                {failedCount > 0 && <span className="text-[11px] text-destructive flex items-center gap-1"><XIcon className="w-3 h-3" /> {failedCount} falharam</span>}
+              </div>
             </div>
           )}
 
@@ -606,14 +751,28 @@ const Dieta = () => {
                 {planPeriod === "semana" ? "Plano Semanal" : "Plano Mensal"}
               </h3>
               {displayWeekPlan.map((dayPlan, i) => (
-                <DayAccordion key={i} dayPlan={dayPlan} defaultOpen={i === 0} onMealFocus={(meal) => setFocusMeal(meal)} />
+                <DayAccordion
+                  key={i}
+                  dayPlan={dayPlan}
+                  defaultOpen={i === 0}
+                  onMealFocus={(meal) => setFocusMeal(meal)}
+                  mealStatuses={mealStatuses}
+                  onSetMealStatus={setMealStatus}
+                />
               ))}
             </div>
           ) : (
             <div className="space-y-3">
               <h3 className="font-display font-semibold text-xs text-muted-foreground uppercase tracking-widest">Refeições de Hoje</h3>
               {displayPlan.map((meal, i) => (
-                <MealCard key={i} meal={meal} index={i} onFocus={() => setFocusMeal(meal)} />
+                <MealCard
+                  key={i}
+                  meal={meal}
+                  index={i}
+                  onFocus={() => setFocusMeal(meal)}
+                  status={mealStatuses[`today-${i}`] || null}
+                  onSetStatus={(s) => setMealStatus(`today-${i}`, s)}
+                />
               ))}
             </div>
           )}
