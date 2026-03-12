@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Activity, Target, Menu, Flame, LogOut, User, X, 
-  History, Settings, Trophy, BookOpen
+  History, Settings, Trophy, BookOpen, BarChart3
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
