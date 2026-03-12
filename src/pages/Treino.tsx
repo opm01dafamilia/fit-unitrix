@@ -466,6 +466,32 @@ const Treino = () => {
               </div>
             </RadioGroup>
           </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 mb-5">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Frequência de Cardio</label>
+              <Select value={cardioFreq} onValueChange={(v) => setCardioFreq(v as CardioFrequency)}>
+                <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Sem cardio</SelectItem>
+                  <SelectItem value="1-2">1–2x por semana</SelectItem>
+                  <SelectItem value="3-4">3–4x por semana</SelectItem>
+                  <SelectItem value="daily">Todos os dias</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Intensidade Geral</label>
+              <Select value={intensityLevel} onValueChange={(v) => setIntensityLevel(v as IntensityLevel)}>
+                <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="moderado">Moderado — volume equilibrado, recuperação facilitada</SelectItem>
+                  <SelectItem value="intenso">Intenso — maior volume, descanso menor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
             {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
             {generating ? "Gerando..." : "Gerar Plano de Treino"}
