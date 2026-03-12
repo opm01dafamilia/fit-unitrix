@@ -785,6 +785,33 @@ const Treino = () => {
             </div>
           </div>
 
+          {/* Weekly Consistency Counter */}
+          <div className="glass-card p-4 lg:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
+                  <Target className="w-4.5 h-4.5 text-chart-2" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Consistência Semanal</p>
+                  <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
+                </div>
+              </div>
+              <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
+                {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
+              </span>
+            </div>
+            <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-2">
+              <div 
+                className="h-full bg-gradient-to-r from-chart-2 to-primary rounded-full transition-all duration-700 ease-out" 
+                style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
+              />
+            </div>
+            <p className={`text-[11px] font-medium ${consistencyFeedback.color}`}>
+              {consistencyFeedback.text}
+            </p>
+          </div>
+
           {/* Inactivity Suggestion */}
           {inactivitySuggestion && (
             <div className="glass-card p-4 lg:p-5 border border-amber-500/20">
