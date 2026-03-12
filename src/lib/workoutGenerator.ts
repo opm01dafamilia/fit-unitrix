@@ -12,7 +12,7 @@ type WorkoutDay = {
   exercicios: Exercise[];
 };
 
-const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 // Volume multiplier by level
 const levelConfig = {
