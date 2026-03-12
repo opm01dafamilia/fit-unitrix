@@ -16,6 +16,8 @@ import Historico from "./pages/Historico";
 import Conquistas from "./pages/Conquistas";
 import Biblioteca from "./pages/Biblioteca";
 import AnaliseCorporal from "./pages/AnaliseCorporal";
+import Ranking from "./pages/Ranking";
+import Comunidade from "./pages/Comunidade";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ResetPassword from "./pages/ResetPassword";
