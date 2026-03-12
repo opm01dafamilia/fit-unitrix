@@ -35,6 +35,7 @@ const Treino = () => {
   const navigate = useNavigate();
   // View state
   const [view, setView] = useState<"dashboard" | "generator" | "execution">("dashboard");
+  const [executionKey, setExecutionKey] = useState(0);
   // Generator state
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
