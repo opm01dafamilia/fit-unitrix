@@ -18,7 +18,7 @@ type AchievementDef = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone" | "diet";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
   requirement: number;
   getValue: (stats: UserStats) => number;
 };
