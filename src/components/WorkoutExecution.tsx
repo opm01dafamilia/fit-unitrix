@@ -1083,9 +1083,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                     {altLibrary ? (
                       <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
                     ) : (
-                      <div className="flex flex-col items-center">
-                        {alt.tag?.includes("Casa") ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
-                      </div>
+                      <AltGifPreview name={alt.nome} isHome={!!alt.tag?.includes("Casa")} />
                     )}
                   </div>
                   {/* Exercise details */}
