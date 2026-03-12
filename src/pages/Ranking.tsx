@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import PremiumGate from "@/components/PremiumGate";
 import {
   Trophy, Flame, Dumbbell, Target, Medal, Crown,
   TrendingUp, Zap, ChevronRight, Loader2, UtensilsCrossed
