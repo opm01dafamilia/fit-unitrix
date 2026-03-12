@@ -327,8 +327,91 @@ function getHealthAlert(currentWeight: number, weightGoal: number, deadlineMonth
   return null;
 }
 
+// Weekly adherence feedback component
+const WeeklyAdherenceFeedback = ({ weeklyAdherence, weeklyMealsDone, weeklyMealsTotal, dietMeta, isGain }: {
+  weeklyAdherence: number;
+  weeklyMealsDone: number;
+  weeklyMealsTotal: number;
+  dietMeta: DietMeta | null;
+  isGain: boolean;
+}) => {
+  if (weeklyMealsTotal === 0) return null;
+
+  const getAdherenceLevel = (pct: number) => {
+    if (pct >= 90) return { level: "excelente", color: "chart-2", emoji: "🏆", message: "Parabéns! Sua aderência está excelente. Continue assim para atingir sua meta no prazo!" };
+    if (pct >= 70) return { level: "boa", color: "primary", emoji: "💪", message: "Boa aderência! Pequenos ajustes podem acelerar seus resultados." };
+    if (pct >= 50) return { level: "moderada", color: "chart-4", emoji: "⚠️", message: "Aderência moderada. Tente manter mais refeições no plano para resultados consistentes." };
+    return { level: "baixa", color: "destructive", emoji: "🔄", message: "Aderência baixa. Considere revisar a dieta para algo mais viável no seu dia a dia." };
+  };
+
+  const info = getAdherenceLevel(weeklyAdherence);
+
+  // Adjusted progress estimate based on adherence
+  const adherenceFactor = weeklyAdherence / 100;
+  const adjustedMonthlyRate = dietMeta?.monthlyRate ? Math.round(dietMeta.monthlyRate * adherenceFactor * 10) / 10 : null;
+
+  const isDeviation = weeklyAdherence < 50;
+
+  return (
+    <div className={`glass-card p-4 border-${info.color}/15 space-y-3`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-${info.color}/20 to-${info.color}/5 flex items-center justify-center border border-${info.color}/15 shrink-0`}>
+          <span className="text-lg">{info.emoji}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-display font-bold text-foreground">
+            Resumo Semanal: {weeklyMealsDone}/{weeklyMealsTotal} refeições
+          </p>
+          <p className="text-[12px] text-muted-foreground">
+            Você completou <span className={`font-semibold text-${info.color}`}>{weeklyAdherence}%</span> da dieta esta semana
+          </p>
+        </div>
+      </div>
+
+      {/* Feedback message */}
+      <div className={`p-3 rounded-xl bg-${info.color}/5 border border-${info.color}/10`}>
+        <p className={`text-[12px] text-${info.color} font-medium`}>{info.message}</p>
+      </div>
+
+      {/* Adjusted progress estimate */}
+      {adjustedMonthlyRate !== null && dietMeta?.weightGoal && (
+        <div className="flex items-center gap-2 text-[11px]">
+          <Scale className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            Ritmo estimado com aderência atual:{" "}
+            <span className="font-semibold text-foreground">
+              {Math.abs(adjustedMonthlyRate)}kg/mês
+            </span>
+            {dietMeta.monthlyRate && Math.abs(adjustedMonthlyRate) < Math.abs(dietMeta.monthlyRate) && (
+              <span className="text-chart-4 ml-1">
+                (planejado: {Math.abs(dietMeta.monthlyRate)}kg/mês)
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+
+      {/* Deviation alert */}
+      {isDeviation && (
+        <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle className="text-[13px]">Desvio significativo detectado</AlertTitle>
+          <AlertDescription className="text-[11px]">
+            Com essa aderência, a meta pode não ser atingida no prazo. Sugestões:
+            <ul className="list-disc ml-4 mt-1 space-y-0.5">
+              <li>Revise a dieta para refeições mais práticas</li>
+              <li>Considere uma meta mais realista</li>
+              <li>Aumente o prazo do plano</li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+};
+
 // Weight goal progress banner
-const WeightGoalBanner = ({ meta, isGain, realWeight }: { meta: DietMeta; isGain: boolean; realWeight?: number }) => {
+const WeightGoalBanner = ({ meta, isGain, realWeight, weeklyAdherence }: { meta: DietMeta; isGain: boolean; realWeight?: number; weeklyAdherence?: number }) => {
   if (!meta.weightGoal || !meta.currentWeight) return null;
   
   const diff = Math.abs(meta.weightGoal - meta.currentWeight);
@@ -339,20 +422,27 @@ const WeightGoalBanner = ({ meta, isGain, realWeight }: { meta: DietMeta; isGain
   const progressAchieved = totalDiff !== 0 
     ? Math.max(0, Math.min(100, Math.round(((currentActual - meta.currentWeight) / totalDiff) * 100)))
     : 0;
+
+  // Adherence-adjusted estimated weight projection
+  const adherenceFactor = weeklyAdherence !== undefined ? weeklyAdherence / 100 : 1;
   
   const TrendIcon = isGain ? TrendingUp : TrendingDown;
   const healthAlert = getHealthAlert(meta.currentWeight, meta.weightGoal, meta.deadlineMonths);
 
-  // Build evolution chart data
-  const chartData: { label: string; peso: number }[] = [];
-  chartData.push({ label: "Início", peso: meta.currentWeight });
+  // Build evolution chart data with adherence adjustment
+  const chartData: { label: string; peso: number; pesoAjustado?: number }[] = [];
+  chartData.push({ label: "Início", peso: meta.currentWeight, pesoAjustado: meta.currentWeight });
   
   if (meta.weeklyTargets && meta.weeklyTargets.length > 0 && meta.deadlineMonths) {
     const monthCount = Math.min(meta.deadlineMonths, 6);
     for (let m = 0; m < monthCount; m++) {
       const weekIdx = Math.min((m + 1) * 4 - 1, meta.weeklyTargets.length - 1);
       const wt = meta.weeklyTargets[weekIdx];
-      if (wt) chartData.push({ label: `Mês ${m + 1}`, peso: wt.estimatedWeight });
+      if (wt) {
+        const weightChange = wt.estimatedWeight - meta.currentWeight;
+        const adjustedWeight = Math.round((meta.currentWeight + weightChange * adherenceFactor) * 10) / 10;
+        chartData.push({ label: `Mês ${m + 1}`, peso: wt.estimatedWeight, pesoAjustado: adherenceFactor < 1 ? adjustedWeight : undefined });
+      }
     }
   } else if (meta.weightGoal) {
     chartData.push({ label: "Meta", peso: meta.weightGoal });
@@ -425,17 +515,24 @@ const WeightGoalBanner = ({ meta, isGain, realWeight }: { meta: DietMeta; isGain
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
                     <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="weightAdjustedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--chart-4))" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="hsl(var(--chart-4))" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                 <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} unit="kg" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
-                  formatter={(value: number) => [`${value}kg`, 'Peso estimado']}
+                  formatter={(value: number, name: string) => [`${value}kg`, name === 'pesoAjustado' ? 'Com aderência atual' : 'Peso planejado']}
                 />
                 {realWeight && (
                   <ReferenceLine y={realWeight} stroke="hsl(var(--chart-2))" strokeDasharray="4 4" label={{ value: `Atual: ${realWeight}kg`, fontSize: 10, fill: 'hsl(var(--chart-2))' }} />
                 )}
-                <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightGradient)" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} />
+                <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightGradient)" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} name="Planejado" />
+                {adherenceFactor < 1 && chartData.some(d => d.pesoAjustado !== undefined && d.pesoAjustado !== d.peso) && (
+                  <Area type="monotone" dataKey="pesoAjustado" stroke="hsl(var(--chart-4))" fill="url(#weightAdjustedGradient)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: 'hsl(var(--chart-4))' }} name="Com aderência atual" />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -1136,6 +1233,18 @@ const Dieta = () => {
               meta={displayMeta}
               isGain={displayMeta.weightGoal > displayMeta.currentWeight}
               realWeight={latestWeight}
+              weeklyAdherence={weeklyAdherence}
+            />
+          )}
+
+          {/* Weekly Adherence Feedback */}
+          {weeklyMealsTotal > 0 && displayMeta && (
+            <WeeklyAdherenceFeedback
+              weeklyAdherence={weeklyAdherence}
+              weeklyMealsDone={weeklyMealsDone}
+              weeklyMealsTotal={weeklyMealsTotal}
+              dietMeta={displayMeta}
+              isGain={displayMeta.weightGoal ? displayMeta.weightGoal > displayMeta.currentWeight : objetivo === "massa"}
             />
           )}
 
