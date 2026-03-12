@@ -15,6 +15,8 @@ type Profile = {
   experience_level: string | null;
   training_location: string | null;
   onboarding_completed: boolean;
+  privacy_level: string;
+  avatar_url: string | null;
 };
 
 type AuthContextType = {

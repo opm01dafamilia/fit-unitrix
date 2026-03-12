@@ -5,7 +5,7 @@ export type Achievement = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone" | "diet";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
   requirement: number; // threshold value
   unlocked: boolean;
   unlockedAt?: string;
@@ -18,7 +18,7 @@ type AchievementDef = {
   title: string;
   description: string;
   icon: string;
-  category: "streak" | "volume" | "progression" | "milestone" | "diet";
+  category: "streak" | "volume" | "progression" | "milestone" | "diet" | "social";
   requirement: number;
   getValue: (stats: UserStats) => number;
 };
@@ -37,6 +37,10 @@ export type UserStats = {
   dietWeeklyAdherence: number; // 0-100
   // Body progression stats
   weeksAboveRhythm?: number;
+  // Social stats
+  firstWeekWorkout?: boolean;
+  isTop10?: boolean;
+  challengesCompleted?: number;
 };
 
 const achievementDefs: AchievementDef[] = [
@@ -257,6 +261,34 @@ const achievementDefs: AchievementDef[] = [
     requirement: 4,
     getValue: (s) => s.weeksAboveRhythm || 0,
   },
+  // Social achievements
+  {
+    id: "social_first_week",
+    title: "Primeiro da Semana",
+    description: "Complete o primeiro treino da semana",
+    icon: "🌅",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.firstWeekWorkout ? 1 : 0,
+  },
+  {
+    id: "social_top10",
+    title: "Top 10",
+    description: "Fique entre os 10 primeiros do ranking",
+    icon: "🏅",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.isTop10 ? 1 : 0,
+  },
+  {
+    id: "social_challenge_complete",
+    title: "Desafio Completo",
+    description: "Complete um desafio semanal",
+    icon: "⭐",
+    category: "social",
+    requirement: 1,
+    getValue: (s) => s.challengesCompleted || 0,
+  },
 ];
 
 export function calculateAchievements(stats: UserStats): Achievement[] {
@@ -343,6 +375,7 @@ export const categoryLabels: Record<string, string> = {
   progression: "Progressão",
   milestone: "Marco",
   diet: "Dieta",
+  social: "Social",
 };
 
 export const categoryIcons: Record<string, string> = {
@@ -351,4 +384,5 @@ export const categoryIcons: Record<string, string> = {
   progression: "📈",
   milestone: "🎯",
   diet: "🍽️",
+  social: "👥",
 };
