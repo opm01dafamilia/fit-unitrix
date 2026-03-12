@@ -6,10 +6,13 @@ type Exercise = {
   descanso: string;
 };
 
+export type DayIntensity = "pesado" | "moderado" | "leve";
+
 type WorkoutDay = {
   dia: string;
   grupo: string;
   exercicios: Exercise[];
+  intensidade?: DayIntensity;
 };
 
 const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
