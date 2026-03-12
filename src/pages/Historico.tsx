@@ -143,7 +143,19 @@ const Historico = () => {
 
       {/* Diet History */}
       {!loading && tab === "diet" && data.map((d) => {
-        const totalCal = (d.plan_data as any[])?.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0) || 0;
+        // Normalize plan_data: can be array, or object with plan/weekPlan
+        let meals: any[] = [];
+        try {
+          const pd = d.plan_data;
+          if (Array.isArray(pd)) {
+            meals = pd;
+          } else if (pd && typeof pd === 'object') {
+            if (Array.isArray((pd as any).plan)) meals = (pd as any).plan;
+            else if (Array.isArray((pd as any).weekPlan)) meals = (pd as any).weekPlan;
+          }
+        } catch { meals = []; }
+
+        const totalCal = meals.reduce((acc: number, m: any) => acc + (m.itens?.reduce((a: number, i: any) => a + (i.cal || 0), 0) || 0), 0) || 0;
         return (
           <div key={d.id} className="glass-card overflow-hidden">
             <button onClick={() => setExpandedId(expandedId === d.id ? null : d.id)}
@@ -161,9 +173,11 @@ const Historico = () => {
             </button>
             {expandedId === d.id && (
               <div className="px-4 pb-4 border-t border-border/50 pt-3 space-y-2">
-                {(d.plan_data as any[]).map((meal: any, i: number) => (
+                {meals.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-2">Nenhuma refeição detalhada disponível</p>
+                ) : meals.map((meal: any, i: number) => (
                   <div key={i} className="p-3 rounded-lg bg-secondary/30">
-                    <p className="text-xs font-semibold">{meal.refeicao} — {meal.horario}</p>
+                    <p className="text-xs font-semibold">{meal.refeicao || meal.nome || `Refeição ${i + 1}`} {meal.horario ? `— ${meal.horario}` : ''}</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{meal.itens?.length || 0} itens</p>
                   </div>
                 ))}
