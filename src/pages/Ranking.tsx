@@ -231,11 +231,11 @@ const Ranking = () => {
       {/* Your Position Card */}
       {userStats && (
         <div className="glass-card p-5 lg:p-6 glow-border relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-yellow-500/8 to-transparent rounded-bl-full" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-chart-3/8 to-transparent rounded-bl-full" />
           <div className="relative z-10">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 flex items-center justify-center border border-yellow-500/15">
-                <span className="text-2xl font-display font-bold text-yellow-400">#{userRank || '—'}</span>
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-chart-3/20 to-chart-3/5 flex items-center justify-center border border-chart-3/15">
+                <span className="text-2xl font-display font-bold text-chart-3">#{userRank || '—'}</span>
               </div>
               <div className="flex-1">
                 <h3 className="font-display font-bold text-lg">{profile?.full_name || "Você"}</h3>
