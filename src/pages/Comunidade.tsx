@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import PremiumGate from "@/components/PremiumGate";
 import {
   Users, Heart, MessageCircle, Dumbbell, Flame,
   UtensilsCrossed, Trophy, Send, Shield, Globe, Lock,
