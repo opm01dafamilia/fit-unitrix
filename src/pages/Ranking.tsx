@@ -254,7 +254,7 @@ const Ranking = () => {
                 <p className="text-[8px] text-muted-foreground">Séries</p>
               </div>
               <div className="p-2.5 rounded-xl bg-secondary/40 border border-border/30 text-center">
-                <Flame className="w-3.5 h-3.5 text-orange-400 mx-auto mb-1" />
+                <Flame className="w-3.5 h-3.5 text-destructive mx-auto mb-1" />
                 <p className="text-sm font-display font-bold">{userStats.diet_streak}</p>
                 <p className="text-[8px] text-muted-foreground">Streak Dieta</p>
               </div>
