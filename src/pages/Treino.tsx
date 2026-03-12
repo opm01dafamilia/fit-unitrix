@@ -345,13 +345,17 @@ const Treino = () => {
   };
 
   const startWorkout = useCallback((plan: any, dayIndex: number) => {
+    if (todayCompleted) {
+      toast.info("✅ Treino de hoje concluído. Continue amanhã!", { duration: 4000 });
+      return;
+    }
     // Set all execution state synchronously, then switch view
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
     setExecutionKey(k => k + 1);
     setView("execution");
-  }, []);
+  }, [todayCompleted]);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
