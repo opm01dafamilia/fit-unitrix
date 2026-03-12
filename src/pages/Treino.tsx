@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
@@ -35,6 +35,7 @@ const Treino = () => {
   const navigate = useNavigate();
   // View state
   const [view, setView] = useState<"dashboard" | "generator" | "execution">("dashboard");
+  const [executionKey, setExecutionKey] = useState(0);
   // Generator state
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
@@ -292,12 +293,17 @@ const Treino = () => {
     } catch { toast.error("Erro ao excluir plano"); }
   };
 
-  const startWorkout = (plan: any, dayIndex: number) => {
+  const startWorkout = useCallback((plan: any, dayIndex: number) => {
+    // Force a clean remount of WorkoutExecution by incrementing key
+    setExecutionKey(k => k + 1);
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
-    setView("execution");
-  };
+    // Use a microtask to ensure state is set before switching view
+    Promise.resolve().then(() => {
+      setView("execution");
+    });
+  }, []);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
@@ -335,6 +341,7 @@ const Treino = () => {
   if (view === "execution" && executingPlan) {
     return (
       <WorkoutExecution
+        key={`workout-${executionKey}-${executingDayIndex}`}
         plan={executingPlan}
         dayIndex={executingDayIndex}
         userId={user!.id}

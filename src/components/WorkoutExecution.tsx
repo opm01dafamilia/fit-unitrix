@@ -46,9 +46,10 @@ type Props = {
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
-  const planData = plan.plan_data as WorkoutDay[];
-  const day = planData[dayIndex];
-  const [exercises, setExercises] = useState<Exercise[]>(day.exercicios);
+  const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
+  const day = useMemo(() => planData[dayIndex], [planData, dayIndex]);
+  const [isReady, setIsReady] = useState(false);
+  const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
@@ -92,8 +93,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const currentProgression = progressions[currentEx.nome];
   const REST_OPTIONS = [30, 45, 60, 90, 120];
 
-  const stretching = useMemo(() => getStretchingForDay(day.grupo), [day.grupo]);
+  const stretching = useMemo(() => getStretchingForDay(day?.grupo || ""), [day?.grupo]);
   const cardioRec = useMemo(() => getCardioRecommendation(objective), [objective]);
+
+  // Initialize component - mark as ready after first render
+  useEffect(() => {
+    if (day && exercises.length > 0) {
+      setIsReady(true);
+    } else if (day) {
+      setExercises(day.exercicios);
+      setIsReady(true);
+    }
+  }, [day]);
 
   // Load exercise history
   useEffect(() => {
@@ -393,6 +404,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     </div>
   );
 
+  // ===== LOADING / INITIALIZATION =====
+  if (!isReady || !day) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 shadow-lg">
+          <Dumbbell className="w-8 h-8 text-primary animate-pulse" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">Preparando treino...</p>
+        <p className="text-xs text-muted-foreground mt-1">Carregando exercícios</p>
+      </div>
+    );
+  }
+
   // ===== COMPLETION CELEBRATION SCREEN =====
   if (showCompletion) {
     return (
@@ -450,7 +474,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   // ===== STRETCHING PRE-WORKOUT SCREEN =====
   if (showStretching && stretching.length > 0) {
     return (
-      <div className="space-y-4 animate-slide-up pb-24">
+      <div className="space-y-4 animate-slide-up pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onBack}>
@@ -509,14 +533,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-[11px] text-muted-foreground">Treino adaptado para <span className="font-semibold text-foreground">casa</span>.</p>
           </div>
         )}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
-          <div className="max-w-lg mx-auto flex gap-3">
-            <Button variant="outline" className="flex-1 h-11" onClick={() => setShowStretching(false)}>Pular Aquecimento</Button>
-            <Button className="flex-1 h-11" onClick={() => setShowStretching(false)}>
-              <Play className="w-4 h-4 mr-2" /> Iniciar Treino
-            </Button>
-          </div>
+        {/* Inline buttons - no fixed positioning issues */}
+        <div className="mt-2 space-y-3">
+          <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20" onClick={() => setShowStretching(false)}>
+            <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+          </Button>
+          <Button variant="outline" className="w-full h-11" onClick={() => setShowStretching(false)}>
+            Pular Aquecimento
+          </Button>
         </div>
+        <div className="h-4" />
       </div>
     );
   }
