@@ -23,6 +23,7 @@ const Biblioteca = lazy(() => import("./pages/Biblioteca"));
 const AnaliseCorporal = lazy(() => import("./pages/AnaliseCorporal"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Comunidade = lazy(() => import("./pages/Comunidade"));
+const PerfilFitness = lazy(() => import("./pages/PerfilFitness"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
