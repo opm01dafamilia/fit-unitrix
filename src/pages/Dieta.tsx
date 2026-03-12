@@ -13,7 +13,7 @@ import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
-import FocusMode from "@/components/FocusMode";
+import DietFocusMode from "@/components/DietFocusMode";
 import { format, subDays } from "date-fns";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
