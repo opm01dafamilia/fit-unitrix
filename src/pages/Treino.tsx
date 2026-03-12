@@ -551,6 +551,7 @@ const Treino = () => {
 
   // ==================== DASHBOARD VIEW ====================
   return (
+    <PremiumGate feature="Plano de Treino">
     <div className="space-y-5 animate-slide-up">
       <div className="flex items-center justify-between">
         <div>
