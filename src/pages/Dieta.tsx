@@ -1107,7 +1107,7 @@ const Dieta = () => {
                   key={i}
                   dayPlan={dayPlan}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => setFocusMeal(meal)}
+                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
