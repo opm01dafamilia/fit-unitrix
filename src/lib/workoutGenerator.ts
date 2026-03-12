@@ -219,7 +219,12 @@ const upperGroups = ["peito", "costas", "ombros", "biceps", "triceps"];
 const lowerGroups = ["pernas"];
 const coreAndCardio = ["abdomen", "hiit", "cardio"];
 
-const splitTemplates: Record<Objective, Record<number, string[][]>> = {
+// Each 7-day entry uses a tuple: [groups[], intensity]
+// For 3-6 day splits, intensity is always "pesado" (default)
+type SplitEntry = string[];
+type SplitEntry7 = { groups: string[]; intensity: DayIntensity };
+
+const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
   emagrecer: {
     3: [["hiit", "abdomen"], ["pernas", "cardio"], ["peito", "costas", "hiit"]],
     4: [["hiit", "abdomen"], ["pernas"], ["peito", "triceps", "hiit"], ["costas", "biceps", "cardio"]],
@@ -240,8 +245,40 @@ const splitTemplates: Record<Objective, Record<number, string[][]>> = {
   },
 };
 
+// 7-day splits with intelligent intensity distribution
+// Pattern: 4 pesado, 2 moderado, 1 leve — never 2 consecutive heavy days on same muscle group
+const splitTemplates7: Record<Objective, SplitEntry7[]> = {
+  emagrecer: [
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["cardio", "abdomen"], intensity: "moderado" },
+    { groups: ["costas", "biceps"], intensity: "pesado" },
+    { groups: ["hiit", "abdomen"], intensity: "moderado" },
+    { groups: ["pernas"], intensity: "pesado" },
+    { groups: ["ombros", "hiit"], intensity: "pesado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  massa: [
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "pesado" },
+    { groups: ["abdomen", "cardio"], intensity: "moderado" },
+    { groups: ["pernas"], intensity: "pesado" },
+    { groups: ["ombros", "abdomen"], intensity: "moderado" },
+    { groups: ["biceps", "triceps", "peito"], intensity: "pesado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  condicionamento: [
+    { groups: ["hiit", "peito"], intensity: "pesado" },
+    { groups: ["cardio", "abdomen"], intensity: "moderado" },
+    { groups: ["costas", "hiit"], intensity: "pesado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["pernas", "cardio"], intensity: "pesado" },
+    { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
+    { groups: ["hiit", "pernas"], intensity: "pesado" },
+  ],
+};
+
 // Focus-specific split overrides
-const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, string[][]>>> = {
+const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, SplitEntry[]>>> = {
   superior: {
     emagrecer: {
       3: [["peito", "costas", "hiit"], ["ombros", "biceps", "hiit"], ["triceps", "peito", "cardio"]],
@@ -289,17 +326,111 @@ const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, st
   },
 };
 
+// Focus-specific 7-day overrides
+const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> = {
+  superior: {
+    emagrecer: [
+      { groups: ["peito", "triceps"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["costas", "biceps"], intensity: "pesado" },
+      { groups: ["ombros", "hiit"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["peito", "costas"], intensity: "pesado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    ],
+    massa: [
+      { groups: ["peito"], intensity: "pesado" },
+      { groups: ["costas"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["ombros"], intensity: "pesado" },
+      { groups: ["biceps", "triceps"], intensity: "pesado" },
+      { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    ],
+    condicionamento: [
+      { groups: ["hiit", "peito"], intensity: "pesado" },
+      { groups: ["costas", "cardio"], intensity: "moderado" },
+      { groups: ["ombros", "hiit"], intensity: "pesado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["biceps", "triceps", "hiit"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["peito", "costas"], intensity: "pesado" },
+    ],
+  },
+  inferior: {
+    emagrecer: [
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas", "hiit"], intensity: "pesado" },
+    ],
+    massa: [
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["pernas", "abdomen"], intensity: "moderado" },
+      { groups: ["pernas"], intensity: "pesado" },
+    ],
+    condicionamento: [
+      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas", "cardio"], intensity: "pesado" },
+    ],
+  },
+  completo: splitTemplates7,
+};
+
 const groupLabels: Record<string, string> = {
   peito: "Peito", costas: "Costas", pernas: "Pernas", ombros: "Ombros",
   biceps: "Bíceps", triceps: "Tríceps", abdomen: "Abdômen",
-  hiit: "HIIT", cardio: "Cardio",
+  hiit: "HIIT", cardio: "Cardio", mobilidade: "Mobilidade", recuperacao: "Recuperação",
 };
 
 export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number, bodyFocus: BodyFocus = "completo"): WorkoutDay[] {
-  const days = Math.max(3, Math.min(6, daysPerWeek));
+  const days = Math.max(3, Math.min(7, daysPerWeek));
+  const config = levelConfig[level];
+
+  // 7-day uses special templates with intensity metadata
+  if (days === 7) {
+    const focusTemplates7 = focusSplitTemplates7[bodyFocus] || focusSplitTemplates7.completo;
+    const split7 = focusTemplates7[objective] || splitTemplates7[objective];
+
+    return split7.map((entry, i) => {
+      const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
+      const exercicios: Exercise[] = [];
+
+      // Reduce volume for moderate/light days
+      const volumeMultiplier = entry.intensity === "leve" ? 0.5 : entry.intensity === "moderado" ? 0.75 : 1;
+
+      entry.groups.forEach(group => {
+        const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+        pool.forEach(ex => {
+          const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
+          exercicios.push({ ...ex, series: String(adjustedSeries) });
+        });
+      });
+
+      return {
+        dia: diasSemana[i] || `Dia ${i + 1}`,
+        grupo,
+        exercicios,
+        intensidade: entry.intensity,
+      };
+    });
+  }
+
+  // 3-6 day standard generation
   const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
   const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
-  const config = levelConfig[level];
 
   return split.map((muscleGroups, i) => {
     const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
@@ -317,6 +448,7 @@ export function generateWorkoutPlan(objective: Objective, level: Level, daysPerW
       dia: diasSemana[i] || `Dia ${i + 1}`,
       grupo,
       exercicios,
+      intensidade: "pesado" as DayIntensity,
     };
   });
 }
