@@ -16,6 +16,8 @@ const navItems = [
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/analise", icon: BarChart3, label: "Análise" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
+  { to: "/ranking", icon: Crown, label: "Ranking" },
+  { to: "/comunidade", icon: Users, label: "Comunidade" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
