@@ -404,6 +404,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     </div>
   );
 
+  // ===== LOADING / INITIALIZATION =====
+  if (!isReady || !day) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center animate-fade-in">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 shadow-lg">
+          <Dumbbell className="w-8 h-8 text-primary animate-pulse" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">Preparando treino...</p>
+        <p className="text-xs text-muted-foreground mt-1">Carregando exercícios</p>
+      </div>
+    );
+  }
+
   // ===== COMPLETION CELEBRATION SCREEN =====
   if (showCompletion) {
     return (
