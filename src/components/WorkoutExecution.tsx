@@ -93,8 +93,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const currentProgression = progressions[currentEx.nome];
   const REST_OPTIONS = [30, 45, 60, 90, 120];
 
-  const stretching = useMemo(() => getStretchingForDay(day.grupo), [day.grupo]);
+  const stretching = useMemo(() => getStretchingForDay(day?.grupo || ""), [day?.grupo]);
   const cardioRec = useMemo(() => getCardioRecommendation(objective), [objective]);
+
+  // Initialize component - mark as ready after first render
+  useEffect(() => {
+    if (day && exercises.length > 0) {
+      setIsReady(true);
+    } else if (day) {
+      setExercises(day.exercicios);
+      setIsReady(true);
+    }
+  }, [day]);
 
   // Load exercise history
   useEffect(() => {
