@@ -272,7 +272,7 @@ const Treino = () => {
     setGenerating(true);
     setTimeout(() => {
       try {
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco);
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);
