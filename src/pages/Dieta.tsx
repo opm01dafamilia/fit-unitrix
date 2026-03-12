@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3 } from "lucide-react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +14,9 @@ import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type We
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { format, subDays } from "date-fns";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from "recharts";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
@@ -306,23 +308,74 @@ const WeekBlockAccordion = ({ block, defaultOpen, onMealFocus, mealStatuses, onS
   );
 };
 
+// Health alert logic
+function getHealthAlert(currentWeight: number, weightGoal: number, deadlineMonths: number | null): { type: "warning" | "danger"; message: string } | null {
+  if (!deadlineMonths || deadlineMonths <= 0) return null;
+  const diff = weightGoal - currentWeight;
+  const monthlyRate = Math.abs(diff / deadlineMonths);
+  const weeklyRate = monthlyRate / 4;
+
+  if (diff < 0) {
+    // Weight loss
+    if (weeklyRate > 1.0) return { type: "danger", message: `Perda de ${weeklyRate.toFixed(1)}kg/semana é potencialmente perigosa. Recomendamos no máximo 0.5–1kg/semana. Considere aumentar o prazo.` };
+    if (weeklyRate > 0.7) return { type: "warning", message: `Perda de ${weeklyRate.toFixed(1)}kg/semana é agressiva. Para preservar massa muscular, considere um prazo maior.` };
+  } else {
+    // Weight gain
+    if (weeklyRate > 0.5) return { type: "danger", message: `Ganho de ${weeklyRate.toFixed(1)}kg/semana pode gerar acúmulo excessivo de gordura. Recomendamos até 0.25–0.5kg/semana.` };
+    if (weeklyRate > 0.35) return { type: "warning", message: `Ganho de ${weeklyRate.toFixed(1)}kg/semana é acima do ideal para massa magra. Considere um prazo maior.` };
+  }
+  return null;
+}
+
 // Weight goal progress banner
-const WeightGoalBanner = ({ meta, isGain }: { meta: DietMeta; isGain: boolean }) => {
+const WeightGoalBanner = ({ meta, isGain, realWeight }: { meta: DietMeta; isGain: boolean; realWeight?: number }) => {
   if (!meta.weightGoal || !meta.currentWeight) return null;
   
   const diff = Math.abs(meta.weightGoal - meta.currentWeight);
-  const progressPct = 0; // Starting point — future: connect to body_tracking for real progress
+  const totalDiff = meta.weightGoal - meta.currentWeight;
+  
+  // Real progress from body_tracking
+  const currentActual = realWeight || meta.currentWeight;
+  const progressAchieved = totalDiff !== 0 
+    ? Math.max(0, Math.min(100, Math.round(((currentActual - meta.currentWeight) / totalDiff) * 100)))
+    : 0;
+  
   const TrendIcon = isGain ? TrendingUp : TrendingDown;
+  const healthAlert = getHealthAlert(meta.currentWeight, meta.weightGoal, meta.deadlineMonths);
+
+  // Build evolution chart data
+  const chartData: { label: string; peso: number }[] = [];
+  chartData.push({ label: "Início", peso: meta.currentWeight });
+  
+  if (meta.weeklyTargets && meta.weeklyTargets.length > 0 && meta.deadlineMonths) {
+    const monthCount = Math.min(meta.deadlineMonths, 6);
+    for (let m = 0; m < monthCount; m++) {
+      const weekIdx = Math.min((m + 1) * 4 - 1, meta.weeklyTargets.length - 1);
+      const wt = meta.weeklyTargets[weekIdx];
+      if (wt) chartData.push({ label: `Mês ${m + 1}`, peso: wt.estimatedWeight });
+    }
+  } else if (meta.weightGoal) {
+    chartData.push({ label: "Meta", peso: meta.weightGoal });
+  }
 
   return (
     <div className="glass-card p-5 border-primary/15 space-y-4">
+      {/* Health Alert */}
+      {healthAlert && (
+        <Alert variant={healthAlert.type === "danger" ? "destructive" : "default"} className={healthAlert.type === "warning" ? "border-chart-4/40 bg-chart-4/5" : ""}>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{healthAlert.type === "danger" ? "Meta agressiva" : "Atenção"}</AlertTitle>
+          <AlertDescription className="text-[12px]">{healthAlert.message}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center gap-3">
         <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/15 shrink-0">
           <Target className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-base font-display font-bold text-foreground">
-            Plano de {meta.currentWeight}kg → {meta.weightGoal}kg
+            Plano nutricional: {meta.currentWeight}kg → {meta.weightGoal}kg
           </p>
           <p className="text-[12px] text-muted-foreground">
             {meta.deadlineMonths
@@ -339,33 +392,77 @@ const WeightGoalBanner = ({ meta, isGain }: { meta: DietMeta; isGain: boolean })
         </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar with real data */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-muted-foreground font-medium">Progresso da meta</span>
-          <span className="text-[11px] text-foreground font-semibold">{progressPct}%</span>
+          <span className="text-[11px] text-muted-foreground font-medium">
+            Progresso da meta
+            {realWeight && realWeight !== meta.currentWeight && (
+              <span className="text-primary ml-1.5">• Peso atual: {realWeight}kg</span>
+            )}
+          </span>
+          <span className="text-[11px] text-foreground font-semibold">{progressAchieved}%</span>
         </div>
-        <Progress value={progressPct} className="h-2.5" />
+        <Progress value={progressAchieved} className="h-2.5" />
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-[10px] text-muted-foreground">{meta.currentWeight}kg</span>
+          {realWeight && realWeight !== meta.currentWeight && (
+            <span className="text-[10px] text-primary font-semibold">{realWeight}kg ←</span>
+          )}
           <span className="text-[10px] text-primary font-medium">{meta.weightGoal}kg</span>
         </div>
       </div>
 
-      {/* Monthly evolution */}
+      {/* Visual evolution chart */}
+      {chartData.length > 2 && (
+        <div>
+          <p className="text-[11px] text-muted-foreground font-medium mb-2 uppercase tracking-widest">Evolução Estimada de Peso</p>
+          <div className="h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} unit="kg" />
+                <Tooltip
+                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                  formatter={(value: number) => [`${value}kg`, 'Peso estimado']}
+                />
+                {realWeight && (
+                  <ReferenceLine y={realWeight} stroke="hsl(var(--chart-2))" strokeDasharray="4 4" label={{ value: `Atual: ${realWeight}kg`, fontSize: 10, fill: 'hsl(var(--chart-2))' }} />
+                )}
+                <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightGradient)" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Monthly evolution cards */}
       {meta.weeklyTargets && meta.weeklyTargets.length > 0 && meta.deadlineMonths && (
         <div>
-          <p className="text-[11px] text-muted-foreground font-medium mb-2 uppercase tracking-widest">Evolução Mensal Estimada</p>
+          <p className="text-[11px] text-muted-foreground font-medium mb-2 uppercase tracking-widest">Progressão Calórica Mensal</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {Array.from({ length: Math.min(meta.deadlineMonths, 6) }, (_, m) => {
               const weekIdx = Math.min((m + 1) * 4 - 1, meta.weeklyTargets!.length - 1);
               const weekData = meta.weeklyTargets![weekIdx];
               if (!weekData) return null;
+              const prevCal = m === 0 ? null : meta.weeklyTargets![Math.min(m * 4 - 1, meta.weeklyTargets!.length - 1)]?.calories;
+              const calDiff = prevCal ? weekData.calories - prevCal : null;
               return (
                 <div key={m} className="p-3 rounded-xl bg-secondary/40 border border-border/30 text-center">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Mês {m + 1}</p>
                   <p className="text-sm font-display font-bold text-foreground">{weekData.estimatedWeight}kg</p>
                   <p className="text-[10px] text-chart-3 font-medium">{weekData.calories} kcal</p>
+                  {calDiff !== null && calDiff !== 0 && (
+                    <p className={`text-[9px] mt-0.5 font-medium ${calDiff > 0 ? "text-primary" : "text-chart-2"}`}>
+                      {calDiff > 0 ? "+" : ""}{calDiff} kcal
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -426,6 +523,7 @@ const Dieta = () => {
   const [weeklyMealsDone, setWeeklyMealsDone] = useState(0);
   const [weeklyMealsTotal, setWeeklyMealsTotal] = useState(0);
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+  const [latestWeight, setLatestWeight] = useState<number | undefined>(undefined);
 
   // Streak achievements thresholds
   const streakMilestones = [
@@ -453,9 +551,15 @@ const Dieta = () => {
     Promise.all([
       supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("diet_tracking").select("*").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(60),
-    ]).then(([plansRes, trackingRes]) => {
+      supabase.from("body_tracking").select("weight, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+    ]).then(([plansRes, trackingRes, bodyRes]) => {
       if (plansRes.error) toast.error("Erro ao carregar planos salvos");
       setSavedPlans(plansRes.data || []);
+      
+      // Set latest weight from body_tracking
+      if (bodyRes.data && bodyRes.data.length > 0) {
+        setLatestWeight(Number(bodyRes.data[0].weight));
+      }
       
       // Calculate streak from tracking data
       const tracking = (trackingRes.data || []) as any[];
@@ -1031,6 +1135,7 @@ const Dieta = () => {
             <WeightGoalBanner
               meta={displayMeta}
               isGain={displayMeta.weightGoal > displayMeta.currentWeight}
+              realWeight={latestWeight}
             />
           )}
 
