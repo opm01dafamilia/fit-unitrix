@@ -736,6 +736,11 @@ const Dieta = () => {
   const doneCount = Object.values(mealStatuses).filter((s) => s === "done").length;
   const failedCount = Object.values(mealStatuses).filter((s) => s === "failed").length;
 
+  // Next streak milestone
+  const nextMilestone = useMemo(() => {
+    return streakMilestones.find(m => m.days > dietStreak) || streakMilestones[streakMilestones.length - 1];
+  }, [dietStreak, streakMilestones]);
+
   return (
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
@@ -743,6 +748,68 @@ const Dieta = () => {
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Dieta Inteligente</h1>
         <p className="text-muted-foreground text-sm mt-1">Plano alimentar progressivo e personalizado para seu perfil e objetivos</p>
       </div>
+
+      {/* Streak & Weekly Stats Bar */}
+      {(dietStreak > 0 || weeklyMealsTotal > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Streak Card */}
+          <div className={`glass-card p-4 border-chart-3/15 transition-all ${showStreakAnimation ? "animate-scale-in" : ""}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${
+                dietStreak >= 7 
+                  ? "bg-gradient-to-br from-chart-3/25 to-chart-3/5 border-chart-3/20" 
+                  : dietStreak >= 3 
+                    ? "bg-gradient-to-br from-primary/20 to-primary/5 border-primary/15"
+                    : "bg-gradient-to-br from-chart-4/15 to-chart-4/5 border-chart-4/15"
+              }`}>
+                <Flame className={`w-6 h-6 ${dietStreak >= 7 ? "text-chart-3" : dietStreak >= 3 ? "text-primary" : "text-chart-4"}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-2xl font-display font-bold text-foreground">{dietStreak}</p>
+                  <p className="text-xs text-muted-foreground font-medium">dia{dietStreak !== 1 ? "s" : ""} seguido{dietStreak !== 1 ? "s" : ""}</p>
+                </div>
+                {nextMilestone && dietStreak < nextMilestone.days && (
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-muted-foreground">Próxima: {nextMilestone.icon} {nextMilestone.title}</span>
+                      <span className="text-[10px] text-foreground font-medium">{dietStreak}/{nextMilestone.days}</span>
+                    </div>
+                    <Progress value={(dietStreak / nextMilestone.days) * 100} className="h-1.5" />
+                  </div>
+                )}
+                {dietStreak >= 30 && (
+                  <p className="text-[11px] text-chart-3 font-semibold mt-0.5">🏆 Transformação atingida!</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Adherence Card */}
+          {weeklyMealsTotal > 0 && (
+            <div className="glass-card p-4 border-chart-2/15">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-chart-2/20 to-chart-2/5 flex items-center justify-center border border-chart-2/15 shrink-0">
+                  <BarChart3 className="w-6 h-6 text-chart-2" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-display font-bold text-foreground">{weeklyAdherence}%</p>
+                    <p className="text-xs text-muted-foreground font-medium">aderência semanal</p>
+                  </div>
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[10px] text-muted-foreground">{weeklyMealsDone}/{weeklyMealsTotal} refeições</span>
+                      {weeklyAdherence >= 90 && <span className="text-[10px] text-chart-2 font-bold">💯 Excelente!</span>}
+                    </div>
+                    <Progress value={weeklyAdherence} className="h-1.5" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Form */}
       <div className="glass-card p-5 lg:p-7 space-y-6">
