@@ -741,9 +741,22 @@ const Treino = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => startWorkout(activePlan, nextDayIndex)} className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
-                  <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+                <Button 
+                  onClick={() => startWorkout(activePlan, nextDayIndex)} 
+                  className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+                  disabled={todayCompleted}
+                >
+                  {todayCompleted ? (
+                    <><CheckCircle2 className="w-5 h-5 mr-2" /> Treino Concluído</>
+                  ) : (
+                    <><Play className="w-5 h-5 mr-2" /> Iniciar Treino</>
+                  )}
                 </Button>
+                {todayCompleted && (
+                  <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥
+                  </p>
+                )}
               </div>
             </div>
           )}
