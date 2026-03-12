@@ -8,6 +8,12 @@ const EXERCISEDB_API = "https://exercisedb-api.vercel.app/api/v1";
 const CACHE_KEY = "fitpulse_exercise_gifs_v2";
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// In-memory cache to avoid repeated localStorage reads
+let memoryCache: GifCache | null = null;
+
+// Dedup in-flight requests
+const pendingRequests = new Map<string, Promise<string | null>>();
+
 // Maps our exercise IDs to ExerciseDB search queries for best match
 export const exerciseSearchMap: Record<string, string> = {
   // PEITO
@@ -82,9 +88,7 @@ export const exerciseSearchMap: Record<string, string> = {
 };
 
 // Name-based search map for exercises not in the library by ID
-// Maps exercise display names to ExerciseDB search queries
 export const exerciseNameSearchMap: Record<string, string> = {
-  // Peito extras
   "Flexão com Peso": "weighted push up",
   "Flexão de Braço": "push up",
   "Flexão Inclinada": "incline push up",
@@ -97,16 +101,12 @@ export const exerciseNameSearchMap: Record<string, string> = {
   "Supino Smith": "smith machine bench press",
   "Peck Deck": "pec deck fly",
   "Crucifixo Inclinado": "dumbbell incline fly",
-
-  // Costas extras
   "Barra Fixa Supinada": "chin up",
   "Remada Alta": "barbell upright row",
   "Remada Cavaleiro": "t bar row",
   "Remada Curvada Pronada": "barbell pronated bent over row",
   "Pullover Cabo": "cable pullover",
   "Remada Invertida": "inverted row",
-
-  // Pernas extras
   "Agachamento Smith": "smith machine squat",
   "Avanço": "dumbbell lunge",
   "Flexão de Pernas em Pé": "standing leg curl",
@@ -117,33 +117,23 @@ export const exerciseNameSearchMap: Record<string, string> = {
   "Extensão de Pernas": "leg extension",
   "Agachamento Isométrico": "wall sit",
   "Elevação Pélvica": "barbell hip thrust",
-
-  // Ombros extras
   "Desenvolvimento Halteres": "dumbbell shoulder press",
   "Elevação Lateral Cabo": "cable lateral raise",
   "Elevação Lateral Máquina": "machine lateral raise",
   "Crucifixo Inverso": "reverse machine fly",
   "Elevação Frontal com Barra": "barbell front raise",
   "Elevação Frontal Alternada": "dumbbell alternate front raise",
-
-  // Bíceps extras
   "Rosca Alternada": "dumbbell alternate bicep curl",
   "Rosca Concentrada": "dumbbell concentration curl",
   "Rosca Direta Barra": "ez bar curl",
-
-  // Tríceps extras
   "Tríceps Francês": "dumbbell overhead triceps extension",
   "Tríceps Barra": "cable straight bar pushdown",
   "Tríceps Banco": "bench dip",
-
-  // Abdômen extras
   "Prancha Lateral": "side plank",
   "Prancha Dinâmica": "dynamic plank",
   "Abdominal Infra": "reverse crunch",
   "Abdominal na Roldana": "cable crunch",
   "Dragon Flag": "dragon flag",
-
-  // Home alternatives
   "Pike Push-Up": "pike push up",
   "Remada com Elástico": "resistance band bent over row",
   "Ponte de Glúteo": "glute bridge",
@@ -158,11 +148,14 @@ interface CachedGif {
 type GifCache = Record<string, CachedGif>;
 
 function getCache(): GifCache {
+  if (memoryCache) return memoryCache;
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    if (!cached) return {};
+    if (!cached) {
+      memoryCache = {};
+      return memoryCache;
+    }
     const parsed = JSON.parse(cached) as GifCache;
-    // Invalidate old entries
     const now = Date.now();
     const valid: GifCache = {};
     for (const [key, val] of Object.entries(parsed)) {
@@ -170,35 +163,33 @@ function getCache(): GifCache {
         valid[key] = val;
       }
     }
-    return valid;
+    memoryCache = valid;
+    return memoryCache;
   } catch {
-    return {};
+    memoryCache = {};
+    return memoryCache;
   }
 }
 
 function setCache(cache: GifCache) {
+  memoryCache = cache;
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
   } catch {
-    // localStorage full, clear old cache
     localStorage.removeItem(CACHE_KEY);
   }
 }
 
-export async function fetchExerciseGif(exerciseId: string): Promise<string | null> {
-  // Check cache first
-  const cache = getCache();
-  if (cache[exerciseId]) {
-    return cache[exerciseId].gifUrl;
-  }
-
-  const searchTerm = exerciseSearchMap[exerciseId];
-  if (!searchTerm) return null;
-
+async function fetchFromAPI(searchTerm: string, cacheKey: string): Promise<string | null> {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    
     const response = await fetch(
-      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`
+      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`,
+      { signal: controller.signal }
     );
+    clearTimeout(timeout);
 
     if (!response.ok) return null;
 
@@ -209,47 +200,7 @@ export async function fetchExerciseGif(exerciseId: string): Promise<string | nul
     const gifUrl = exercise.gifUrl;
 
     if (gifUrl) {
-      // Cache the result
-      cache[exerciseId] = {
-        gifUrl,
-        exerciseName: exercise.name,
-        timestamp: Date.now(),
-      };
-      setCache(cache);
-    }
-
-    return gifUrl || null;
-  } catch (error) {
-    console.error(`Failed to fetch GIF for ${exerciseId}:`, error);
-    return null;
-  }
-}
-
-// Fetch GIF by exercise display name (for alternatives not in the library by ID)
-export async function fetchExerciseGifByName(exerciseName: string): Promise<string | null> {
-  const cacheKey = `name_${exerciseName}`;
-  const cache = getCache();
-  if (cache[cacheKey]) {
-    return cache[cacheKey].gifUrl;
-  }
-
-  const searchTerm = exerciseNameSearchMap[exerciseName];
-  if (!searchTerm) return null;
-
-  try {
-    const response = await fetch(
-      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`
-    );
-
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    if (!data.success || !data.data?.length) return null;
-
-    const exercise = data.data[0];
-    const gifUrl = exercise.gifUrl;
-
-    if (gifUrl) {
+      const cache = getCache();
       cache[cacheKey] = {
         gifUrl,
         exerciseName: exercise.name,
@@ -260,9 +211,72 @@ export async function fetchExerciseGifByName(exerciseName: string): Promise<stri
 
     return gifUrl || null;
   } catch (error) {
-    console.error(`Failed to fetch GIF for ${exerciseName}:`, error);
+    if ((error as Error).name !== 'AbortError') {
+      console.error(`Failed to fetch GIF for ${cacheKey}:`, error);
+    }
     return null;
   }
+}
+
+export async function fetchExerciseGif(exerciseId: string): Promise<string | null> {
+  const cache = getCache();
+  if (cache[exerciseId]) return cache[exerciseId].gifUrl;
+
+  const searchTerm = exerciseSearchMap[exerciseId];
+  if (!searchTerm) return null;
+
+  // Dedup: if same request is already in flight, return the same promise
+  if (pendingRequests.has(exerciseId)) {
+    return pendingRequests.get(exerciseId)!;
+  }
+
+  const promise = fetchFromAPI(searchTerm, exerciseId).finally(() => {
+    pendingRequests.delete(exerciseId);
+  });
+  pendingRequests.set(exerciseId, promise);
+  return promise;
+}
+
+export async function fetchExerciseGifByName(exerciseName: string): Promise<string | null> {
+  const cacheKey = `name_${exerciseName}`;
+  const cache = getCache();
+  if (cache[cacheKey]) return cache[cacheKey].gifUrl;
+
+  const searchTerm = exerciseNameSearchMap[exerciseName];
+  if (!searchTerm) return null;
+
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey)!;
+  }
+
+  const promise = fetchFromAPI(searchTerm, cacheKey).finally(() => {
+    pendingRequests.delete(cacheKey);
+  });
+  pendingRequests.set(cacheKey, promise);
+  return promise;
+}
+
+/**
+ * Preload a GIF URL into the browser's image cache
+ */
+export function preloadGifImage(url: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = url;
+  });
+}
+
+/**
+ * Preload GIFs for a list of exercise names (used before swap)
+ */
+export async function preloadAlternativeGifs(names: string[]): Promise<void> {
+  const promises = names.map(async (name) => {
+    const url = await fetchExerciseGifByName(name);
+    if (url) await preloadGifImage(url);
+  });
+  await Promise.allSettled(promises);
 }
 
 // Preload all exercise GIFs in background
@@ -270,10 +284,9 @@ export function preloadExerciseGifs() {
   const cache = getCache();
   const uncached = Object.keys(exerciseSearchMap).filter((id) => !cache[id]);
 
-  // Fetch in small batches to avoid overwhelming the API
   let index = 0;
   const batchSize = 3;
-  const delay = 500;
+  const delay = 1000; // slower to avoid overwhelming
 
   function fetchBatch() {
     const batch = uncached.slice(index, index + batchSize);
@@ -287,6 +300,6 @@ export function preloadExerciseGifs() {
     }
   }
 
-  // Start preloading after a short delay
-  setTimeout(fetchBatch, 2000);
+  // Start preloading after a longer delay to not compete with page load
+  setTimeout(fetchBatch, 5000);
 }

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
-import { fetchExerciseGifByName } from "@/lib/exerciseGifs";
+import { fetchExerciseGifByName, preloadAlternativeGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
@@ -47,7 +47,7 @@ type Props = {
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
 // Mini component for alternative exercise GIF preview (by name)
-function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
+const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -66,10 +66,11 @@ function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
           src={gifUrl}
           alt={name}
           className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px" }}
+          style={{ objectFit: "contain", padding: "2px", aspectRatio: "1/1" }}
           onLoad={() => setLoaded(true)}
           onError={() => setGifUrl(null)}
-          loading="eager"
+          loading="lazy"
+          decoding="async"
         />
         {!loaded && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -85,7 +86,7 @@ function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
       {isHome ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
     </div>
   );
-}
+};
 
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
@@ -185,41 +186,55 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }
   }, [currentExIndex, progressions, currentEx.nome]);
 
-  // Workout timer
+  // Workout timer - wall-clock based to prevent drift
+  const workoutStartRef = useRef(Date.now());
   useEffect(() => {
-    workoutTimerRef.current = setInterval(() => setWorkoutSeconds(s => s + 1), 1000);
+    workoutStartRef.current = Date.now();
+    const tick = () => {
+      setWorkoutSeconds(Math.floor((Date.now() - workoutStartRef.current) / 1000));
+    };
+    workoutTimerRef.current = setInterval(tick, 1000);
     return () => { if (workoutTimerRef.current) clearInterval(workoutTimerRef.current); };
   }, []);
 
-  // Rest timer
+  // Rest timer - wall-clock based to prevent drift, works in background
+  const restEndTimeRef = useRef<number | null>(null);
+  const restPausedAtRef = useRef<number>(0);
+
   useEffect(() => {
     if (phase === "resting" && !restPaused && restTime > 0) {
+      if (!restEndTimeRef.current) {
+        restEndTimeRef.current = Date.now() + restTime * 1000;
+      }
       restIntervalRef.current = setInterval(() => {
-        setRestTime(t => {
-          if (t <= 1) {
-            clearInterval(restIntervalRef.current!);
-            setPhase("rest-done");
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-            try {
-              const ctx = new AudioContext();
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.connect(gain); gain.connect(ctx.destination);
-              osc.frequency.value = 880; gain.gain.value = 0.3;
-              osc.start(); osc.stop(ctx.currentTime + 0.5);
-              setTimeout(() => {
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.connect(gain2); gain2.connect(ctx.destination);
-                osc2.frequency.value = 1100; gain2.gain.value = 0.3;
-                osc2.start(); osc2.stop(ctx.currentTime + 0.3);
-              }, 600);
-            } catch {}
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
+        const remaining = Math.max(0, Math.ceil((restEndTimeRef.current! - Date.now()) / 1000));
+        setRestTime(remaining);
+        if (remaining <= 0) {
+          clearInterval(restIntervalRef.current!);
+          restEndTimeRef.current = null;
+          setPhase("rest-done");
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+          try {
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = 880; gain.gain.value = 0.3;
+            osc.start(); osc.stop(ctx.currentTime + 0.5);
+            setTimeout(() => {
+              const osc2 = ctx.createOscillator();
+              const gain2 = ctx.createGain();
+              osc2.connect(gain2); gain2.connect(ctx.destination);
+              osc2.frequency.value = 1100; gain2.gain.value = 0.3;
+              osc2.start(); osc2.stop(ctx.currentTime + 0.3);
+            }, 600);
+          } catch {}
+        }
+      }, 250); // 250ms for smoother updates
+    } else if (phase === "resting" && restPaused) {
+      // Paused: save remaining time
+      restPausedAtRef.current = restTime;
+      restEndTimeRef.current = null;
     }
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
   }, [phase, restPaused]);
@@ -279,7 +294,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       }
       setPhase("exercise-done");
     } else {
-      // Auto-start rest
+      // Auto-start rest with wall-clock
+      restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
       setRestTime(effectiveRestSeconds);
       setRestPaused(false);
       setPhase("resting");
@@ -287,6 +303,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   };
 
   const startManualRest = () => {
+    restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
     setRestTime(effectiveRestSeconds);
     setRestPaused(false);
     setPhase("resting");
@@ -385,10 +402,46 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   };
 
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
-  const toggleRestPause = () => setRestPaused(p => !p);
-  const resetRest = () => { setRestTime(effectiveRestSeconds); setRestPaused(false); setPhase("resting"); };
-  const skipRest = () => { setPhase("input"); setRestTime(0); };
-  const addRestTime = (seconds: number) => setRestTime(t => Math.max(5, t + seconds));
+  
+  // Preload alternative GIFs when alternatives change
+  useEffect(() => {
+    if (alternatives.length > 0) {
+      preloadAlternativeGifs(alternatives.map(a => a.nome));
+    }
+  }, [alternatives]);
+
+  const toggleRestPause = useCallback(() => {
+    setRestPaused(p => {
+      if (p) {
+        // Resuming: set new end time based on remaining
+        restEndTimeRef.current = Date.now() + restPausedAtRef.current * 1000;
+      }
+      return !p;
+    });
+  }, []);
+
+  const resetRest = useCallback(() => {
+    restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
+    setRestTime(effectiveRestSeconds);
+    setRestPaused(false);
+    setPhase("resting");
+  }, [effectiveRestSeconds]);
+
+  const skipRest = useCallback(() => {
+    restEndTimeRef.current = null;
+    setPhase("input");
+    setRestTime(0);
+  }, []);
+
+  const addRestTime = useCallback((seconds: number) => {
+    setRestTime(t => {
+      const newTime = Math.max(5, t + seconds);
+      if (restEndTimeRef.current) {
+        restEndTimeRef.current += seconds * 1000;
+      }
+      return newTime;
+    });
+  }, []);
 
   const libraryExercise = useMemo(() => {
     const name = currentEx.nome.toLowerCase();
@@ -784,7 +837,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                     return;
                   }
                 }
-                // Start rest timer
+                // Start rest timer with wall-clock
+                restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
                 setRestTime(effectiveRestSeconds);
                 setRestPaused(false);
                 setPhase("resting");

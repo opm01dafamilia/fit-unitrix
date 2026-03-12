@@ -312,15 +312,12 @@ const Treino = () => {
   };
 
   const startWorkout = useCallback((plan: any, dayIndex: number) => {
-    // Force a clean remount of WorkoutExecution by incrementing key
-    setExecutionKey(k => k + 1);
+    // Set all execution state synchronously, then switch view
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
-    // Use a microtask to ensure state is set before switching view
-    Promise.resolve().then(() => {
-      setView("execution");
-    });
+    setExecutionKey(k => k + 1);
+    setView("execution");
   }, []);
 
   const toggleExercise = (index: number) => {
