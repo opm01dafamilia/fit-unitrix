@@ -346,7 +346,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const toggleRestPause = () => setRestPaused(p => !p);
   const resetRest = () => { setRestTime(effectiveRestSeconds); setRestPaused(false); setPhase("resting"); };
   const skipRest = () => { setPhase("input"); setRestTime(0); };
-  const addRestTime = (seconds: number) => setRestTime(t => t + seconds);
+  const addRestTime = (seconds: number) => setRestTime(t => Math.max(5, t + seconds));
 
   const libraryExercise = useMemo(() => {
     const name = currentEx.nome.toLowerCase();
