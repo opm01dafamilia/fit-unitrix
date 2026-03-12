@@ -438,7 +438,9 @@ export function generateDietPlan(
   weightGoal?: number,
   period?: PlanPeriod,
   deadlineMonths?: number,
-  preferencias?: string
+  preferencias?: string,
+  excludedCategories?: string[],
+  mealStyle?: MealStyle
 ): DietPlanResult {
   const tdee = calcTDEE(weight, height, age || 25, gender || "masculino", activityLevel);
   const targetCal = getCalorieTarget(tdee, objective, weightGoal, weight, deadlineMonths);
@@ -446,9 +448,21 @@ export function generateDietPlan(
   let basePlan = mealTemplates[objective]?.(macros, targetCal) || mealTemplates.manter(macros, targetCal);
   const usedPeriod = period || "hoje";
 
-  // Apply preference-based food swaps
-  if (preferencias) {
-    basePlan = applyPreferences(basePlan, preferencias);
+  // Build excluded foods from categories
+  const excludedFoods = new Set<string>();
+  if (excludedCategories && excludedCategories.length > 0) {
+    for (const cat of excludedCategories) {
+      const foods = preferenceExclusions[cat];
+      if (foods) foods.forEach(f => excludedFoods.add(f));
+    }
+  }
+
+  // Apply preference-based food swaps (text + category exclusions)
+  basePlan = applyPreferences(basePlan, preferencias || "", excludedFoods);
+
+  // Apply meal style
+  if (mealStyle && mealStyle !== "completa") {
+    basePlan = applyMealStyle(basePlan, mealStyle);
   }
 
   const meta: DietMeta = {
