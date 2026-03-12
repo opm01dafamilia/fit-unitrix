@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon } from "lucide-react";
+import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod } from "@/lib/dietGenerator";
+import { generateDietPlan, type MealPlan, type DayPlan, type PlanPeriod, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { Skeleton } from "@/components/ui/skeleton";
 import FocusMode from "@/components/FocusMode";
 
@@ -251,6 +252,128 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMe
   );
 };
 
+// Weekly block accordion with calorie target header
+const WeekBlockAccordion = ({ block, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: {
+  block: WeekBlock;
+  defaultOpen?: boolean;
+  onMealFocus?: (meal: MealPlan) => void;
+  mealStatuses?: Record<string, MealStatus>;
+  onSetMealStatus?: (key: string, s: MealStatus) => void;
+}) => {
+  const [open, setOpen] = useState(defaultOpen || false);
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full glass-card p-4 flex items-center justify-between hover:bg-secondary/30 transition-colors border-primary/10"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/15">
+            <span className="text-sm font-bold text-primary">{block.weekNumber}</span>
+          </div>
+          <div className="text-left">
+            <p className="font-semibold text-sm text-foreground">{block.label}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[11px] text-chart-3 font-medium">{block.targetCalories} kcal/dia</span>
+              <span className="text-[11px] text-muted-foreground">•</span>
+              <span className="text-[11px] text-muted-foreground flex items-center gap-0.5">
+                <Scale className="w-3 h-3" />
+                ~{block.estimatedWeight}kg
+              </span>
+            </div>
+          </div>
+        </div>
+        {open ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-2 pl-2">
+          {block.days.map((dayPlan, i) => (
+            <DayAccordion
+              key={i}
+              dayPlan={dayPlan}
+              defaultOpen={i === 0}
+              onMealFocus={onMealFocus}
+              mealStatuses={mealStatuses}
+              onSetMealStatus={onSetMealStatus}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Weight goal progress banner
+const WeightGoalBanner = ({ meta, isGain }: { meta: DietMeta; isGain: boolean }) => {
+  if (!meta.weightGoal || !meta.currentWeight) return null;
+  
+  const diff = Math.abs(meta.weightGoal - meta.currentWeight);
+  const progressPct = 0; // Starting point — future: connect to body_tracking for real progress
+  const TrendIcon = isGain ? TrendingUp : TrendingDown;
+
+  return (
+    <div className="glass-card p-5 border-primary/15 space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/15 shrink-0">
+          <Target className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-base font-display font-bold text-foreground">
+            Plano de {meta.currentWeight}kg → {meta.weightGoal}kg
+          </p>
+          <p className="text-[12px] text-muted-foreground">
+            {meta.deadlineMonths
+              ? `${isGain ? "Ganho" : "Perda"} de ${diff.toFixed(1)}kg em ${meta.deadlineMonths} ${meta.deadlineMonths === 1 ? "mês" : "meses"}`
+              : `${isGain ? "Ganho" : "Perda"} de ${diff.toFixed(1)}kg — ritmo sustentável`
+            }
+          </p>
+        </div>
+        <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 shrink-0 ${
+          isGain ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
+        }`}>
+          <TrendIcon className="w-3.5 h-3.5" />
+          {meta.monthlyRate ? `${Math.abs(meta.monthlyRate)}kg/mês` : `${diff.toFixed(1)}kg`}
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[11px] text-muted-foreground font-medium">Progresso da meta</span>
+          <span className="text-[11px] text-foreground font-semibold">{progressPct}%</span>
+        </div>
+        <Progress value={progressPct} className="h-2.5" />
+        <div className="flex items-center justify-between mt-1.5">
+          <span className="text-[10px] text-muted-foreground">{meta.currentWeight}kg</span>
+          <span className="text-[10px] text-primary font-medium">{meta.weightGoal}kg</span>
+        </div>
+      </div>
+
+      {/* Monthly evolution */}
+      {meta.weeklyTargets && meta.weeklyTargets.length > 0 && meta.deadlineMonths && (
+        <div>
+          <p className="text-[11px] text-muted-foreground font-medium mb-2 uppercase tracking-widest">Evolução Mensal Estimada</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {Array.from({ length: Math.min(meta.deadlineMonths, 6) }, (_, m) => {
+              const weekIdx = Math.min((m + 1) * 4 - 1, meta.weeklyTargets!.length - 1);
+              const weekData = meta.weeklyTargets![weekIdx];
+              if (!weekData) return null;
+              return (
+                <div key={m} className="p-3 rounded-xl bg-secondary/40 border border-border/30 text-center">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Mês {m + 1}</p>
+                  <p className="text-sm font-display font-bold text-foreground">{weekData.estimatedWeight}kg</p>
+                  <p className="text-[10px] text-chart-3 font-medium">{weekData.calories} kcal</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const deadlineOptions = [
   { value: "none", label: "Sem prazo" },
   { value: "1", label: "1 mês" },
@@ -283,6 +406,8 @@ const Dieta = () => {
   const [periodo, setPeriodo] = useState<PlanPeriod>("hoje");
   const [plan, setPlan] = useState<MealPlan[] | null>(null);
   const [weekPlan, setWeekPlan] = useState<DayPlan[] | null>(null);
+  const [weekBlocks, setWeekBlocks] = useState<WeekBlock[] | null>(null);
+  const [dietMeta, setDietMeta] = useState<DietMeta | null>(null);
   const [planPeriod, setPlanPeriod] = useState<PlanPeriod>("hoje");
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
   const [viewingSaved, setViewingSaved] = useState<any | null>(null);
@@ -349,10 +474,13 @@ const Dieta = () => {
           profile?.gender || undefined,
           metaPeso ? Number(metaPeso) : undefined,
           periodo,
-          deadlineValue
+          deadlineValue,
+          preferencias || undefined
         );
         setPlan(result.plan);
         setWeekPlan(result.weekPlan || null);
+        setWeekBlocks(result.weekBlocks || null);
+        setDietMeta(result.meta);
         setPlanPeriod(result.period);
         setViewingSaved(null);
         const periodLabel = periodo === "hoje" ? "hoje" : periodo === "semana" ? "da semana" : "do mês";
@@ -370,15 +498,17 @@ const Dieta = () => {
     setSaving(true);
     try {
       const deadlineValue = prazo === "none" ? null : Number(prazo);
-      const meta = {
+      const meta: DietMeta = {
         currentWeight: Number(peso),
         weightGoal: metaPeso ? Number(metaPeso) : null,
         deadlineMonths: deadlineValue,
         preferencias: preferencias || null,
+        weeklyTargets: dietMeta?.weeklyTargets || undefined,
+        monthlyRate: dietMeta?.monthlyRate || undefined,
       };
-      const planData = weekPlan
-        ? { plan, weekPlan, period: planPeriod, meta }
-        : { plan, period: planPeriod, meta };
+      const planData: any = { plan, period: planPeriod, meta };
+      if (weekPlan) planData.weekPlan = weekPlan;
+      if (weekBlocks) planData.weekBlocks = weekBlocks;
 
       const { error } = await supabase.from("diet_plans").insert({
         user_id: user.id,
@@ -390,7 +520,6 @@ const Dieta = () => {
       });
       if (error) throw error;
 
-      // Show meta description in toast
       const metaMsg = metaPeso
         ? deadlineValue
           ? `Meta: ${peso}kg → ${metaPeso}kg em ${deadlineValue} ${deadlineValue === 1 ? "mês" : "meses"}`
@@ -423,16 +552,26 @@ const Dieta = () => {
     setViewingSaved(sp);
     setPlan(null);
     setWeekPlan(null);
+    setWeekBlocks(null);
+    setDietMeta(null);
     setMealStatuses({});
     
     const data = sp.plan_data;
-    if (data && typeof data === "object" && "weekPlan" in data) {
-      setPlan(data.plan as MealPlan[]);
-      setWeekPlan(data.weekPlan as DayPlan[]);
-      setPlanPeriod(data.period as PlanPeriod || "semana");
-    } else if (data && typeof data === "object" && "plan" in data) {
-      setPlan(data.plan as MealPlan[]);
-      setPlanPeriod(data.period as PlanPeriod || "hoje");
+    if (data && typeof data === "object") {
+      if ("weekPlan" in data) {
+        setPlan(data.plan as MealPlan[]);
+        setWeekPlan(data.weekPlan as DayPlan[]);
+        setPlanPeriod(data.period as PlanPeriod || "semana");
+      } else if ("plan" in data) {
+        setPlan(data.plan as MealPlan[]);
+        setPlanPeriod(data.period as PlanPeriod || "hoje");
+      }
+      if ("weekBlocks" in data) {
+        setWeekBlocks(data.weekBlocks as WeekBlock[]);
+      }
+      if ("meta" in data) {
+        setDietMeta(data.meta as DietMeta);
+      }
     } else {
       setPlanPeriod("hoje");
     }
@@ -446,10 +585,13 @@ const Dieta = () => {
     ? (viewingSaved.plan_data?.weekPlan as DayPlan[] | undefined) || null
     : weekPlan;
 
-  const totalCal = displayPlan?.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0) || 0;
-  const totalProt = displayPlan?.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.prot, 0), 0) || 0;
-  const totalCarb = displayPlan?.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.carb, 0), 0) || 0;
-  const totalGord = displayPlan?.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.gord, 0), 0) || 0;
+  const displayWeekBlocks = weekBlocks;
+  const displayMeta = dietMeta;
+
+  const totalCal = displayPlan?.reduce((acc, m) => acc + (m?.itens?.reduce((a, i) => a + (i?.cal || 0), 0) || 0), 0) || 0;
+  const totalProt = displayPlan?.reduce((acc, m) => acc + (m?.itens?.reduce((a, i) => a + (i?.prot || 0), 0) || 0), 0) || 0;
+  const totalCarb = displayPlan?.reduce((acc, m) => acc + (m?.itens?.reduce((a, i) => a + (i?.carb || 0), 0) || 0), 0) || 0;
+  const totalGord = displayPlan?.reduce((acc, m) => acc + (m?.itens?.reduce((a, i) => a + (i?.gord || 0), 0) || 0), 0) || 0;
 
   const macroCards = [
     { label: "Calorias", value: totalCal, unit: "kcal", color: "text-chart-3", bg: "from-chart-3/15 to-chart-3/5" },
@@ -469,8 +611,8 @@ const Dieta = () => {
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
       <div>
-        <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Dieta Automática</h1>
-        <p className="text-muted-foreground text-sm mt-1">Plano alimentar personalizado para seu perfil e objetivos</p>
+        <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Dieta Inteligente</h1>
+        <p className="text-muted-foreground text-sm mt-1">Plano alimentar progressivo e personalizado para seu perfil e objetivos</p>
       </div>
 
       {/* Form */}
@@ -530,7 +672,7 @@ const Dieta = () => {
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Peso Desejado (kg)</label>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Peso Desejado (kg) <span className="text-muted-foreground/60">(opcional)</span></label>
               <div className="relative">
                 <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -574,6 +716,11 @@ const Dieta = () => {
                       : `↑ ${weightDiff.toFixed(1)}kg${prazo !== "none" ? ` em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` : ""}`
                   }
                 </div>
+                {prazo !== "none" && weightDiff !== 0 && (
+                  <span className="text-[10px] text-muted-foreground">
+                    ~{Math.abs(weightDiff / Number(prazo)).toFixed(1)}kg/mês
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -585,11 +732,11 @@ const Dieta = () => {
         <div>
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <span className="w-5 h-5 rounded-md bg-chart-4/10 flex items-center justify-center text-[10px] font-bold text-chart-4">3</span>
-            Preferências Alimentares
+            Descrição Alimentar
           </h3>
           <div className="relative">
             <Textarea
-              placeholder="Ex: prefiro comidas simples, não gosto de peixe, quero dieta barata..."
+              placeholder="Ex: Não gosto de ovo, prefiro frango e arroz, sem lactose..."
               value={preferencias}
               onChange={(e) => setPreferencias(e.target.value.slice(0, 100))}
               maxLength={100}
@@ -598,7 +745,7 @@ const Dieta = () => {
             />
             <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{preferencias.length}/100</span>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1.5">Opcional — ajuda a personalizar melhor seu plano</p>
+          <p className="text-[11px] text-muted-foreground mt-1.5">Opcional — a dieta será adaptada às suas preferências</p>
         </div>
 
         <div className="border-t border-border/40" />
@@ -613,7 +760,7 @@ const Dieta = () => {
             {(["hoje", "semana", "mes"] as PlanPeriod[]).map((p) => {
               const PIcon = periodIcons[p];
               const labels: Record<PlanPeriod, string> = { hoje: "Hoje", semana: "Semana", mes: "Mês" };
-              const descs: Record<PlanPeriod, string> = { hoje: "Refeições do dia", semana: "7 dias variados", mes: "4 semanas completas" };
+              const descs: Record<PlanPeriod, string> = { hoje: "Refeições do dia", semana: "7 dias variados", mes: "4 semanas progressivas" };
               return (
                 <Label
                   key={p}
@@ -680,31 +827,21 @@ const Dieta = () => {
       {/* Plan Display */}
       {displayPlan && (
         <>
-          {/* Save button + Meta banner */}
+          {/* Weight Goal Banner */}
+          {displayMeta?.weightGoal && displayMeta.weightGoal !== displayMeta.currentWeight && (
+            <WeightGoalBanner
+              meta={displayMeta}
+              isGain={displayMeta.weightGoal > displayMeta.currentWeight}
+            />
+          )}
+
+          {/* Save button */}
           {!viewingSaved && plan && (
-            <div className="space-y-3">
-              {metaPeso && (
-                <div className="glass-card p-4 flex items-center gap-3 border-primary/15">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Target className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">
-                      Meta: {peso}kg → {metaPeso}kg
-                      {prazo !== "none" && <span className="text-muted-foreground font-normal"> em {prazo} {Number(prazo) === 1 ? "mês" : "meses"}</span>}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {planPeriod === "semana" ? "Plano semanal" : planPeriod === "mes" ? "Plano mensal" : "Plano diário"} gerado com base nessa meta
-                    </p>
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-end">
-                <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
-                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {saving ? "Salvando..." : "Salvar Plano"}
-                </Button>
-              </div>
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {saving ? "Salvando..." : "Salvar Plano"}
+              </Button>
             </div>
           )}
 
@@ -744,8 +881,27 @@ const Dieta = () => {
             </div>
           </div>
 
-          {/* Meals — Today or Week/Month */}
-          {displayWeekPlan && displayWeekPlan.length > 0 ? (
+          {/* Meals — Progressive Week Blocks or flat list */}
+          {displayWeekBlocks && displayWeekBlocks.length > 0 ? (
+            <div className="space-y-4">
+              <h3 className="font-display font-semibold text-xs text-muted-foreground uppercase tracking-widest">
+                Plano Mensal Progressivo
+              </h3>
+              <p className="text-[12px] text-muted-foreground -mt-2">
+                Calorias ajustadas semanalmente para atingir sua meta de forma gradual e sustentável
+              </p>
+              {displayWeekBlocks.map((block, i) => (
+                <WeekBlockAccordion
+                  key={i}
+                  block={block}
+                  defaultOpen={i === 0}
+                  onMealFocus={(meal) => setFocusMeal(meal)}
+                  mealStatuses={mealStatuses}
+                  onSetMealStatus={setMealStatus}
+                />
+              ))}
+            </div>
+          ) : displayWeekPlan && displayWeekPlan.length > 0 ? (
             <div className="space-y-3">
               <h3 className="font-display font-semibold text-xs text-muted-foreground uppercase tracking-widest">
                 {planPeriod === "semana" ? "Plano Semanal" : "Plano Mensal"}
