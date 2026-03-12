@@ -837,7 +837,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                     return;
                   }
                 }
-                // Start rest timer
+                // Start rest timer with wall-clock
+                restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
                 setRestTime(effectiveRestSeconds);
                 setRestPaused(false);
                 setPhase("resting");
