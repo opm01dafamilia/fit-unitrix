@@ -218,7 +218,6 @@ const Ranking = () => {
   }
 
   return (
-    <PremiumGate feature="Ranking Completo">
     <div className="space-y-7 animate-slide-up">
       {/* Header */}
       <div>
