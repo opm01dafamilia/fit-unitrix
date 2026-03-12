@@ -525,7 +525,10 @@ const Treino = () => {
                       <Dumbbell className="w-4.5 h-4.5 text-primary" />
                     </div>
                     <div className="text-left">
-                      <p className="font-semibold text-sm">{day.dia}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{day.dia}</p>
+                        {getIntensityBadge(day.intensidade)}
+                      </div>
                       <p className="text-xs text-muted-foreground">{day.grupo}</p>
                     </div>
                   </div>
