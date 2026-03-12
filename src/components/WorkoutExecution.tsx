@@ -363,7 +363,22 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     if (currentExIndex > 0) goToExercise(currentExIndex - 1);
   };
 
+  const MIN_WORKOUT_SECONDS = 180; // 3 minutes minimum
+  const MIN_SETS_REQUIRED = 3; // At least 3 sets total
+
   const handleFinish = async () => {
+    // Fraud prevention: minimum time
+    if (workoutSeconds < MIN_WORKOUT_SECONDS) {
+      toast.error(`⏱ Treino muito curto! Mínimo de ${Math.ceil(MIN_WORKOUT_SECONDS / 60)} minutos para validar.`, { duration: 4000 });
+      return;
+    }
+    // Fraud prevention: minimum sets
+    const totalSets = Object.values(sets).reduce((a, exSets) => a + exSets.length, 0);
+    if (totalSets < MIN_SETS_REQUIRED) {
+      toast.error(`💪 Registre pelo menos ${MIN_SETS_REQUIRED} séries para concluir o treino.`, { duration: 4000 });
+      return;
+    }
+
     try {
       const { data: sessionData, error: sessionError } = await supabase.from("workout_sessions").insert({
         user_id: userId, workout_plan_id: plan.id, day_index: dayIndex,
