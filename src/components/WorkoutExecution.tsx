@@ -186,41 +186,55 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }
   }, [currentExIndex, progressions, currentEx.nome]);
 
-  // Workout timer
+  // Workout timer - wall-clock based to prevent drift
+  const workoutStartRef = useRef(Date.now());
   useEffect(() => {
-    workoutTimerRef.current = setInterval(() => setWorkoutSeconds(s => s + 1), 1000);
+    workoutStartRef.current = Date.now();
+    const tick = () => {
+      setWorkoutSeconds(Math.floor((Date.now() - workoutStartRef.current) / 1000));
+    };
+    workoutTimerRef.current = setInterval(tick, 1000);
     return () => { if (workoutTimerRef.current) clearInterval(workoutTimerRef.current); };
   }, []);
 
-  // Rest timer
+  // Rest timer - wall-clock based to prevent drift, works in background
+  const restEndTimeRef = useRef<number | null>(null);
+  const restPausedAtRef = useRef<number>(0);
+
   useEffect(() => {
     if (phase === "resting" && !restPaused && restTime > 0) {
+      if (!restEndTimeRef.current) {
+        restEndTimeRef.current = Date.now() + restTime * 1000;
+      }
       restIntervalRef.current = setInterval(() => {
-        setRestTime(t => {
-          if (t <= 1) {
-            clearInterval(restIntervalRef.current!);
-            setPhase("rest-done");
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-            try {
-              const ctx = new AudioContext();
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.connect(gain); gain.connect(ctx.destination);
-              osc.frequency.value = 880; gain.gain.value = 0.3;
-              osc.start(); osc.stop(ctx.currentTime + 0.5);
-              setTimeout(() => {
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.connect(gain2); gain2.connect(ctx.destination);
-                osc2.frequency.value = 1100; gain2.gain.value = 0.3;
-                osc2.start(); osc2.stop(ctx.currentTime + 0.3);
-              }, 600);
-            } catch {}
-            return 0;
-          }
-          return t - 1;
-        });
-      }, 1000);
+        const remaining = Math.max(0, Math.ceil((restEndTimeRef.current! - Date.now()) / 1000));
+        setRestTime(remaining);
+        if (remaining <= 0) {
+          clearInterval(restIntervalRef.current!);
+          restEndTimeRef.current = null;
+          setPhase("rest-done");
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+          try {
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = 880; gain.gain.value = 0.3;
+            osc.start(); osc.stop(ctx.currentTime + 0.5);
+            setTimeout(() => {
+              const osc2 = ctx.createOscillator();
+              const gain2 = ctx.createGain();
+              osc2.connect(gain2); gain2.connect(ctx.destination);
+              osc2.frequency.value = 1100; gain2.gain.value = 0.3;
+              osc2.start(); osc2.stop(ctx.currentTime + 0.3);
+            }, 600);
+          } catch {}
+        }
+      }, 250); // 250ms for smoother updates
+    } else if (phase === "resting" && restPaused) {
+      // Paused: save remaining time
+      restPausedAtRef.current = restTime;
+      restEndTimeRef.current = null;
     }
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
   }, [phase, restPaused]);
