@@ -661,6 +661,7 @@ const Treino = () => {
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Próximo Treino</span>
+                        {getIntensityBadge(nextWorkout.intensidade)}
                       </div>
                       <h2 className="font-display font-bold text-xl">{nextWorkout.dia}</h2>
                       <p className="text-sm text-muted-foreground">{nextWorkout.grupo} • {nextWorkout.exercicios.length} exercícios</p>
