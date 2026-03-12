@@ -1032,6 +1032,7 @@ const Treino = () => {
         )}
       </FocusMode>
     </div>
+    </PremiumGate>
   );
 };
 
