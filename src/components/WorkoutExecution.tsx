@@ -548,7 +548,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }
 
   return (
-    <div className="space-y-4 animate-slide-up pb-28">
+    <div className="space-y-4 animate-slide-up pb-24 sm:pb-28 max-w-2xl mx-auto">
       {/* ===== TOP PROGRESS BAR ===== */}
       <div className="glass-card p-3">
         <div className="flex items-center justify-between mb-2">
@@ -1068,42 +1068,77 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <h3 className="font-display font-semibold text-sm">Exercícios Alternativos</h3>
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAlternatives(false)}><X className="w-4 h-4" /></Button>
           </div>
-          <div className="space-y-2">
-            {alternatives.map((alt, i) => (
-              <button key={i} onClick={() => swapExercise(alt.nome)}
-                className="w-full text-left p-3 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition-colors flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  {alt.tag?.includes("Casa") ? <Home className="w-3.5 h-3.5 text-amber-500" /> : <Dumbbell className="w-3.5 h-3.5 text-primary" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{alt.nome}</span>
-                    {alt.tag && <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary/80 text-muted-foreground font-medium">{alt.tag}</span>}
+          <div className="space-y-3">
+            {alternatives.map((alt, i) => {
+              const altLibrary = exerciseLibrary.find(e => 
+                alt.nome.toLowerCase().includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(alt.nome.toLowerCase())
+              );
+              return (
+                <button key={i} onClick={() => swapExercise(alt.nome)}
+                  className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all flex items-start gap-3 group">
+                  {/* Exercise preview image */}
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
+                    {altLibrary ? (
+                      <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        {alt.tag?.includes("Casa") ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
+                      </div>
+                    )}
                   </div>
-                  {alt.desc && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{alt.desc}</p>}
-                </div>
-              </button>
-            ))}
+                  {/* Exercise details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{alt.nome}</span>
+                    </div>
+                    {alt.desc && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{alt.desc}</p>}
+                    {/* Tags row */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {alt.tag && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">{alt.tag}</span>
+                      )}
+                      {altLibrary && (
+                        <>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium border border-primary/15">
+                            {altLibrary.grupoLabel}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 capitalize">
+                            {altLibrary.dificuldade}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 flex items-center gap-0.5">
+                            <Dumbbell className="w-2.5 h-2.5" /> {altLibrary.equipamento}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {/* Swap arrow */}
+                  <div className="shrink-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <RefreshCw className="w-4 h-4 text-primary" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* ===== BOTTOM NAVIGATION ===== */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goPrev} disabled={currentExIndex === 0}>
+      <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50 safe-area-inset-bottom">
+        <div className="max-w-2xl mx-auto flex items-center gap-2 sm:gap-3">
+          <Button variant="outline" size="icon" className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl" onClick={goPrev} disabled={currentExIndex === 0}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
           {currentExIndex === totalExercises - 1 && completedCount > 0 ? (
-            <Button onClick={handleFinish} className="flex-1 h-11 font-semibold">
+            <Button onClick={handleFinish} className="flex-1 h-10 sm:h-11 font-semibold text-sm sm:text-base">
               <Trophy className="w-4 h-4 mr-2" /> Finalizar Treino
             </Button>
           ) : (
-            <Button onClick={goNext} className="flex-1 h-11" disabled={currentExIndex >= totalExercises - 1}>
+            <Button onClick={goNext} className="flex-1 h-10 sm:h-11 text-sm sm:text-base" disabled={currentExIndex >= totalExercises - 1}>
               Próximo Exercício <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           )}
-          <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={goNext} disabled={currentExIndex >= totalExercises - 1}>
+          <Button variant="outline" size="icon" className="h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-xl" onClick={goNext} disabled={currentExIndex >= totalExercises - 1}>
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>

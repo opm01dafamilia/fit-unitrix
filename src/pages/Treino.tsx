@@ -726,54 +726,65 @@ const Treino = () => {
                   return (
                     <div
                       key={i}
-                      className={`glass-card p-4 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group ${
-                        isNext ? "border border-primary/20 shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]" :
-                        isCompleted ? "border border-green-500/20 opacity-80" : "border border-transparent"
+                      className={`relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group rounded-xl ${
+                        isNext
+                          ? "border-2 border-primary/30 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.2)]"
+                          : isCompleted
+                          ? "border-2 border-green-500/25"
+                          : "border border-border/50"
                       }`}
+                      style={{
+                        background: isNext
+                          ? 'linear-gradient(145deg, hsl(225 16% 13% / 0.98), hsl(225 16% 9% / 0.98))'
+                          : 'linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95))',
+                        boxShadow: isNext
+                          ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
+                          : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
+                      }}
                       onClick={() => startWorkout(activePlan, i)}
                     >
                       {isNext && (
-                        <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-[0.06] pointer-events-none -translate-y-6 translate-x-6"
+                        <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
                              style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
                       )}
-                      <div className="relative z-10">
+                      <div className="relative z-10 p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-md ${
-                              isNext ? "shadow-primary/10" : ""
+                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
+                              isNext ? "border-primary/20 shadow-primary/10" : "border-border/30"
                             }`}>
-                              <span className="text-lg">{getMuscleIcon(day.grupo)}</span>
+                              <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold">{day.dia}</p>
+                                <p className="text-sm font-bold text-foreground">{day.dia}</p>
                                 {isNext && (
-                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-1.5 py-0.5 rounded bg-primary/10">Próximo</span>
+                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
                                 )}
                                 {isCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-green-500 font-bold px-1.5 py-0.5 rounded bg-green-500/10 flex items-center gap-0.5">
+                                  <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
                                     <Check className="w-2.5 h-2.5" /> Feito
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground">{day.grupo}</p>
+                              <p className="text-xs text-foreground/70 font-medium mt-0.5">{day.grupo}</p>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Dumbbell className="w-3 h-3" /> {day.exercicios.length} exercícios
+                          <div className="flex items-center gap-3 text-[11px] text-foreground/60 font-medium">
+                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
+                              <Dumbbell className="w-3 h-3 text-primary/70" /> {day.exercicios.length} exercícios
                             </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> ~{day.exercicios.length * 5}min
+                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
+                              <Clock className="w-3 h-3 text-primary/70" /> ~{day.exercicios.length * 5}min
                             </span>
                           </div>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
+                          <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
                               <Eye className="w-3.5 h-3.5 mr-1" /> Ver
                             </Button>
-                            <Button variant="ghost" size="sm" className={`text-xs ${isNext ? "text-primary" : ""}`}>
+                            <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
                               <Play className="w-3.5 h-3.5 mr-1" /> Treinar
                             </Button>
                           </div>
