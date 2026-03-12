@@ -196,6 +196,7 @@ const Comunidade = () => {
   }
 
   return (
+    <PremiumGate feature="Comunidade Fitness">
     <div className="space-y-7 animate-slide-up">
       {/* Header */}
       <div className="flex items-center justify-between">

@@ -1157,6 +1157,7 @@ const Dieta = () => {
         currentGoal={currentGoal}
       />
     </div>
+    </PremiumGate>
   );
 };
 
