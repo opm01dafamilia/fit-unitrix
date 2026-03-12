@@ -730,6 +730,9 @@ const Dieta = () => {
   ];
 
   const weightDiff = metaPeso && peso ? Number(metaPeso) - Number(peso) : null;
+  const currentGoal = metaPeso && peso
+    ? `${peso}kg → ${metaPeso}kg${prazo !== "none" ? ` em ${prazo} ${Number(prazo) === 1 ? "mês" : "meses"}` : ""}`
+    : objetivo ? `Objetivo: ${objetivo}` : undefined;
 
   // Meal progress stats
   const totalMealsCount = displayPlan?.length || 0;
