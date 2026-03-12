@@ -534,7 +534,6 @@ const WeightGoalBanner = ({ meta, isGain, realWeight, weeklyAdherence }: { meta:
                   <Area type="monotone" dataKey="pesoAjustado" stroke="hsl(var(--chart-4))" fill="url(#weightAdjustedGradient)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: 'hsl(var(--chart-4))' }} name="Com aderência atual" />
                 )}
               </AreaChart>
-              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
