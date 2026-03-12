@@ -429,16 +429,20 @@ const WeightGoalBanner = ({ meta, isGain, realWeight, weeklyAdherence }: { meta:
   const TrendIcon = isGain ? TrendingUp : TrendingDown;
   const healthAlert = getHealthAlert(meta.currentWeight, meta.weightGoal, meta.deadlineMonths);
 
-  // Build evolution chart data
-  const chartData: { label: string; peso: number }[] = [];
-  chartData.push({ label: "Início", peso: meta.currentWeight });
+  // Build evolution chart data with adherence adjustment
+  const chartData: { label: string; peso: number; pesoAjustado?: number }[] = [];
+  chartData.push({ label: "Início", peso: meta.currentWeight, pesoAjustado: meta.currentWeight });
   
   if (meta.weeklyTargets && meta.weeklyTargets.length > 0 && meta.deadlineMonths) {
     const monthCount = Math.min(meta.deadlineMonths, 6);
     for (let m = 0; m < monthCount; m++) {
       const weekIdx = Math.min((m + 1) * 4 - 1, meta.weeklyTargets.length - 1);
       const wt = meta.weeklyTargets[weekIdx];
-      if (wt) chartData.push({ label: `Mês ${m + 1}`, peso: wt.estimatedWeight });
+      if (wt) {
+        const weightChange = wt.estimatedWeight - meta.currentWeight;
+        const adjustedWeight = Math.round((meta.currentWeight + weightChange * adherenceFactor) * 10) / 10;
+        chartData.push({ label: `Mês ${m + 1}`, peso: wt.estimatedWeight, pesoAjustado: adherenceFactor < 1 ? adjustedWeight : undefined });
+      }
     }
   } else if (meta.weightGoal) {
     chartData.push({ label: "Meta", peso: meta.weightGoal });
