@@ -225,6 +225,46 @@ export async function fetchExerciseGif(exerciseId: string): Promise<string | nul
   }
 }
 
+// Fetch GIF by exercise display name (for alternatives not in the library by ID)
+export async function fetchExerciseGifByName(exerciseName: string): Promise<string | null> {
+  const cacheKey = `name_${exerciseName}`;
+  const cache = getCache();
+  if (cache[cacheKey]) {
+    return cache[cacheKey].gifUrl;
+  }
+
+  const searchTerm = exerciseNameSearchMap[exerciseName];
+  if (!searchTerm) return null;
+
+  try {
+    const response = await fetch(
+      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (!data.success || !data.data?.length) return null;
+
+    const exercise = data.data[0];
+    const gifUrl = exercise.gifUrl;
+
+    if (gifUrl) {
+      cache[cacheKey] = {
+        gifUrl,
+        exerciseName: exercise.name,
+        timestamp: Date.now(),
+      };
+      setCache(cache);
+    }
+
+    return gifUrl || null;
+  } catch (error) {
+    console.error(`Failed to fetch GIF for ${exerciseName}:`, error);
+    return null;
+  }
+}
+
 // Preload all exercise GIFs in background
 export function preloadExerciseGifs() {
   const cache = getCache();

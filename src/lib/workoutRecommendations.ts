@@ -191,7 +191,7 @@ export function getAlternatives(exerciseName: string, trainingLocation?: string)
   });
 
   // If training at home, also add other home alternatives from same muscle group
-  if (trainingLocation === "casa" && results.length < 4) {
+  if (trainingLocation === "casa" && results.length < 5) {
     Object.entries(homeAlternatives).forEach(([key, val]) => {
       if (key !== exerciseName && !results.find(r => r.nome === val.nome) && results.length < 4) {
         // Only add if it's roughly the same muscle group area
