@@ -23,6 +23,7 @@ const Biblioteca = lazy(() => import("./pages/Biblioteca"));
 const AnaliseCorporal = lazy(() => import("./pages/AnaliseCorporal"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Comunidade = lazy(() => import("./pages/Comunidade"));
+const PerfilFitness = lazy(() => import("./pages/PerfilFitness"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -167,6 +168,7 @@ const App = () => (
               <Route path="/ranking" element={<Suspense fallback={<PageSkeleton />}><Ranking /></Suspense>} />
               <Route path="/comunidade" element={<Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense>} />
               <Route path="/perfil" element={<Suspense fallback={<PageSkeleton />}><Perfil /></Suspense>} />
+              <Route path="/perfil-fitness" element={<Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense>} />
               <Route path="/configuracoes" element={<Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense>} />
             </Route>
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
