@@ -189,29 +189,55 @@ const Conquistas = () => {
         </div>
       </div>
 
+      {/* Rank + XP Card */}
+      <div className="glass-card p-4 lg:p-5 flex items-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-chart-3/20 to-chart-3/5 flex items-center justify-center border border-chart-3/15">
+          <span className="text-2xl">{currentRank.icon}</span>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-bold ${currentRank.color}`}>{currentRank.label}</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-sm font-display font-bold">{totalXP} XP</span>
+          </div>
+          {nextRankInfo && (
+            <div className="mt-1.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-muted-foreground">
+                  {nextRankInfo.nextRank.icon} {nextRankInfo.nextRank.label} em {nextRankInfo.xpNeeded} XP
+                </span>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min(100, ((totalXP - currentRank.minXP) / (nextRankInfo.nextRank.minXP - currentRank.minXP)) * 100)}%` }} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Stats summary */}
       {stats && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass-card p-3.5 flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500/15 to-orange-500/5 flex items-center justify-center mb-1.5">
-              <Flame className="w-5 h-5 text-orange-400" />
-            </div>
-            <p className="font-display font-bold text-lg">{stats.currentStreak}</p>
-            <p className="text-[10px] text-muted-foreground">Sequência</p>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="glass-card p-3 flex flex-col items-center">
+            <Star className="w-4 h-4 text-chart-3 mb-1" />
+            <p className="font-display font-bold text-base">{totalXP}</p>
+            <p className="text-[9px] text-muted-foreground">XP Total</p>
           </div>
-          <div className="glass-card p-3.5 flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center mb-1.5">
-              <Trophy className="w-5 h-5 text-primary" />
-            </div>
-            <p className="font-display font-bold text-lg">{stats.totalWorkouts}</p>
-            <p className="text-[10px] text-muted-foreground">Treinos</p>
+          <div className="glass-card p-3 flex flex-col items-center">
+            <Flame className="w-4 h-4 text-orange-400 mb-1" />
+            <p className="font-display font-bold text-base">{stats.currentStreak}</p>
+            <p className="text-[9px] text-muted-foreground">Sequência</p>
           </div>
-          <div className="glass-card p-3.5 flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center mb-1.5">
-              <TrendingUp className="w-5 h-5 text-chart-2" />
-            </div>
-            <p className="font-display font-bold text-lg">{stats.totalProgressions}</p>
-            <p className="text-[10px] text-muted-foreground">Progressões</p>
+          <div className="glass-card p-3 flex flex-col items-center">
+            <Trophy className="w-4 h-4 text-primary mb-1" />
+            <p className="font-display font-bold text-base">{stats.totalWorkouts}</p>
+            <p className="text-[9px] text-muted-foreground">Treinos</p>
+          </div>
+          <div className="glass-card p-3 flex flex-col items-center">
+            <TrendingUp className="w-4 h-4 text-chart-2 mb-1" />
+            <p className="font-display font-bold text-base">{stats.totalProgressions}</p>
+            <p className="text-[9px] text-muted-foreground">Progressões</p>
           </div>
         </div>
       )}
