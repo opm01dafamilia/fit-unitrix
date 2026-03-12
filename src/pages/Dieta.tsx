@@ -745,7 +745,6 @@ const Dieta = () => {
   }, [dietStreak, streakMilestones]);
 
   return (
-    <PremiumGate feature="Plano de Dieta">
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
       <div>
