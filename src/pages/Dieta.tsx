@@ -1141,9 +1141,16 @@ const Dieta = () => {
       )}
 
       {/* Focus Mode for Meals */}
-      <FocusMode open={!!focusMeal} onClose={() => setFocusMeal(null)}>
-        {focusMeal && <MealFocusCard meal={focusMeal} onClose={() => setFocusMeal(null)} />}
-      </FocusMode>
+      <DietFocusMode
+        open={focusMealIndex !== null}
+        onClose={() => setFocusMealIndex(null)}
+        meals={displayPlan || []}
+        initialIndex={focusMealIndex ?? 0}
+        mealStatuses={mealStatuses}
+        onSetMealStatus={(idx, s) => setMealStatus(`today-${idx}`, s)}
+        userName={profile?.full_name || undefined}
+        currentGoal={currentGoal}
+      />
     </div>
   );
 };
