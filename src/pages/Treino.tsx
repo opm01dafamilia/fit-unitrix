@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
 import { Button } from "@/components/ui/button";
@@ -141,6 +141,39 @@ const Treino = () => {
     }
     return count;
   }, [sessions]);
+
+  // Check if user already completed a workout today
+  const todayCompleted = useMemo(() => {
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    return sessions.some(s => 
+      format(new Date(s.completed_at), "yyyy-MM-dd") === todayKey &&
+      s.exercises_completed >= s.exercises_total &&
+      s.exercises_total > 0
+    );
+  }, [sessions]);
+
+  // Weekly consistency counter
+  const weeklyConsistency = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const weekDays = new Set(
+      sessions
+        .filter(s => new Date(s.completed_at) >= startOfWeek)
+        .map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))
+    );
+    return { done: weekDays.size, target: 5 };
+  }, [sessions]);
+
+  // Consistency feedback
+  const consistencyFeedback = useMemo(() => {
+    const pct = weeklyConsistency.target > 0 ? (weeklyConsistency.done / weeklyConsistency.target) * 100 : 0;
+    if (pct >= 100) return { emoji: "🏆", text: "Excelente consistência!", color: "text-primary" };
+    if (pct >= 60) return { emoji: "💪", text: "Você está evoluindo!", color: "text-chart-2" };
+    if (pct >= 30) return { emoji: "🔥", text: "Continue firme!", color: "text-amber-400" };
+    return { emoji: "🚀", text: "Continue amanhã!", color: "text-muted-foreground" };
+  }, [weeklyConsistency]);
 
   // Inactivity suggestion
   const inactivitySuggestion = useMemo((): InactivitySuggestion | null => {
@@ -312,13 +345,17 @@ const Treino = () => {
   };
 
   const startWorkout = useCallback((plan: any, dayIndex: number) => {
+    if (todayCompleted) {
+      toast.info("✅ Treino de hoje concluído. Continue amanhã!", { duration: 4000 });
+      return;
+    }
     // Set all execution state synchronously, then switch view
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
     setExecutionKey(k => k + 1);
     setView("execution");
-  }, []);
+  }, [todayCompleted]);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
@@ -704,9 +741,22 @@ const Treino = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => startWorkout(activePlan, nextDayIndex)} className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
-                  <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+                <Button 
+                  onClick={() => startWorkout(activePlan, nextDayIndex)} 
+                  className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+                  disabled={todayCompleted}
+                >
+                  {todayCompleted ? (
+                    <><CheckCircle2 className="w-5 h-5 mr-2" /> Treino Concluído</>
+                  ) : (
+                    <><Play className="w-5 h-5 mr-2" /> Iniciar Treino</>
+                  )}
                 </Button>
+                {todayCompleted && (
+                  <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -733,6 +783,33 @@ const Treino = () => {
               <p className="font-display font-bold text-2xl">{totalCompleted}</p>
               <p className="text-[11px] text-muted-foreground mt-1">Treinos concluídos</p>
             </div>
+          </div>
+
+          {/* Weekly Consistency Counter */}
+          <div className="glass-card p-4 lg:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
+                  <Target className="w-4.5 h-4.5 text-chart-2" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Consistência Semanal</p>
+                  <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
+                </div>
+              </div>
+              <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
+                {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
+              </span>
+            </div>
+            <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-2">
+              <div 
+                className="h-full bg-gradient-to-r from-chart-2 to-primary rounded-full transition-all duration-700 ease-out" 
+                style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
+              />
+            </div>
+            <p className={`text-[11px] font-medium ${consistencyFeedback.color}`}>
+              {consistencyFeedback.text}
+            </p>
           </div>
 
           {/* Inactivity Suggestion */}
@@ -786,8 +863,10 @@ const Treino = () => {
                         boxShadow: isNext
                           ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
                           : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
+                        opacity: todayCompleted && !isCompleted ? 0.6 : 1,
+                        cursor: todayCompleted ? 'default' : 'pointer',
                       }}
-                      onClick={() => startWorkout(activePlan, i)}
+                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
                     >
                       {isNext && (
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
@@ -805,12 +884,17 @@ const Treino = () => {
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold text-foreground">{day.dia}</p>
                                 {getIntensityBadge(day.intensidade)}
-                                {isNext && (
+                                {isNext && !todayCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
                                 )}
                                 {isCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
                                     <Check className="w-2.5 h-2.5" /> Feito
+                                  </span>
+                                )}
+                                {todayCompleted && !isCompleted && (
+                                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-0.5 rounded-md bg-muted/50 border border-border/30">
+                                    Amanhã
                                   </span>
                                 )}
                               </div>
@@ -831,9 +915,11 @@ const Treino = () => {
                             <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
                               <Eye className="w-3.5 h-3.5 mr-1" /> Ver
                             </Button>
-                            <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
-                              <Play className="w-3.5 h-3.5 mr-1" /> Treinar
-                            </Button>
+                            {!todayCompleted && (
+                              <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
+                                <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
