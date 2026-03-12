@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import { preloadExerciseGifs } from "@/lib/exerciseGifs";
@@ -150,7 +150,6 @@ const App = () => (
       <OfflineBanner />
       <BrowserRouter>
         <AuthProvider>
-          <SubscriptionProvider>
           <Routes>
             <Route path="/auth" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Auth /></Suspense></PublicRoute>} />
             <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
@@ -172,7 +171,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
-          </SubscriptionProvider>
+          
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

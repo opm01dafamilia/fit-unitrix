@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import PremiumGate from "@/components/PremiumGate";
 import {
   Trophy, Flame, Dumbbell, Target, Medal, Crown,
   TrendingUp, Zap, ChevronRight, Loader2, UtensilsCrossed
@@ -219,7 +218,6 @@ const Ranking = () => {
   }
 
   return (
-    <PremiumGate feature="Ranking Completo">
     <div className="space-y-7 animate-slide-up">
       {/* Header */}
       <div>
@@ -400,7 +398,7 @@ const Ranking = () => {
         </div>
       )}
     </div>
-    </PremiumGate>
+    
   );
 };
 
