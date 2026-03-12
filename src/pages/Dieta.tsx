@@ -599,7 +599,8 @@ const Dieta = () => {
   const [metaPeso, setMetaPeso] = useState("");
   const [prazo, setPrazo] = useState("none");
   const [preferencias, setPreferencias] = useState("");
-  const [periodo, setPeriodo] = useState<PlanPeriod>("hoje");
+  const [excludedCategories, setExcludedCategories] = useState<string[]>([]);
+  const [mealStyle, setMealStyle] = useState<MealStyle>("completa");
   const [plan, setPlan] = useState<MealPlan[] | null>(null);
   const [weekPlan, setWeekPlan] = useState<DayPlan[] | null>(null);
   const [weekBlocks, setWeekBlocks] = useState<WeekBlock[] | null>(null);
