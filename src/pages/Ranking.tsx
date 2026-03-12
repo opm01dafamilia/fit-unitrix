@@ -400,6 +400,7 @@ const Ranking = () => {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 };
 
