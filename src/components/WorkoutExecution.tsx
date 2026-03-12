@@ -685,20 +685,87 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       <div className="glass-card p-4">
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full border-[3px] border-primary/30 flex items-center justify-center mb-1">
+            <div className="w-14 h-14 rounded-full border-[3px] border-primary/30 flex items-center justify-center mb-1">
               <span className="font-display font-bold text-sm">{targetReps}</span>
             </div>
             <span className="text-[10px] text-muted-foreground font-medium">Reps</span>
           </div>
-          <button onClick={() => setShowRestConfig(!showRestConfig)} className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-12 h-12 rounded-full border-[3px] border-amber-500/30 flex items-center justify-center mb-1">
-              <span className="font-display font-bold text-sm">{effectiveRestSeconds}s</span>
+          {/* REST CIRCLE - functional button */}
+          {phase === "resting" ? (
+            <div className="flex flex-col items-center">
+              <div className="relative w-14 h-14 mb-1">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
+                  <circle cx="28" cy="28" r="24" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" />
+                  <circle cx="28" cy="28" r="24" fill="none" stroke="hsl(45 93% 47%)" strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 24}`}
+                    strokeDashoffset={`${2 * Math.PI * 24 * (1 - (effectiveRestSeconds > 0 ? restTime / effectiveRestSeconds : 0))}`}
+                    className="transition-all duration-1000" />
+                </svg>
+                <button onClick={toggleRestPause}
+                  className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-display font-bold text-xs tabular-nums">{formatTime(restTime)}</span>
+                </button>
+              </div>
+              <span className="text-[10px] text-amber-400 font-medium">Descansando</span>
             </div>
-            <span className="text-[10px] text-muted-foreground font-medium">Descanso ⚙️</span>
-          </button>
+          ) : (
+            <button
+              onClick={() => {
+                if (currentSets.length >= targetSeries) {
+                  setShowRestConfig(!showRestConfig);
+                  return;
+                }
+                // Starting rest = completed a series (if no set registered yet for this rest)
+                if (currentSets.length < targetSeries) {
+                  // Auto-register a set with last known weight/reps or defaults
+                  const lastSet = currentSets[currentSets.length - 1];
+                  const autoKg = lastSet ? lastSet.kg : (parseFloat(inputKg) || (currentProgression?.recommendedWeight ?? 0));
+                  const autoReps = lastSet ? lastSet.reps : (parseInt(inputReps) || parseInt(targetReps) || 12);
+                  const newSet: SetRecord = { id: crypto.randomUUID(), kg: autoKg, reps: autoReps };
+                  setSets(prev => ({
+                    ...prev,
+                    [currentExIndex]: [...(prev[currentExIndex] || []), newSet],
+                  }));
+                  if (navigator.vibrate) navigator.vibrate(50);
+
+                  const newCount = currentSets.length + 1;
+                  if (newCount >= targetSeries) {
+                    if (!finishedFeedback[currentExIndex]) {
+                      setFinishedFeedback(prev => ({ ...prev, [currentExIndex]: true }));
+                      const prog = progressions[currentEx.nome];
+                      if (prog && prog.feedback !== "first_time") {
+                        toast.success(`${prog.feedbackEmoji} ${prog.feedbackLabel}`, { duration: 4000 });
+                      }
+                    }
+                    setPhase("exercise-done");
+                    return;
+                  }
+                }
+                // Start rest timer
+                setRestTime(effectiveRestSeconds);
+                setRestPaused(false);
+                setPhase("resting");
+                toast.success(`Série ${currentSets.length + 1} registrada! Descansando...`, { duration: 2000 });
+              }}
+              className="flex flex-col items-center group"
+            >
+              <div className={`w-14 h-14 rounded-full border-[3px] border-amber-500/40 flex items-center justify-center mb-1 transition-all group-hover:border-amber-500 group-hover:shadow-[0_0_12px_hsl(45_93%_47%/0.3)] group-active:scale-95 ${
+                currentSets.length > 0 ? "bg-amber-500/10" : ""
+              }`}>
+                <div className="flex flex-col items-center">
+                  <Timer className="w-4 h-4 text-amber-500 mb-0.5" />
+                  <span className="font-display font-bold text-[10px]">{effectiveRestSeconds}s</span>
+                </div>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-medium">
+                {currentSets.length > 0 ? "Descansar" : "Iniciar"}
+              </span>
+            </button>
+          )}
           <div className="flex flex-col items-center">
-            <div className={`w-12 h-12 rounded-full border-[3px] flex items-center justify-center mb-1 ${
-              currentSets.length >= targetSeries ? "border-green-500/50 shadow-[0_0_10px_hsl(152_69%_46%/0.3)]" : "border-muted-foreground/20"
+            <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center mb-1 transition-all ${
+              currentSets.length >= targetSeries ? "border-green-500/50 bg-green-500/10 shadow-[0_0_12px_hsl(152_69%_46%/0.3)]" : "border-muted-foreground/20"
             }`}>
               <span className="font-display font-bold text-sm">{currentSets.length}/{targetSeries}</span>
             </div>
