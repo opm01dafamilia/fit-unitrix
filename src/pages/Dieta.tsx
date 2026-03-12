@@ -419,6 +419,22 @@ const Dieta = () => {
   const [saving, setSaving] = useState(false);
   const [focusMeal, setFocusMeal] = useState<MealPlan | null>(null);
   const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
+  
+  // Streak & gamification state
+  const [dietStreak, setDietStreak] = useState(0);
+  const [weeklyAdherence, setWeeklyAdherence] = useState(0);
+  const [weeklyMealsDone, setWeeklyMealsDone] = useState(0);
+  const [weeklyMealsTotal, setWeeklyMealsTotal] = useState(0);
+  const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+
+  // Streak achievements thresholds
+  const streakMilestones = [
+    { days: 1, title: "Dia Perfeito", icon: "🍽️" },
+    { days: 3, title: "Consistência", icon: "🥗" },
+    { days: 7, title: "Foco Extremo", icon: "🔥" },
+    { days: 15, title: "Máquina", icon: "⚡" },
+    { days: 30, title: "Transformação", icon: "🏆" },
+  ];
 
   useEffect(() => {
     if (profile) {
@@ -429,23 +445,134 @@ const Dieta = () => {
     }
   }, [profile]);
 
+  // Load saved plans and streak data
   useEffect(() => {
     if (!user) return;
     setLoadingPlans(true);
-    supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) toast.error("Erro ao carregar planos salvos");
-        setSavedPlans(data || []);
-        setLoadingPlans(false);
-      });
+    
+    Promise.all([
+      supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("diet_tracking").select("*").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(60),
+    ]).then(([plansRes, trackingRes]) => {
+      if (plansRes.error) toast.error("Erro ao carregar planos salvos");
+      setSavedPlans(plansRes.data || []);
+      
+      // Calculate streak from tracking data
+      const tracking = (trackingRes.data || []) as any[];
+      const completedDates = tracking.filter(t => t.all_completed).map(t => t.tracked_date).sort().reverse();
+      
+      let streak = 0;
+      if (completedDates.length > 0) {
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
+        if (completedDates[0] === todayStr || completedDates[0] === yesterdayStr) {
+          for (let i = 0; i < completedDates.length; i++) {
+            const expected = format(subDays(new Date(), i + (completedDates[0] === todayStr ? 0 : 1)), "yyyy-MM-dd");
+            if (completedDates[i] === expected) streak++;
+            else break;
+          }
+        }
+      }
+      setDietStreak(streak);
+
+      // Weekly stats
+      const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
+      const weekData = tracking.filter(t => t.tracked_date >= weekAgo);
+      const wDone = weekData.reduce((a: number, t: any) => a + (t.meals_done || 0), 0);
+      const wTotal = weekData.reduce((a: number, t: any) => a + (t.meals_total || 0), 0);
+      setWeeklyMealsDone(wDone);
+      setWeeklyMealsTotal(wTotal);
+      setWeeklyAdherence(wTotal > 0 ? Math.round((wDone / wTotal) * 100) : 0);
+      
+      setLoadingPlans(false);
+    });
   }, [user]);
 
+  // Save daily tracking when all meals are marked
+  const saveDayTracking = useCallback(async (statuses: Record<string, MealStatus>, totalMeals: number) => {
+    if (!user || totalMeals === 0) return;
+    
+    const done = Object.values(statuses).filter(s => s === "done").length;
+    const failed = Object.values(statuses).filter(s => s === "failed").length;
+    const allMarked = done + failed >= totalMeals;
+    
+    if (!allMarked) return;
+    
+    const allCompleted = done >= totalMeals;
+    const adherence = Math.round((done / totalMeals) * 100);
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    
+    try {
+      // Upsert tracking record
+      const { data: existing } = await supabase.from("diet_tracking")
+        .select("id").eq("user_id", user.id).eq("tracked_date", todayStr).maybeSingle();
+      
+      if (existing) {
+        await supabase.from("diet_tracking").update({
+          meals_total: totalMeals,
+          meals_done: done,
+          meals_failed: failed,
+          all_completed: allCompleted,
+          adherence_pct: adherence,
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("diet_tracking").insert({
+          user_id: user.id,
+          tracked_date: todayStr,
+          meals_total: totalMeals,
+          meals_done: done,
+          meals_failed: failed,
+          all_completed: allCompleted,
+          adherence_pct: adherence,
+        });
+      }
+      
+      if (allCompleted) {
+        const newStreak = dietStreak + 1;
+        setDietStreak(newStreak);
+        setShowStreakAnimation(true);
+        setTimeout(() => setShowStreakAnimation(false), 2000);
+        
+        // Check milestone
+        const milestone = streakMilestones.find(m => m.days === newStreak);
+        if (milestone) {
+          setTimeout(() => {
+            toast.success(`${milestone.icon} Conquista: ${milestone.title}!`, {
+              description: `${newStreak} dia${newStreak > 1 ? "s" : ""} seguido${newStreak > 1 ? "s" : ""} com dieta completa!`,
+            });
+          }, 500);
+        }
+      }
+    } catch (err) {
+      console.error("Error saving diet tracking:", err);
+    }
+  }, [user, dietStreak, streakMilestones]);
+
   const setMealStatus = (key: string, status: MealStatus) => {
-    setMealStatuses((prev) => ({ ...prev, [key]: status }));
+    const newStatuses = { ...mealStatuses, [key]: status };
+    setMealStatuses(newStatuses);
+    
     if (status === "done") {
-      toast.success("Refeição marcada como feita! 💪");
+      const msg = getDietMotivationalMessage();
+      toast.success(`${msg.emoji} ${msg.text}`);
+      // Haptic feedback on mobile
+      if (navigator.vibrate) navigator.vibrate(50);
     } else if (status === "failed") {
-      toast("Refeição marcada como falha", { description: "Tente manter o foco na próxima!" });
+      const failMsg = getDietFailMessage();
+      toast(failMsg, { 
+        description: "Continue firme nas próximas refeições!",
+        icon: "💪",
+      });
+    }
+    
+    // Check if all meals are now marked (for today's plan)
+    if (planPeriod === "hoje" && displayPlan) {
+      const totalMeals = displayPlan.length;
+      const markedCount = Object.values(newStatuses).filter(s => s !== null).length;
+      if (markedCount >= totalMeals) {
+        saveDayTracking(newStatuses, totalMeals);
+      }
     }
   };
 
