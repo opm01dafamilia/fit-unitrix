@@ -777,7 +777,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
     (interpolatedTransform as any)[key] = lerp(v0, v1, t);
   }
 
-  const showGif = gifUrl && !gifError;
+  const showGif = gifUrl && !gifError && gifLoaded;
 
   return (
     <div
@@ -787,6 +787,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
         height: px.h,
         minWidth: px.w,
         minHeight: px.h,
+        aspectRatio: "1 / 1",
         background: showGif 
           ? "hsl(var(--secondary) / 0.3)" 
           : "linear-gradient(180deg, hsl(var(--secondary)) 0%, hsl(var(--background)) 100%)",
@@ -798,7 +799,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
         <img
           src={gifUrl}
           alt={exercise.nome}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-500 ${gifLoading ? 'opacity-0' : 'opacity-100'}`}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-300 ${gifLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{
             objectFit: "contain",
             objectPosition: "center",
@@ -807,12 +808,13 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
           }}
           onLoad={handleGifLoad}
           onError={handleGifError}
-          loading="eager"
+          loading="lazy"
+          decoding="async"
         />
       )}
 
-      {/* Loading state */}
-      {gifLoading && gifUrl && (
+      {/* Loading state - show skeleton placeholder */}
+      {gifUrl && !gifLoaded && !gifError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
           <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           <span className="text-[9px] text-muted-foreground">Carregando...</span>
@@ -820,7 +822,7 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
       )}
 
       {/* SVG Fallback - shown when no GIF or GIF failed */}
-      {(!showGif && !gifLoading) && (
+      {(!showGif && (gifError || !gifUrl)) && (
         <>
           <div className="absolute inset-0 opacity-[0.02]"
             style={{
