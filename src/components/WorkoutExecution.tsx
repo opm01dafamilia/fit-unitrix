@@ -548,7 +548,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }
 
   return (
-    <div className="space-y-4 animate-slide-up pb-28">
+    <div className="space-y-4 animate-slide-up pb-24 sm:pb-28 max-w-2xl mx-auto">
       {/* ===== TOP PROGRESS BAR ===== */}
       <div className="glass-card p-3">
         <div className="flex items-center justify-between mb-2">
