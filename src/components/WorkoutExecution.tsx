@@ -402,10 +402,46 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   };
 
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
-  const toggleRestPause = () => setRestPaused(p => !p);
-  const resetRest = () => { setRestTime(effectiveRestSeconds); setRestPaused(false); setPhase("resting"); };
-  const skipRest = () => { setPhase("input"); setRestTime(0); };
-  const addRestTime = (seconds: number) => setRestTime(t => Math.max(5, t + seconds));
+  
+  // Preload alternative GIFs when alternatives change
+  useEffect(() => {
+    if (alternatives.length > 0) {
+      preloadAlternativeGifs(alternatives.map(a => a.nome));
+    }
+  }, [alternatives]);
+
+  const toggleRestPause = useCallback(() => {
+    setRestPaused(p => {
+      if (p) {
+        // Resuming: set new end time based on remaining
+        restEndTimeRef.current = Date.now() + restPausedAtRef.current * 1000;
+      }
+      return !p;
+    });
+  }, []);
+
+  const resetRest = useCallback(() => {
+    restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
+    setRestTime(effectiveRestSeconds);
+    setRestPaused(false);
+    setPhase("resting");
+  }, [effectiveRestSeconds]);
+
+  const skipRest = useCallback(() => {
+    restEndTimeRef.current = null;
+    setPhase("input");
+    setRestTime(0);
+  }, []);
+
+  const addRestTime = useCallback((seconds: number) => {
+    setRestTime(t => {
+      const newTime = Math.max(5, t + seconds);
+      if (restEndTimeRef.current) {
+        restEndTimeRef.current += seconds * 1000;
+      }
+      return newTime;
+    });
+  }, []);
 
   const libraryExercise = useMemo(() => {
     const name = currentEx.nome.toLowerCase();
