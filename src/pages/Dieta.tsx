@@ -556,6 +556,11 @@ const Dieta = () => {
       if (plansRes.error) toast.error("Erro ao carregar planos salvos");
       setSavedPlans(plansRes.data || []);
       
+      // Set latest weight from body_tracking
+      if (bodyRes.data && bodyRes.data.length > 0) {
+        setLatestWeight(Number(bodyRes.data[0].weight));
+      }
+      
       // Calculate streak from tracking data
       const tracking = (trackingRes.data || []) as any[];
       const completedDates = tracking.filter(t => t.all_completed).map(t => t.tracked_date).sort().reverse();
