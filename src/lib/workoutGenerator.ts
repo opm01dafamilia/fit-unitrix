@@ -487,9 +487,80 @@ const groupLabels: Record<string, string> = {
   quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
 };
 
+// =====================================================
+// ROTATION & VARIATION ENGINE
+// =====================================================
+
+// Deterministic shuffle based on a seed (day index + group) for consistency per plan
+function shuffleArray<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  let s = seed;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    const j = s % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// Select a varied subset from pool, ensuring rotation across days
+// dayIndex shifts which exercises are picked, so consecutive days with same group get different exercises
+function selectExercises(
+  pool: Exercise[],
+  dayIndex: number,
+  maxCount: number,
+  usedNames: Set<string>
+): Exercise[] {
+  if (pool.length === 0) return [];
+  
+  // Shuffle pool deterministically based on day index
+  const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
+  
+  const selected: Exercise[] = [];
+  // First pass: pick exercises not used on adjacent days
+  for (const ex of shuffled) {
+    if (selected.length >= maxCount) break;
+    if (!usedNames.has(ex.nome)) {
+      selected.push(ex);
+    }
+  }
+  // Fill remaining if needed (allows reuse if pool is small)
+  for (const ex of shuffled) {
+    if (selected.length >= maxCount) break;
+    if (!selected.includes(ex)) {
+      selected.push(ex);
+    }
+  }
+  
+  return selected;
+}
+
+// Adjust rest times based on day intensity
+function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Exercise {
+  const restMap: Record<DayIntensity, Record<string, string>> = {
+    pesado: { "30s": "60s", "45s": "90s", "60s": "90s", "90s": "120s", "120s": "180s" },
+    moderado: { "120s": "90s", "180s": "120s", "90s": "75s" },
+    leve: { "90s": "60s", "120s": "60s", "180s": "90s", "60s": "45s", "45s": "30s" },
+  };
+  const mapping = restMap[intensity];
+  const newDescanso = mapping?.[exercise.descanso] || exercise.descanso;
+  return { ...exercise, descanso: newDescanso };
+}
+
+// Max exercises per muscle group per day, varies by intensity
+function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
+  const base = level === "avancado" ? 4 : level === "intermediario" ? 3 : 2;
+  if (intensity === "leve") return Math.max(1, base - 1);
+  if (intensity === "moderado") return base;
+  return base + 1; // pesado: allow more
+}
+
 export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number, bodyFocus: BodyFocus = "completo"): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
+
+  // Track used exercise names to avoid repetition on adjacent days
+  const prevDayExercises: Set<string> = new Set();
 
   // 7-day uses special templates with intensity metadata
   if (days === 7) {
@@ -499,17 +570,22 @@ export function generateWorkoutPlan(objective: Objective, level: Level, daysPerW
     return split7.map((entry, i) => {
       const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
       const exercicios: Exercise[] = [];
-
-      // Reduce volume for moderate/light days
       const volumeMultiplier = entry.intensity === "leve" ? 0.5 : entry.intensity === "moderado" ? 0.75 : 1;
+      const maxPerGroup = getMaxExercisesPerGroup(entry.intensity, level);
 
       entry.groups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-        pool.forEach(ex => {
+        const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises);
+        selected.forEach(ex => {
           const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
-          exercicios.push({ ...ex, series: String(adjustedSeries) });
+          const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, entry.intensity);
+          exercicios.push(adjusted);
         });
       });
+
+      // Update adjacency tracker: clear previous, set current
+      prevDayExercises.clear();
+      exercicios.forEach(ex => prevDayExercises.add(ex.nome));
 
       return {
         dia: diasSemana[i] || `Dia ${i + 1}`,
@@ -520,27 +596,43 @@ export function generateWorkoutPlan(objective: Objective, level: Level, daysPerW
     });
   }
 
-  // 3-6 day standard generation
+  // 3-6 day standard generation with rotation
   const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
   const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+
+  // Determine intensity pattern for 3-6 day plans
+  const intensityPatterns: Record<number, DayIntensity[]> = {
+    3: ["pesado", "moderado", "pesado"],
+    4: ["pesado", "moderado", "pesado", "moderado"],
+    5: ["pesado", "moderado", "pesado", "moderado", "pesado"],
+    6: ["pesado", "moderado", "pesado", "moderado", "pesado", "moderado"],
+  };
+  const intensities = intensityPatterns[days] || intensityPatterns[3];
 
   return split.map((muscleGroups, i) => {
     const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
     const exercicios: Exercise[] = [];
+    const dayIntensity = intensities[i] || "pesado";
+    const maxPerGroup = getMaxExercisesPerGroup(dayIntensity, level);
 
     muscleGroups.forEach(group => {
       const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-      pool.forEach(ex => {
+      const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises);
+      selected.forEach(ex => {
         const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
-        exercicios.push({ ...ex, series: String(adjustedSeries) });
+        const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, dayIntensity);
+        exercicios.push(adjusted);
       });
     });
+
+    prevDayExercises.clear();
+    exercicios.forEach(ex => prevDayExercises.add(ex.nome));
 
     return {
       dia: diasSemana[i] || `Dia ${i + 1}`,
       grupo,
       exercicios,
-      intensidade: "pesado" as DayIntensity,
+      intensidade: dayIntensity,
     };
   });
 }
