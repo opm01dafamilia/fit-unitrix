@@ -58,7 +58,18 @@ function getCalorieTarget(
   }
 
   const weightDiff = weightGoal - currentWeight; // negative = lose, positive = gain
-  const months = deadlineMonths && deadlineMonths > 0 ? deadlineMonths : 3; // default 3 months
+  
+  // If no deadline provided, use moderate defaults based on objective
+  if (!deadlineMonths || deadlineMonths <= 0) {
+    // Use a comfortable rate: ~0.5kg/week for loss, ~0.3kg/week for gain
+    const weeklyRate = weightDiff < 0 ? -0.5 : 0.3;
+    const dailyChange = Math.round((weeklyRate * 7700) / 7);
+    const clampedDaily = Math.max(-800, Math.min(700, dailyChange));
+    const target = tdee + clampedDaily;
+    return Math.max(1200, Math.round(target));
+  }
+  
+  const months = deadlineMonths;
   const days = months * 30;
 
   // 1 kg ≈ 7700 kcal
