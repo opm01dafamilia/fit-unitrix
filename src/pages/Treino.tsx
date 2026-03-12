@@ -341,6 +341,7 @@ const Treino = () => {
   if (view === "execution" && executingPlan) {
     return (
       <WorkoutExecution
+        key={`workout-${executionKey}-${executingDayIndex}`}
         plan={executingPlan}
         dayIndex={executingDayIndex}
         userId={user!.id}
