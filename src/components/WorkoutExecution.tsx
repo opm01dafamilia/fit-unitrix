@@ -868,6 +868,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">⏱ Descanso</span>
             <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(-15)}>-15s</Button>
               <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={() => addRestTime(15)}>+15s</Button>
               <Button variant="ghost" size="sm" className="text-xs h-7 px-2" onClick={skipRest}>Pular</Button>
             </div>
