@@ -87,6 +87,82 @@ const exerciseDB: Record<string, Record<string, Exercise[]>> = {
       { nome: "Panturrilha Sentado", series: "5", reps: "15", desc: "Amplitude máxima, controle total.", descanso: "45s" },
     ],
   },
+  // Sub-grupos de pernas para foco inferior com variação
+  quadriceps: {
+    iniciante: [
+      { nome: "Leg Press", series: "3", reps: "12", desc: "Pés na largura dos ombros, foco em empurrar com os calcanhares.", descanso: "60s" },
+      { nome: "Cadeira Extensora", series: "3", reps: "12", desc: "Estenda completamente, segure 1s no topo.", descanso: "60s" },
+      { nome: "Agachamento Goblet", series: "3", reps: "10", desc: "Segure halter no peito, agache controlando.", descanso: "60s" },
+    ],
+    intermediario: [
+      { nome: "Agachamento Livre", series: "4", reps: "10", desc: "Barra nas costas, desça até paralelo ou abaixo.", descanso: "120s" },
+      { nome: "Agachamento Frontal", series: "3", reps: "10", desc: "Barra na frente dos ombros, tronco ereto.", descanso: "90s" },
+      { nome: "Leg Press Pés Baixos", series: "4", reps: "12", desc: "Pés na parte inferior da plataforma para ênfase em quadríceps.", descanso: "90s" },
+      { nome: "Cadeira Extensora", series: "3", reps: "15", desc: "Unilateral, pausa no topo por 2s.", descanso: "60s" },
+    ],
+    avancado: [
+      { nome: "Agachamento Livre", series: "5", reps: "6-8", desc: "Carga pesada, profundidade total, controle excêntrico.", descanso: "180s" },
+      { nome: "Agachamento Hack", series: "4", reps: "10", desc: "Na máquina hack, pés juntos para ênfase no vasto lateral.", descanso: "90s" },
+      { nome: "Agachamento Búlgaro", series: "4", reps: "10", desc: "Pé traseiro elevado, halter em cada mão.", descanso: "90s" },
+      { nome: "Cadeira Extensora", series: "4", reps: "12", desc: "Drop set na última série.", descanso: "60s" },
+      { nome: "Passada Caminhando", series: "3", reps: "12/perna", desc: "Com halteres, passos longos e controlados.", descanso: "60s" },
+    ],
+  },
+  posterior: {
+    iniciante: [
+      { nome: "Mesa Flexora", series: "3", reps: "12", desc: "Flexione as pernas contra a resistência, mantenha quadril no banco.", descanso: "60s" },
+      { nome: "Elevação Pélvica", series: "3", reps: "12", desc: "Deitado, eleve o quadril contraindo glúteos no topo.", descanso: "60s" },
+      { nome: "Agachamento Sumô", series: "3", reps: "12", desc: "Pernas afastadas, pontas dos pés para fora, segure halter.", descanso: "60s" },
+    ],
+    intermediario: [
+      { nome: "Stiff", series: "4", reps: "10", desc: "Barra, pernas quase estendidas, sinta o alongamento no posterior.", descanso: "90s" },
+      { nome: "Mesa Flexora", series: "4", reps: "12", desc: "Unilateral para equilíbrio entre os lados.", descanso: "60s" },
+      { nome: "Hip Thrust", series: "4", reps: "10", desc: "Costas apoiadas no banco, barra no quadril, contraia no topo.", descanso: "90s" },
+      { nome: "Cadeira Abdutora", series: "3", reps: "15", desc: "Foco no glúteo médio, controle o retorno.", descanso: "45s" },
+    ],
+    avancado: [
+      { nome: "Stiff Romeno", series: "4", reps: "10", desc: "Barra, descida lenta, alongamento máximo do posterior.", descanso: "90s" },
+      { nome: "Hip Thrust", series: "5", reps: "8", desc: "Carga pesada, pausa de 2s no topo.", descanso: "90s" },
+      { nome: "Good Morning", series: "3", reps: "12", desc: "Barra nas costas, incline o tronco mantendo costas retas.", descanso: "90s" },
+      { nome: "Mesa Flexora Unilateral", series: "4", reps: "10", desc: "Uma perna por vez, excêntrica lenta.", descanso: "60s" },
+      { nome: "Elevação Pélvica Unilateral", series: "3", reps: "12", desc: "Uma perna elevada, contraia glúteos no topo.", descanso: "60s" },
+    ],
+  },
+  gluteos: {
+    iniciante: [
+      { nome: "Elevação Pélvica", series: "3", reps: "15", desc: "Deitado, eleve o quadril e contraia glúteos 2s no topo.", descanso: "45s" },
+      { nome: "Agachamento Sumô", series: "3", reps: "12", desc: "Pés afastados, pontas para fora, foco em glúteos.", descanso: "60s" },
+      { nome: "Cadeira Abdutora", series: "3", reps: "15", desc: "Abra as pernas contra a resistência.", descanso: "45s" },
+    ],
+    intermediario: [
+      { nome: "Hip Thrust", series: "4", reps: "12", desc: "Costas no banco, barra no quadril, contraia forte no topo.", descanso: "90s" },
+      { nome: "Passada Reversa", series: "3", reps: "12/perna", desc: "Passo para trás, joelho quase toca o chão.", descanso: "60s" },
+      { nome: "Cadeira Abdutora", series: "4", reps: "15", desc: "Incline levemente o tronco para ativar glúteo máximo.", descanso: "45s" },
+      { nome: "Kickback Cabo", series: "3", reps: "12", desc: "No cabo baixo, estenda a perna para trás.", descanso: "45s" },
+    ],
+    avancado: [
+      { nome: "Hip Thrust Pesado", series: "5", reps: "8", desc: "Carga pesada, pausa de 3s no topo.", descanso: "120s" },
+      { nome: "Agachamento Sumô Barra", series: "4", reps: "10", desc: "Barra nas costas, foco em glúteos e adutores.", descanso: "90s" },
+      { nome: "Passada Lateral", series: "3", reps: "12/lado", desc: "Halteres, passo lateral amplo, foco em glúteo médio.", descanso: "60s" },
+      { nome: "Kickback Cabo Pesado", series: "4", reps: "10", desc: "Carga desafiadora, contração máxima.", descanso: "60s" },
+      { nome: "Elevação Pélvica Unilateral", series: "3", reps: "12", desc: "Uma perna, carga adicional no quadril.", descanso: "60s" },
+    ],
+  },
+  panturrilha: {
+    iniciante: [
+      { nome: "Panturrilha em Pé", series: "3", reps: "15", desc: "Suba nas pontas dos pés, segure 1s no topo.", descanso: "30s" },
+      { nome: "Panturrilha Sentado", series: "3", reps: "15", desc: "Na máquina sentado, amplitude completa.", descanso: "30s" },
+    ],
+    intermediario: [
+      { nome: "Panturrilha em Pé", series: "4", reps: "15", desc: "Amplitude máxima, segure 2s no topo.", descanso: "45s" },
+      { nome: "Panturrilha Sentado", series: "4", reps: "20", desc: "Foco no sóleo, excêntrica lenta.", descanso: "30s" },
+    ],
+    avancado: [
+      { nome: "Panturrilha em Pé Unilateral", series: "4", reps: "12", desc: "Uma perna, carga pesada, pausa no topo.", descanso: "45s" },
+      { nome: "Panturrilha Sentado", series: "5", reps: "20", desc: "Drop set na última série.", descanso: "30s" },
+      { nome: "Panturrilha no Leg Press", series: "3", reps: "15", desc: "Pontas dos pés na plataforma, amplitude máxima.", descanso: "45s" },
+    ],
+  },
   ombros: {
     iniciante: [
       { nome: "Desenvolvimento Máquina", series: "3", reps: "12", desc: "Empurre acima da cabeça na máquina.", descanso: "60s" },
@@ -215,15 +291,13 @@ type Objective = "emagrecer" | "massa" | "condicionamento";
 type Level = "iniciante" | "intermediario" | "avancado";
 export type BodyFocus = "superior" | "inferior" | "completo";
 
-const upperGroups = ["peito", "costas", "ombros", "biceps", "triceps"];
-const lowerGroups = ["pernas"];
-const coreAndCardio = ["abdomen", "hiit", "cardio"];
-
-// Each 7-day entry uses a tuple: [groups[], intensity]
-// For 3-6 day splits, intensity is always "pesado" (default)
+// Each 7-day entry uses intensity metadata
 type SplitEntry = string[];
 type SplitEntry7 = { groups: string[]; intensity: DayIntensity };
 
+// =====================================================
+// SPLIT TEMPLATES — CORPO COMPLETO (default)
+// =====================================================
 const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
   emagrecer: {
     3: [["hiit", "abdomen"], ["pernas", "cardio"], ["peito", "costas", "hiit"]],
@@ -245,8 +319,6 @@ const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
   },
 };
 
-// 7-day splits with intelligent intensity distribution
-// Pattern: 4 pesado, 2 moderado, 1 leve — never 2 consecutive heavy days on same muscle group
 const splitTemplates7: Record<Objective, SplitEntry7[]> = {
   emagrecer: [
     { groups: ["peito", "triceps"], intensity: "pesado" },
@@ -277,46 +349,63 @@ const splitTemplates7: Record<Objective, SplitEntry7[]> = {
   ],
 };
 
-// Focus-specific split overrides
+// =====================================================
+// SPLIT TEMPLATES — FOCO SUPERIOR
+// Prioriza peito, costas, ombros, braços
+// Mantém estímulo leve/moderado de inferiores para equilíbrio
+// Alterna empurrar/puxar
+// =====================================================
 const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, SplitEntry[]>>> = {
   superior: {
     emagrecer: {
-      3: [["peito", "costas", "hiit"], ["ombros", "biceps", "hiit"], ["triceps", "peito", "cardio"]],
-      4: [["peito", "triceps", "hiit"], ["costas", "biceps"], ["ombros", "hiit"], ["peito", "costas", "cardio"]],
-      5: [["peito", "hiit"], ["costas"], ["ombros", "triceps"], ["biceps", "peito", "hiit"], ["costas", "ombros", "cardio"]],
-      6: [["peito", "hiit"], ["costas"], ["ombros"], ["biceps", "triceps", "hiit"], ["peito", "costas"], ["ombros", "cardio"]],
+      // 3d: Empurrar + HIIT | Puxar + HIIT | Braços + Pernas leve
+      3: [["peito", "ombros", "hiit"], ["costas", "biceps", "hiit"], ["triceps", "ombros", "pernas"]],
+      // 4d: Empurrar | Puxar | Braços + HIIT | Ombros + Pernas leve
+      4: [["peito", "triceps", "hiit"], ["costas", "biceps"], ["ombros", "hiit", "abdomen"], ["pernas", "triceps", "cardio"]],
+      // 5d: Peito | Costas | Ombros + HIIT | Braços | Pernas leve + Cardio
+      5: [["peito", "triceps"], ["costas", "biceps", "hiit"], ["ombros", "abdomen"], ["biceps", "triceps", "hiit"], ["pernas", "cardio"]],
+      // 6d: Peito | Costas | Ombros | Braços | Pernas leve | HIIT
+      6: [["peito", "hiit"], ["costas", "abdomen"], ["ombros", "triceps"], ["biceps", "peito", "hiit"], ["pernas", "cardio"], ["costas", "ombros"]],
     },
     massa: {
-      3: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "peito"]],
-      4: [["peito", "triceps"], ["costas", "biceps"], ["ombros"], ["peito", "costas", "abdomen"]],
-      5: [["peito"], ["costas"], ["ombros"], ["biceps", "triceps"], ["peito", "costas", "abdomen"]],
-      6: [["peito"], ["costas"], ["ombros"], ["biceps", "triceps"], ["peito", "costas"], ["ombros", "abdomen"]],
+      3: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "pernas"]],
+      4: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "abdomen"], ["peito", "costas", "pernas"]],
+      5: [["peito"], ["costas", "biceps"], ["ombros", "triceps"], ["peito", "costas"], ["pernas", "abdomen"]],
+      6: [["peito", "triceps"], ["costas", "biceps"], ["ombros"], ["peito", "ombros"], ["biceps", "triceps"], ["pernas", "abdomen"]],
     },
     condicionamento: {
-      3: [["hiit", "peito", "costas"], ["ombros", "biceps", "cardio"], ["hiit", "triceps", "abdomen"]],
-      4: [["hiit", "peito"], ["costas", "biceps", "cardio"], ["hiit", "ombros"], ["triceps", "abdomen", "cardio"]],
-      5: [["hiit", "peito"], ["costas"], ["ombros", "cardio"], ["hiit", "biceps", "triceps"], ["abdomen", "cardio"]],
-      6: [["hiit", "peito"], ["costas"], ["ombros", "hiit"], ["biceps", "cardio"], ["triceps", "abdomen"], ["peito", "cardio"]],
+      3: [["hiit", "peito", "costas"], ["ombros", "biceps", "cardio"], ["triceps", "pernas", "hiit"]],
+      4: [["hiit", "peito", "triceps"], ["costas", "biceps", "cardio"], ["ombros", "hiit"], ["pernas", "abdomen", "cardio"]],
+      5: [["hiit", "peito"], ["costas", "biceps"], ["ombros", "cardio"], ["triceps", "hiit", "abdomen"], ["pernas", "cardio"]],
+      6: [["hiit", "peito"], ["costas", "biceps"], ["ombros", "hiit"], ["peito", "triceps", "cardio"], ["costas", "abdomen"], ["pernas", "cardio"]],
     },
   },
+  // =====================================================
+  // FOCO INFERIOR
+  // Prioriza quadríceps, posterior, glúteos, panturrilha
+  // Alterna: quadríceps-dominante / posterior-glúteo / perna completa
+  // Mantém estímulo leve de superior para equilíbrio
+  // =====================================================
   inferior: {
     emagrecer: {
-      3: [["pernas", "hiit"], ["pernas", "abdomen", "cardio"], ["pernas", "hiit"]],
-      4: [["pernas", "hiit"], ["pernas", "abdomen"], ["pernas", "cardio"], ["pernas", "hiit"]],
-      5: [["pernas", "hiit"], ["pernas"], ["pernas", "abdomen", "cardio"], ["pernas", "hiit"], ["pernas", "cardio"]],
-      6: [["pernas", "hiit"], ["pernas"], ["pernas", "abdomen"], ["pernas", "hiit"], ["pernas", "cardio"], ["pernas"]],
+      // 3d: Quad-dominante + HIIT | Posterior-Glúteo + Cardio | Perna completa + Superior leve
+      3: [["quadriceps", "panturrilha", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "ombros", "abdomen"]],
+      4: [["quadriceps", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "abdomen"], ["quadriceps", "panturrilha", "peito"]],
+      5: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["pernas", "cardio", "abdomen"], ["quadriceps", "panturrilha", "hiit"], ["peito", "costas", "cardio"]],
+      6: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["peito", "costas", "cardio"], ["pernas", "abdomen"], ["quadriceps", "panturrilha", "hiit"], ["gluteos", "posterior", "cardio"]],
     },
     massa: {
-      3: [["pernas"], ["pernas", "abdomen"], ["pernas"]],
-      4: [["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"]],
-      5: [["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"], ["pernas"]],
-      6: [["pernas"], ["pernas"], ["pernas"], ["pernas", "abdomen"], ["pernas"], ["pernas"]],
+      // 3d: Quad-dominante | Posterior-Glúteo | Perna completa + Superior leve
+      3: [["quadriceps", "panturrilha"], ["posterior", "gluteos"], ["pernas", "ombros"]],
+      4: [["quadriceps", "panturrilha"], ["posterior", "gluteos"], ["pernas", "abdomen"], ["quadriceps", "peito", "costas"]],
+      5: [["quadriceps"], ["posterior", "gluteos"], ["pernas", "panturrilha"], ["quadriceps", "abdomen"], ["peito", "costas", "ombros"]],
+      6: [["quadriceps"], ["posterior", "gluteos"], ["panturrilha", "abdomen"], ["pernas"], ["quadriceps", "gluteos"], ["peito", "costas", "ombros"]],
     },
     condicionamento: {
-      3: [["pernas", "hiit"], ["pernas", "cardio"], ["pernas", "hiit", "abdomen"]],
-      4: [["pernas", "hiit"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen", "cardio"]],
-      5: [["pernas", "hiit"], ["pernas"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen", "cardio"]],
-      6: [["pernas", "hiit"], ["pernas"], ["pernas", "cardio"], ["pernas", "hiit"], ["pernas", "abdomen"], ["pernas", "cardio"]],
+      3: [["quadriceps", "hiit", "panturrilha"], ["posterior", "gluteos", "cardio"], ["pernas", "peito", "hiit"]],
+      4: [["quadriceps", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "hiit", "abdomen"], ["panturrilha", "peito", "costas", "cardio"]],
+      5: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["pernas", "cardio"], ["quadriceps", "hiit", "panturrilha"], ["peito", "costas", "abdomen", "cardio"]],
+      6: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["peito", "costas", "cardio"], ["pernas", "hiit"], ["quadriceps", "panturrilha", "abdomen"], ["gluteos", "cardio"]],
     },
   },
   completo: {
@@ -326,7 +415,9 @@ const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, Sp
   },
 };
 
-// Focus-specific 7-day overrides
+// =====================================================
+// 7-DAY FOCUS OVERRIDES
+// =====================================================
 const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> = {
   superior: {
     emagrecer: [
@@ -334,14 +425,14 @@ const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> 
       { groups: ["cardio", "abdomen"], intensity: "moderado" },
       { groups: ["costas", "biceps"], intensity: "pesado" },
       { groups: ["ombros", "hiit"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas", "cardio"], intensity: "moderado" },
       { groups: ["peito", "costas"], intensity: "pesado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     massa: [
-      { groups: ["peito"], intensity: "pesado" },
-      { groups: ["costas"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["peito", "triceps"], intensity: "pesado" },
+      { groups: ["costas", "biceps"], intensity: "pesado" },
+      { groups: ["pernas", "abdomen"], intensity: "moderado" },
       { groups: ["ombros"], intensity: "pesado" },
       { groups: ["biceps", "triceps"], intensity: "pesado" },
       { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
@@ -353,37 +444,37 @@ const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> 
       { groups: ["ombros", "hiit"], intensity: "pesado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
       { groups: ["biceps", "triceps", "hiit"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas", "abdomen", "cardio"], intensity: "moderado" },
       { groups: ["peito", "costas"], intensity: "pesado" },
     ],
   },
   inferior: {
     emagrecer: [
-      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
       { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "pesado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-      { groups: ["pernas"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
       { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["peito", "costas", "cardio"], intensity: "moderado" },
+      { groups: ["quadriceps", "gluteos", "hiit"], intensity: "pesado" },
     ],
     massa: [
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "pesado" },
+      { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
       { groups: ["pernas"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
-      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["quadriceps", "gluteos"], intensity: "pesado" },
+      { groups: ["ombros", "abdomen", "panturrilha"], intensity: "moderado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-      { groups: ["pernas"], intensity: "pesado" },
-      { groups: ["pernas", "abdomen"], intensity: "moderado" },
-      { groups: ["pernas"], intensity: "pesado" },
     ],
     condicionamento: [
-      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["quadriceps", "hiit"], intensity: "pesado" },
       { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["pernas"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "pesado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
       { groups: ["pernas", "hiit"], intensity: "pesado" },
-      { groups: ["abdomen", "cardio"], intensity: "moderado" },
-      { groups: ["pernas", "cardio"], intensity: "pesado" },
+      { groups: ["peito", "costas", "cardio"], intensity: "moderado" },
+      { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" },
     ],
   },
   completo: splitTemplates7,
@@ -393,6 +484,7 @@ const groupLabels: Record<string, string> = {
   peito: "Peito", costas: "Costas", pernas: "Pernas", ombros: "Ombros",
   biceps: "Bíceps", triceps: "Tríceps", abdomen: "Abdômen",
   hiit: "HIIT", cardio: "Cardio", mobilidade: "Mobilidade", recuperacao: "Recuperação",
+  quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
 };
 
 export function generateWorkoutPlan(objective: Objective, level: Level, daysPerWeek: number, bodyFocus: BodyFocus = "completo"): WorkoutDay[] {
