@@ -523,6 +523,7 @@ const Dieta = () => {
   const [weeklyMealsDone, setWeeklyMealsDone] = useState(0);
   const [weeklyMealsTotal, setWeeklyMealsTotal] = useState(0);
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+  const [latestWeight, setLatestWeight] = useState<number | undefined>(undefined);
 
   // Streak achievements thresholds
   const streakMilestones = [
