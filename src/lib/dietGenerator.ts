@@ -515,8 +515,9 @@ export function generateDietPlan(
       const weekMacros = getMacroSplit(weekTarget.calories, objective, weight);
       let weekBasePlan = mealTemplates[objective]?.(weekMacros, weekTarget.calories) || mealTemplates.manter(weekMacros, weekTarget.calories);
       
-      if (preferencias) {
-        weekBasePlan = applyPreferences(weekBasePlan, preferencias);
+      weekBasePlan = applyPreferences(weekBasePlan, preferencias || "", excludedFoods);
+      if (mealStyle && mealStyle !== "completa") {
+        weekBasePlan = applyMealStyle(weekBasePlan, mealStyle);
       }
 
       const days: DayPlan[] = [];
