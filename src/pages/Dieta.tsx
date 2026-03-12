@@ -806,7 +806,9 @@ const Dieta = () => {
           metaPeso ? Number(metaPeso) : undefined,
           periodo,
           deadlineValue,
-          preferencias || undefined
+          preferencias || undefined,
+          excludedCategories.length > 0 ? excludedCategories : undefined,
+          mealStyle
         );
         setPlan(result.plan);
         setWeekPlan(result.weekPlan || null);
