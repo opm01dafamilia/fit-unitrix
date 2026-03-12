@@ -1,15 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
-import { Trophy, Lock, Flame, TrendingUp, Dumbbell, ArrowLeft } from "lucide-react";
+import { Trophy, Lock, Flame, TrendingUp, Dumbbell, ArrowLeft, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  calculateAchievements,
+  calculateAchievements, calculateTotalXP, getRankForXP, getNextRank,
   type Achievement,
   type UserStats,
   categoryLabels,
   categoryIcons,
+  tierLabels,
+  XP_PER_TIER,
 } from "@/lib/achievementsEngine";
 import { format, subDays } from "date-fns";
 import { useNavigate } from "react-router-dom";
