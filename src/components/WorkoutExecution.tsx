@@ -47,7 +47,7 @@ type Props = {
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
 // Mini component for alternative exercise GIF preview (by name)
-function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
+const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -66,10 +66,11 @@ function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
           src={gifUrl}
           alt={name}
           className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px" }}
+          style={{ objectFit: "contain", padding: "2px", aspectRatio: "1/1" }}
           onLoad={() => setLoaded(true)}
           onError={() => setGifUrl(null)}
-          loading="eager"
+          loading="lazy"
+          decoding="async"
         />
         {!loaded && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -85,7 +86,7 @@ function AltGifPreview({ name, isHome }: { name: string; isHome: boolean }) {
       {isHome ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
     </div>
   );
-}
+};
 
 export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
