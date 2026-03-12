@@ -97,6 +97,10 @@
 }
 
 @layer utilities {
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   .glass-card {
     background: linear-gradient(145deg, hsl(225 16% 11% / 0.9), hsl(225 16% 7% / 0.9));
     backdrop-filter: blur(20px);
