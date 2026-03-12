@@ -703,7 +703,7 @@ const sizePixels = {
 const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAnimationProps) => {
   const [animTime, setAnimTime] = useState(0);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
-  const [gifLoading, setGifLoading] = useState(true);
+  const [gifLoaded, setGifLoaded] = useState(false);
   const [gifError, setGifError] = useState(false);
   const config = useMemo(() => getExerciseConfig(exercise.id), [exercise.id]);
   const activeMuscles = useMemo(() => getActiveMuscles(exercise.id), [exercise.id]);
@@ -713,15 +713,15 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
   // Fetch GIF from ExerciseDB
   useEffect(() => {
     let cancelled = false;
-    setGifLoading(true);
+    setGifLoaded(false);
     setGifError(false);
     setGifUrl(null);
 
     fetchExerciseGif(exercise.id).then((url) => {
       if (!cancelled) {
-        setGifUrl(url);
-        if (!url) {
-          setGifLoading(false);
+        if (url) {
+          setGifUrl(url);
+        } else {
           setGifError(true);
         }
       }
@@ -731,17 +731,17 @@ const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAn
   }, [exercise.id]);
 
   const handleGifLoad = useCallback(() => {
-    setGifLoading(false);
+    setGifLoaded(true);
     setGifError(false);
   }, []);
 
   const handleGifError = useCallback(() => {
-    setGifLoading(false);
+    setGifLoaded(false);
     setGifError(true);
     setGifUrl(null);
   }, []);
 
-  // SVG animation (used as fallback)
+  // SVG animation (used as fallback) - only runs when no GIF
   useEffect(() => {
     if (gifUrl && !gifError) return;
     let raf: number;
