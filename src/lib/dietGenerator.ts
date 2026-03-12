@@ -37,6 +37,7 @@ export type DietMeta = {
 };
 
 export type PlanPeriod = "hoje" | "semana" | "mes";
+export type MealStyle = "rapida" | "completa" | "simples";
 
 type Objective = "emagrecer" | "massa" | "manter";
 type ActivityLevel = "sedentario" | "leve" | "moderado" | "intenso";
