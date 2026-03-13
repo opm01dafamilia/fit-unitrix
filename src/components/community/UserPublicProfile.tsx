@@ -114,10 +114,15 @@ const UserPublicProfile = ({ userId, userName, onClose }: Props) => {
                 <p className="text-lg font-bold">{data.workout_streak}</p>
                 <p className="text-[10px] text-muted-foreground">Streak</p>
               </div>
-              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20 col-span-2">
+              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20">
                 <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
                 <p className="text-lg font-bold">{data.achievements_count}</p>
                 <p className="text-[10px] text-muted-foreground">Conquistas</p>
+              </div>
+              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20">
+                <Crown className="w-4 h-4 text-chart-2 mx-auto mb-1" />
+                <p className="text-lg font-bold">{data.total_workouts || 0}</p>
+                <p className="text-[10px] text-muted-foreground">Treinos</p>
               </div>
             </div>
           </div>
