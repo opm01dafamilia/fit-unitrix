@@ -1030,7 +1030,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["prancha-frontal", "abdominal-crunch"],
+    alternativas: ["prancha-frontal", "abdominal-crunch", "elevacao-pernas"],
     animacao: { frames: ["🚴 ←", "🚴 →"], cor: "hsl(45 93% 47%)" },
   },
   {
