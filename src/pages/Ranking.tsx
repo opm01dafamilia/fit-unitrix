@@ -177,8 +177,19 @@ const Ranking = () => {
         .limit(100);
       setWeeklyRankings(weekData || []);
 
-      // Check position change
+      // Determine user's global position
       const myGlobalPos = dedupedGlobal.findIndex((r: any) => r.user_id === user.id) + 1;
+      if (myGlobalPos > 0) {
+        setUserGlobalPosition(myGlobalPos);
+      } else {
+        // User not in top 100 — count how many users have more XP
+        const { count } = await supabase
+          .from("user_ranking_stats")
+          .select("*", { count: "exact", head: true })
+          .gt("total_xp", totalXP);
+        setUserGlobalPosition((count || 0) + 1);
+      }
+
       if (previousRank > 0 && myGlobalPos > 0 && myGlobalPos < previousRank) {
         toast.success(`🎉 Você subiu ${previousRank - myGlobalPos} posições no ranking!`, { duration: 4000 });
       }
