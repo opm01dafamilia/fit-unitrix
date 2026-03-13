@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
-import { fetchExerciseGifByName, preloadAlternativeGifs } from "@/lib/exerciseGifs";
+import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
