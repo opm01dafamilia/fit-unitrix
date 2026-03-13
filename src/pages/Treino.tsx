@@ -78,19 +78,27 @@ const Treino = () => {
     }
   }, [profile]);
 
-  // Fetch plans & sessions
+  // Fetch plans & sessions with smart cache
   useEffect(() => {
     if (!user) return;
+
+    // 1. Show cached data instantly
+    const cachedPlans = readCache<any[]>(CACHE_KEYS.workoutPlans(user.id), { maxAge: 30 * 60 * 1000 });
+    const cachedSessions = readCache<WorkoutSession[]>(CACHE_KEYS.workoutSessions(user.id), { maxAge: 10 * 60 * 1000 });
+    if (cachedPlans) { setSavedPlans(cachedPlans); setLoadingPlans(false); }
+    if (cachedSessions) { setSessions(cachedSessions); setLoadingSessions(false); }
+
+    // 2. Fetch fresh in background
     const fetchAll = async () => {
-      setLoadingPlans(true);
-      setLoadingSessions(true);
+      if (!cachedPlans) setLoadingPlans(true);
+      if (!cachedSessions) setLoadingSessions(true);
       const [plansRes, sessionsRes] = await Promise.all([
         supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
       ]);
-      if (plansRes.error) toast.error("Erro ao carregar planos");
-      setSavedPlans(plansRes.data || []);
-      setSessions((sessionsRes.data as WorkoutSession[]) || []);
+      if (plansRes.error) { if (!cachedPlans) toast.error("Erro ao carregar planos"); }
+      else { setSavedPlans(plansRes.data || []); writeCache(CACHE_KEYS.workoutPlans(user.id), plansRes.data || []); }
+      if (!sessionsRes.error) { setSessions((sessionsRes.data as WorkoutSession[]) || []); writeCache(CACHE_KEYS.workoutSessions(user.id), sessionsRes.data || []); }
       setLoadingPlans(false);
       setLoadingSessions(false);
     };
