@@ -155,20 +155,20 @@ const App = () => (
             <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
             <Route path="/onboarding" element={<OnboardingRoute />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense>} />
-              <Route path="/treino" element={<Suspense fallback={<PageSkeleton />}><Treino /></Suspense>} />
-              <Route path="/dieta" element={<Suspense fallback={<PageSkeleton />}><Dieta /></Suspense>} />
-              <Route path="/acompanhamento" element={<Suspense fallback={<PageSkeleton />}><Acompanhamento /></Suspense>} />
-              <Route path="/metas" element={<Suspense fallback={<PageSkeleton />}><Metas /></Suspense>} />
-              <Route path="/historico" element={<Suspense fallback={<PageSkeleton />}><Historico /></Suspense>} />
-              <Route path="/conquistas" element={<Suspense fallback={<PageSkeleton />}><Conquistas /></Suspense>} />
-              <Route path="/biblioteca" element={<Suspense fallback={<PageSkeleton />}><Biblioteca /></Suspense>} />
-              <Route path="/analise" element={<Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense>} />
-              <Route path="/ranking" element={<Suspense fallback={<PageSkeleton />}><Ranking /></Suspense>} />
-              <Route path="/comunidade" element={<Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense>} />
-              <Route path="/perfil" element={<Suspense fallback={<PageSkeleton />}><Perfil /></Suspense>} />
-              <Route path="/perfil-fitness" element={<Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense>} />
-              <Route path="/configuracoes" element={<Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense>} />
+              <Route path="/" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense></ErrorBoundary>} />
+              <Route path="/treino" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Treino /></Suspense></ErrorBoundary>} />
+              <Route path="/dieta" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dieta /></Suspense></ErrorBoundary>} />
+              <Route path="/acompanhamento" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Acompanhamento /></Suspense></ErrorBoundary>} />
+              <Route path="/metas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Metas /></Suspense></ErrorBoundary>} />
+              <Route path="/historico" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Historico /></Suspense></ErrorBoundary>} />
+              <Route path="/conquistas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Conquistas /></Suspense></ErrorBoundary>} />
+              <Route path="/biblioteca" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Biblioteca /></Suspense></ErrorBoundary>} />
+              <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
+              <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
+              <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
+              <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
+              <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
+              <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
             </Route>
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
