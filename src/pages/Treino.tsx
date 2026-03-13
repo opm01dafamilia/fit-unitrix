@@ -17,6 +17,7 @@ import { ptBR } from "date-fns/locale";
 import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
+import { startLazyPreload } from "@/lib/exerciseGifs";
 
 type WorkoutSession = {
   id: string;
