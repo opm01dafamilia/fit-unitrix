@@ -226,7 +226,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["crucifixo", "crucifixo-maquina"],
+    alternativas: ["crucifixo", "crucifixo-maquina", "supino-inclinado-halteres", "flexao"],
     animacao: { frames: ["✖ ↔", "✖ →←"], cor: "hsl(152 69% 46%)" },
   },
   {
