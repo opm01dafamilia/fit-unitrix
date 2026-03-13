@@ -3,7 +3,7 @@ import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCro
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PerfilFitnessSkeleton } from "@/components/skeletons/SkeletonPremium";
 import {
   calculateAchievements, calculateTotalXP, getRankForXP, getNextRank,
   getCurrentPhase, getLegendaryAchievements, getNextPhaseProgress,
