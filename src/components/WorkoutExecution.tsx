@@ -58,6 +58,7 @@ type Props = {
   trainingLocation?: string;
   objective?: string;
   cycleStatus?: CycleStatus;
+  comebackStatus?: ComebackStatus;
   onFinish: () => void;
   onBack: () => void;
 };
