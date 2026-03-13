@@ -403,7 +403,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["remada-curvada", "remada-maquina"],
+    alternativas: ["remada-curvada", "remada-maquina", "remada-baixa", "pulldown"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
