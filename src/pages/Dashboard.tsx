@@ -245,7 +245,68 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* User Progress Indicator */}
+      {/* ✨ Micro-Victories Daily Progress */}
+      <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
+        {victoryFlash && (
+          <div className="absolute inset-0 bg-primary/5 animate-fade-in z-0" />
+        )}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Progresso do Dia
+            </h3>
+            <div className="flex items-center gap-2">
+              {microStreak > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 font-bold flex items-center gap-1">
+                  🔥 {microStreak} dias
+                </span>
+              )}
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold">
+                +{microXP} XP
+              </span>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] text-muted-foreground">{microProgress.completed}/{microProgress.total} ações</span>
+              <span className="text-xs font-bold text-primary">{microProgress.progress}%</span>
+            </div>
+            <div className="h-2.5 bg-secondary/50 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-chart-2 transition-all duration-700 ease-out"
+                style={{ width: `${microProgress.progress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Completion message */}
+          {microProgress.isComplete ? (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/8 border border-primary/15">
+              <Trophy className="w-5 h-5 text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-primary">🏆 Dia produtivo concluído!</p>
+                <p className="text-[10px] text-muted-foreground">Você completou todas as ações do dia. Parabéns!</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground italic">
+              ✨ Cada pequena ação conta na sua evolução.
+            </p>
+          )}
+
+          {/* Victory flash message */}
+          {victoryFlash && (
+            <div className="mt-2 flex items-center gap-2 animate-fade-in">
+              <span className="text-xs text-primary font-medium">{victoryFlash}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+
       <div className="glass-card p-4 lg:p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
