@@ -802,7 +802,7 @@ export function generateWorkoutPlan(
 
       muscleGroups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-        const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises);
+        const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
         selected.forEach(ex => {
           const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
           const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, dayIntensity);
