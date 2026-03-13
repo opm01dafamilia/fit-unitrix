@@ -190,7 +190,6 @@ export const exerciseNameSearchMap: Record<string, string> = {
   "Elevação Frontal com Garrafas": "dumbbell front raise",
   "Rosca Martelo com Galão": "dumbbell hammer curl",
   "Tríceps no Banco": "bench dip",
-  "Flexão Diamante": "diamond push up",
   "Remada Unilateral com Galão": "dumbbell one arm row",
   "Remada Invertida Supinada": "inverted row",
   "Remada Invertida Pronada": "inverted row",
