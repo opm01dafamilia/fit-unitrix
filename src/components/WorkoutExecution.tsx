@@ -415,20 +415,35 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   // Track swap key to force remount of visual components
   const [swapKey, setSwapKey] = useState(0);
+  const [swapFading, setSwapFading] = useState(false);
 
-  const swapExercise = (newName: string) => {
+  const swapExercise = useCallback((newName: string) => {
     // Preload GIF for new exercise immediately
     fetchExerciseGifByName(newName);
     
-    setExercises(prev => {
-      const updated = [...prev];
-      updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
-      return updated;
-    });
-    setSwapKey(k => k + 1); // Force remount of ExerciseAnimation and MuscleBodyMap
-    setShowAlternatives(false);
-    toast.success(`Exercício trocado para ${newName}`);
-  };
+    // Fade-out animation
+    setSwapFading(true);
+    
+    // Short delay for fade-out then swap
+    setTimeout(() => {
+      setExercises(prev => {
+        const updated = [...prev];
+        updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
+        return updated;
+      });
+      setSwapKey(k => k + 1);
+      setShowAlternatives(false);
+      setSwapFading(false);
+      
+      // Haptic feedback
+      try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch {}
+      
+      toast.success("Exercício atualizado com sucesso", {
+        icon: <Sparkles className="w-4 h-4 text-primary" />,
+        duration: 2500,
+      });
+    }, 200);
+  }, [currentExIndex]);
 
   const goToExercise = (idx: number) => {
     setCurrentExIndex(idx);
