@@ -10,6 +10,7 @@ type PublicUserData = {
   rank_tier: string;
   workout_streak: number;
   achievements_count: number;
+  total_workouts: number;
   avatar_url?: string | null;
 };
 
