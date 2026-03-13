@@ -52,6 +52,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user) return;
+    const fetchData = async () => {
       try {
         const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
