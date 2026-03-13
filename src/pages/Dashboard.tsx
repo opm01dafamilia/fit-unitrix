@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 
 const tooltipStyle = {
