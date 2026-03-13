@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,7 @@ import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } fro
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
+import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -29,9 +30,25 @@ const Dashboard = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [microProgress, setMicroProgress] = useState(getDailyProgress());
+  const [microStreak, setMicroStreak] = useState(getMicroStreak());
+  const [microXP, setMicroXP] = useState(getTodayXP());
+  const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
+
+  // Register app_opened micro-victory on mount
+  useEffect(() => {
+    const v = registerMicroVictory("app_opened");
+    if (v) {
+      setMicroProgress(getDailyProgress());
+      setMicroStreak(getMicroStreak());
+      setMicroXP(getTodayXP());
+      setVictoryFlash(v.icon + " " + getVictoryMessage());
+      setTimeout(() => setVictoryFlash(null), 3000);
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -228,7 +245,68 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* User Progress Indicator */}
+      {/* ✨ Micro-Victories Daily Progress */}
+      <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
+        {victoryFlash && (
+          <div className="absolute inset-0 bg-primary/5 animate-fade-in z-0" />
+        )}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              Progresso do Dia
+            </h3>
+            <div className="flex items-center gap-2">
+              {microStreak > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 font-bold flex items-center gap-1">
+                  🔥 {microStreak} dias
+                </span>
+              )}
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold">
+                +{microXP} XP
+              </span>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] text-muted-foreground">{microProgress.completed}/{microProgress.total} ações</span>
+              <span className="text-xs font-bold text-primary">{microProgress.progress}%</span>
+            </div>
+            <div className="h-2.5 bg-secondary/50 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-chart-2 transition-all duration-700 ease-out"
+                style={{ width: `${microProgress.progress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Completion message */}
+          {microProgress.isComplete ? (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/8 border border-primary/15">
+              <Trophy className="w-5 h-5 text-primary" />
+              <div>
+                <p className="text-sm font-semibold text-primary">🏆 Dia produtivo concluído!</p>
+                <p className="text-[10px] text-muted-foreground">Você completou todas as ações do dia. Parabéns!</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground italic">
+              ✨ Cada pequena ação conta na sua evolução.
+            </p>
+          )}
+
+          {/* Victory flash message */}
+          {victoryFlash && (
+            <div className="mt-2 flex items-center gap-2 animate-fade-in">
+              <span className="text-xs text-primary font-medium">{victoryFlash}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+
       <div className="glass-card p-4 lg:p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
@@ -524,7 +602,39 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* 📊 Daily Summary Card */}
+      {(sessions.length > 0 || dietPlans.length > 0) && (
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base flex items-center gap-2 mb-4">
+            <Star className="w-5 h-5 text-chart-4" />
+            Seu Resumo Hoje
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
+              <span className="text-lg mb-1">🏋️</span>
+              <span className="text-lg font-display font-bold">{weekWorkouts > 0 ? sessions.filter((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")).length : 0}</span>
+              <span className="text-[9px] text-muted-foreground">Treinos hoje</span>
+            </div>
+            <div className="p-3 rounded-xl bg-chart-3/5 border border-chart-3/10 flex flex-col items-center">
+              <span className="text-lg mb-1">🍽️</span>
+              <span className="text-lg font-display font-bold">—</span>
+              <span className="text-[9px] text-muted-foreground">Refeições</span>
+            </div>
+            <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
+              <span className="text-lg mb-1">🏃</span>
+              <span className="text-lg font-display font-bold">—</span>
+              <span className="text-[9px] text-muted-foreground">Cardio</span>
+            </div>
+            <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
+              <span className="text-lg mb-1">✨</span>
+              <span className="text-lg font-display font-bold">{microProgress.completed}</span>
+              <span className="text-[9px] text-muted-foreground">Micro-vitórias</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {!hasData && !showChecklist && (
         <div className="empty-state">
           <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"

@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, getPreferenceWarning, type MealPlan, type DayPlan, type PlanPeriod, type MealStyle, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
+import { registerMicroVictory } from "@/lib/microVictoriesEngine";
 import { DietaSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
@@ -777,6 +778,7 @@ const Dieta = () => {
     if (status === "done") {
       const msg = getDietMotivationalMessage();
       toast.success(`${msg.emoji} ${msg.text}`);
+      registerMicroVictory("meal_tracked");
       // Haptic feedback on mobile
       if (navigator.vibrate) navigator.vibrate(50);
     } else if (status === "failed") {

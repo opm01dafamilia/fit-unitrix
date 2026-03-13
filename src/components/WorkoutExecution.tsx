@@ -19,6 +19,7 @@ import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseT
 import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
 import { savePerformance, getProgressionDecision, getExerciseEvolution, getSessionSummary, type RPE, type ProgressionDecision, type WeightEvolutionPoint, type SessionProgressionSummary } from "@/lib/smartProgressionEngine";
 import { shouldTrainGroup, type FatigueAdjustment, type MuscleFatigueStatus } from "@/lib/muscleFatigueEngine";
+import { registerMicroVictory, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
@@ -239,6 +240,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   useEffect(() => {
     if (day && exercises.length > 0) {
       setIsReady(true);
+      // Register workout_started micro-victory
+      const v = registerMicroVictory("workout_started");
+      if (v) toast.success(`✨ ${getVictoryMessage()}`, { duration: 2000 });
     } else if (day) {
       setExercises(day.exercicios);
       setIsReady(true);
@@ -554,6 +558,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     if (selectedRPE && currentSets.length > 0) {
       saveExercisePerformance(currentExIndex, selectedRPE);
     }
+    // Register exercise_completed micro-victory if sets were recorded
+    if (currentSets.length > 0) {
+      registerMicroVictory("exercise_completed");
+    }
     setCurrentExIndex(idx);
     setPhase("input");
     setRestTime(0);
@@ -622,6 +630,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
       setSessionSummary(summary);
       setShowCompletion(true);
+      // Register workout_completed micro-victory
+      registerMicroVictory("workout_completed");
+      registerMicroVictory("exercise_completed"); // last exercise
     } catch {
       toast.error("Erro ao salvar sessão");
     }

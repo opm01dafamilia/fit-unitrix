@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { registerMicroVictory } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -73,6 +74,7 @@ const Acompanhamento = () => {
       });
       if (error) throw error;
       toast.success("Registro salvo com sucesso!");
+      registerMicroVictory("weight_logged");
       setNewPeso(""); setNewBodyFat(""); setNewCintura(""); setNewBraco(""); setNewPerna("");
       setShowForm(false); setErrors({});
       fetchRecords();
