@@ -701,13 +701,19 @@ function ensureNoConsecutiveHeavy(plan: WorkoutDay[]): WorkoutDay[] {
   return result;
 }
 
+export type ExercisePreferences = {
+  preferred: string[];
+  freeText?: string;
+};
+
 export function generateWorkoutPlan(
   objective: Objective,
   level: Level,
   daysPerWeek: number,
   bodyFocus: BodyFocus = "completo",
   cardioFreq: CardioFrequency = "0",
-  intensityLevel: IntensityLevel = "intenso"
+  intensityLevel: IntensityLevel = "intenso",
+  preferences?: ExercisePreferences
 ): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
