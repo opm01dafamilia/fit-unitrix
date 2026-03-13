@@ -878,8 +878,10 @@ const Dieta = () => {
         : null;
       toast.success(metaMsg ? `Plano salvo! ${metaMsg}` : "Plano salvo!");
 
+      invalidateCache(CACHE_KEYS.dietPlans(user.id));
       const { data } = await supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
+      writeCache(CACHE_KEYS.dietPlans(user.id), data || []);
     } catch {
       toast.error("Não foi possível salvar o plano. Tente novamente.");
     } finally {
