@@ -166,6 +166,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [techniqueAssignments, setTechniqueAssignments] = useState<ExerciseTechniqueAssignment[]>([]);
   const [showTechniqueInfo, setShowTechniqueInfo] = useState(false);
 
+  // RPE / Smart Progression
+  const [selectedRPE, setSelectedRPE] = useState<RPE | null>(null);
+  const [progressionDecisions, setProgressionDecisions] = useState<Record<number, ProgressionDecision>>({});
+  const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
+  const [showEvolutionChart, setShowEvolutionChart] = useState(false);
+  const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
+
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
   const currentSets = sets[currentExIndex] || [];
