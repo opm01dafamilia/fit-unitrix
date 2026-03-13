@@ -707,30 +707,41 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifLoaded, setGifLoaded] = useState(false);
   const [gifError, setGifError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const config = useMemo(() => getExerciseConfig(exercise.id), [exercise.id]);
   const activeMuscles = useMemo(() => getActiveMuscles(exercise.id), [exercise.id]);
   const sizes = sizeMap[size];
   const px = sizePixels[size];
 
-  // Fetch GIF from ExerciseDB
+  // Fetch GIF: try by ID first, then by name as fallback
   useEffect(() => {
     let cancelled = false;
     setGifLoaded(false);
     setGifError(false);
     setGifUrl(null);
+    setRetryCount(0);
 
-    fetchExerciseGif(exercise.id).then((url) => {
-      if (!cancelled) {
-        if (url) {
-          setGifUrl(url);
-        } else {
-          setGifError(true);
-        }
+    const loadGif = async () => {
+      // Try by ID first
+      let url = await fetchExerciseGif(exercise.id);
+      if (!cancelled && url) {
+        setGifUrl(url);
+        return;
       }
-    });
+      // Fallback: try by name
+      url = await fetchExerciseGifByName(exercise.nome);
+      if (!cancelled && url) {
+        setGifUrl(url);
+        return;
+      }
+      if (!cancelled) {
+        setGifError(true);
+      }
+    };
+    loadGif();
 
     return () => { cancelled = true; };
-  }, [exercise.id]);
+  }, [exercise.id, exercise.nome]);
 
   const handleGifLoad = useCallback(() => {
     setGifLoaded(true);
@@ -738,10 +749,18 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
   }, []);
 
   const handleGifError = useCallback(() => {
+    // Retry up to 2 times with a delay
+    if (retryCount < 2 && gifUrl) {
+      setRetryCount(prev => prev + 1);
+      const currentUrl = gifUrl;
+      setGifUrl(null);
+      setTimeout(() => setGifUrl(currentUrl), 500 * (retryCount + 1));
+      return;
+    }
     setGifLoaded(false);
     setGifError(true);
     setGifUrl(null);
-  }, []);
+  }, [retryCount, gifUrl]);
 
   // SVG animation (used as fallback) - only runs when no GIF
   useEffect(() => {
@@ -815,11 +834,12 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
         />
       )}
 
-      {/* Loading state - show skeleton placeholder */}
+      {/* Loading shimmer state */}
       {gifUrl && !gifLoaded && !gifError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <span className="text-[9px] text-muted-foreground">Carregando...</span>
+          <div className="absolute inset-0 skeleton-shimmer rounded-2xl" style={{ opacity: 0.3 }} />
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin relative z-10" />
+          <span className="text-[9px] text-muted-foreground relative z-10">Carregando...</span>
         </div>
       )}
 
@@ -872,7 +892,7 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
 };
 
 const ExerciseAnimation = memo(ExerciseAnimationInner, (prev, next) => 
-  prev.exercise.id === next.exercise.id && prev.size === next.size && prev.className === next.className
+  prev.exercise.id === next.exercise.id && prev.exercise.nome === next.exercise.nome && prev.size === next.size && prev.className === next.className
 );
 
 export default ExerciseAnimation;
