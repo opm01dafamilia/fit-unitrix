@@ -548,9 +548,7 @@ const Treino = () => {
 
         {/* Saved Plans */}
         {loadingPlans ? (
-          <div className="glass-card p-5 lg:p-6 space-y-2">
-            {[1,2].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
-          </div>
+          <TreinoPlansSkeleton />
         ) : savedPlans.length > 0 && (
           <div className="glass-card p-5 lg:p-6">
             <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Planos Salvos</h3>
