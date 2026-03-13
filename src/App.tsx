@@ -29,8 +29,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Preload exercise GIFs in background
-preloadExerciseGifs();
+// GIF preloading removed from app start - now lazy-loaded per page
 
 // Optimized QueryClient with smart caching
 const queryClient = new QueryClient({
