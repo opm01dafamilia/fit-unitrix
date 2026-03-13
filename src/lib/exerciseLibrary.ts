@@ -954,7 +954,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-testa", "triceps-corda"],
+    alternativas: ["triceps-testa", "triceps-corda", "rosca-direta"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(0 72% 51%)" },
   },
 
