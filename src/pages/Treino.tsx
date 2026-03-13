@@ -474,25 +474,34 @@ const Treino = () => {
         trainingLocation={profile?.training_location || undefined}
         objective={profile?.objective || undefined}
         cycleStatus={cycleStatus || undefined}
+        comebackStatus={comebackStatus || undefined}
         onFinish={async () => {
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
           const newSessions = (data as WorkoutSession[]) || [];
           setSessions(newSessions);
           
-          // Motivational message with streak info
-          const uniqueDays = [...new Set(newSessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
-          let newStreak = 0;
-          const today = format(new Date(), "yyyy-MM-dd");
-          const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-          if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
-            for (let i = 0; i < uniqueDays.length; i++) {
-              const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
-              if (uniqueDays[i] === expected) newStreak++;
-              else break;
+          // Track comeback progress
+          if (comebackStatus?.isInComebackMode) {
+            const newCount = comebackWorkouts + 1;
+            setComebackWorkouts(newCount);
+            const feedback = getComebackFeedback(comebackStatus.daysSinceLastWorkout, newCount);
+            toast.success(`${feedback.emoji} ${feedback.title}`, { description: feedback.description, duration: 5000 });
+          } else {
+            // Normal motivational message with streak info
+            const uniqueDays = [...new Set(newSessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
+            let newStreak = 0;
+            const today = format(new Date(), "yyyy-MM-dd");
+            const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+            if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+              for (let i = 0; i < uniqueDays.length; i++) {
+                const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+                if (uniqueDays[i] === expected) newStreak++;
+                else break;
+              }
             }
+            const msg = getMotivationalMessage(newStreak);
+            toast.success(`${msg.emoji} ${msg.text}`, { description: msg.streakText, duration: 5000 });
           }
-          const msg = getMotivationalMessage(newStreak);
-          toast.success(`${msg.emoji} ${msg.text}`, { description: msg.streakText, duration: 5000 });
           
           setView("dashboard");
         }}
