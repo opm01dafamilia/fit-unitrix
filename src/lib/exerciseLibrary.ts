@@ -278,7 +278,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["pulldown", "pulldown-fechado"],
+    alternativas: ["pulldown", "pulldown-fechado", "remada-curvada", "remada-baixa"],
     animacao: { frames: ["🧗 ↑", "🧗 ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
