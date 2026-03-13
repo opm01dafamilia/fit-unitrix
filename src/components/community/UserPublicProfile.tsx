@@ -10,6 +10,7 @@ type PublicUserData = {
   rank_tier: string;
   workout_streak: number;
   achievements_count: number;
+  total_workouts: number;
   avatar_url?: string | null;
 };
 
@@ -44,13 +45,16 @@ const UserPublicProfile = ({ userId, userName, onClose }: Props) => {
       // Get ranking stats (public data only)
       const { data: rankData } = await supabase
         .from("user_ranking_stats")
-        .select("user_name, total_xp, rank_tier, workout_streak, achievements_count")
+        .select("user_name, total_xp, rank_tier, workout_streak, achievements_count, total_workouts")
         .eq("user_id", userId)
+        .order("total_xp", { ascending: false })
+        .limit(1)
         .single();
 
       if (rankData) {
         setData({
           ...rankData,
+          total_workouts: (rankData as any).total_workouts || 0,
           avatar_url: profileData?.avatar_url,
         });
       }
@@ -110,10 +114,15 @@ const UserPublicProfile = ({ userId, userName, onClose }: Props) => {
                 <p className="text-lg font-bold">{data.workout_streak}</p>
                 <p className="text-[10px] text-muted-foreground">Streak</p>
               </div>
-              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20 col-span-2">
+              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20">
                 <Trophy className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
                 <p className="text-lg font-bold">{data.achievements_count}</p>
                 <p className="text-[10px] text-muted-foreground">Conquistas</p>
+              </div>
+              <div className="bg-secondary/30 rounded-xl p-3 text-center border border-border/20">
+                <Crown className="w-4 h-4 text-chart-2 mx-auto mb-1" />
+                <p className="text-lg font-bold">{data.total_workouts || 0}</p>
+                <p className="text-[10px] text-muted-foreground">Treinos</p>
               </div>
             </div>
           </div>

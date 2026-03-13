@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import UserPublicProfile from "@/components/community/UserPublicProfile";
 import { RankingSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 import { format, startOfWeek, endOfWeek, subDays } from "date-fns";
@@ -46,6 +47,8 @@ const Ranking = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userXP, setUserXP] = useState(0);
   const [previousRank, setPreviousRank] = useState(0);
+  const [userGlobalPosition, setUserGlobalPosition] = useState<number | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<{ userId: string; userName: string } | null>(null);
 
   const computeAndSaveStats = async () => {
     if (!user) return;
@@ -174,8 +177,19 @@ const Ranking = () => {
         .limit(100);
       setWeeklyRankings(weekData || []);
 
-      // Check position change
+      // Determine user's global position
       const myGlobalPos = dedupedGlobal.findIndex((r: any) => r.user_id === user.id) + 1;
+      if (myGlobalPos > 0) {
+        setUserGlobalPosition(myGlobalPos);
+      } else {
+        // User not in top 100 — count how many users have more XP
+        const { count } = await supabase
+          .from("user_ranking_stats")
+          .select("*", { count: "exact", head: true })
+          .gt("total_xp", totalXP);
+        setUserGlobalPosition((count || 0) + 1);
+      }
+
       if (previousRank > 0 && myGlobalPos > 0 && myGlobalPos < previousRank) {
         toast.success(`🎉 Você subiu ${previousRank - myGlobalPos} posições no ranking!`, { duration: 4000 });
       }
@@ -225,10 +239,20 @@ const Ranking = () => {
   const nextRankInfo = getNextRank(userXP);
 
   const getMedalIcon = (pos: number) => {
-    if (pos === 1) return <Crown className="w-5 h-5 text-chart-3" />;
-    if (pos === 2) return <Medal className="w-5 h-5 text-muted-foreground" />;
-    if (pos === 3) return <Medal className="w-5 h-5 text-chart-4" />;
+    if (pos === 1) return <span className="text-lg">👑</span>;
+    if (pos <= 3) return <Crown className="w-5 h-5 text-chart-3" />;
+    if (pos <= 10) return <span className="text-sm">🔥</span>;
+    if (pos <= 50) return <span className="text-sm">⭐</span>;
+    if (pos <= 100) return <span className="text-sm">⚡</span>;
     return <span className="text-xs font-bold text-muted-foreground w-5 text-center">{pos}</span>;
+  };
+
+  const getPositionBadge = (pos: number) => {
+    if (pos === 1) return { label: "Top 1", className: "text-chart-3 bg-chart-3/10 border-chart-3/20" };
+    if (pos <= 10) return { label: "Top 10", className: "text-orange-400 bg-orange-500/10 border-orange-500/20" };
+    if (pos <= 50) return { label: "Top 50", className: "text-chart-4 bg-chart-4/10 border-chart-4/20" };
+    if (pos <= 100) return { label: "Top 100", className: "text-primary bg-primary/10 border-primary/20" };
+    return null;
   };
 
   const handleJoinChallenge = async (challengeId: string) => {
@@ -251,9 +275,11 @@ const Ranking = () => {
             const isMe = entry.user_id === user?.id;
             const pos = idx + 1;
             const entryRank = getRankForXP(entry.total_xp || 0);
+            const posBadge = getPositionBadge(pos);
             return (
               <div key={`${entry.user_id}-${idx}`}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${
+                onClick={() => !isMe && setSelectedProfile({ userId: entry.user_id, userName: entry.user_name })}
+                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer hover:border-primary/20 ${
                   isMe
                     ? "bg-primary/5 border-primary/15 shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
                     : pos <= 3
@@ -274,9 +300,14 @@ const Ranking = () => {
                     <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold ${entryRank.color} bg-secondary/60 border border-border/30`}>
                       {entryRank.icon} {entryRank.label}
                     </span>
+                    {posBadge && (
+                      <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-bold border ${posBadge.className}`}>
+                        {posBadge.label}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    {entry.achievements_count || 0} conquistas
+                    {entry.achievements_count || 0} conquistas • {entry.total_workouts || 0} treinos
                   </p>
                 </div>
                 <div className="text-right">
@@ -286,6 +317,14 @@ const Ranking = () => {
               </div>
             );
           })}
+
+          {/* Show user position if outside the list */}
+          {xpField === "total_xp" && userGlobalPosition && !data.some((r: any) => r.user_id === user?.id) && (
+            <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/15 text-center">
+              <p className="text-sm font-medium">📍 Sua posição atual: <span className="text-primary font-bold">#{userGlobalPosition}</span></p>
+              <p className="text-[11px] text-muted-foreground mt-1">Continue treinando para subir no ranking!</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-8">
@@ -327,7 +366,7 @@ const Ranking = () => {
               <p className="text-sm text-muted-foreground">{userXP} XP Total</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-display font-bold text-chart-3">#{userGlobalRank || '—'}</p>
+              <p className="text-2xl font-display font-bold text-chart-3">#{userGlobalPosition || userGlobalRank || '—'}</p>
               <p className="text-[10px] text-muted-foreground">Global</p>
             </div>
           </div>
@@ -362,7 +401,7 @@ const Ranking = () => {
             </div>
             <div className="p-2.5 rounded-xl bg-secondary/40 border border-border/30 text-center">
               <TrendingUp className="w-3.5 h-3.5 text-primary mx-auto mb-1" />
-              <p className="text-sm font-display font-bold">#{userGlobalRank || '—'}</p>
+              <p className="text-sm font-display font-bold">#{userGlobalPosition || userGlobalRank || '—'}</p>
               <p className="text-[8px] text-muted-foreground">Posição</p>
             </div>
             <div className="p-2.5 rounded-xl bg-secondary/40 border border-border/30 text-center">
@@ -452,6 +491,22 @@ const Ranking = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Incentive Message */}
+      <div className="glass-card p-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          💡 <span className="font-medium text-foreground">Suba no ranking mantendo consistência.</span> Treinos regulares, dieta em dia e conquistas desbloqueadas aumentam seu XP.
+        </p>
+      </div>
+
+      {/* Public Profile Modal */}
+      {selectedProfile && (
+        <UserPublicProfile
+          userId={selectedProfile.userId}
+          userName={selectedProfile.userName}
+          onClose={() => setSelectedProfile(null)}
+        />
       )}
     </div>
   );
