@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   Trophy, Flame, Dumbbell, Target, Medal, Crown,
-  TrendingUp, Zap, Loader2, Star, ChevronUp
+  TrendingUp, Zap, Loader2, Star, ChevronUp, MapPin, Share2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import UserPublicProfile from "@/components/community/UserPublicProfile";
 import { RankingSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 import { format, startOfWeek, endOfWeek, subDays } from "date-fns";
 import { Progress } from "@/components/ui/progress";
 import {
