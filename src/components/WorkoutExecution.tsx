@@ -1011,18 +1011,20 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== REST DONE ALERT ===== */}
+      {/* ===== REST DONE ALERT (enhanced) ===== */}
       {phase === "rest-done" && (
-        <div className="glass-card p-5 glow-border animate-scale-in border border-primary/30">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
-              <Zap className="w-8 h-8 text-primary" />
+        <div className={`glass-card p-6 animate-scale-in border-2 border-primary/40 relative overflow-hidden ${restDoneFlash ? 'shadow-[0_0_40px_hsl(var(--primary)/0.3)]' : ''}`}>
+          {/* Animated glow background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent animate-pulse" />
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mb-4 shadow-[0_0_30px_hsl(var(--primary)/0.25)] animate-bounce" style={{ animationDuration: '1.5s' }}>
+              <Zap className="w-10 h-10 text-primary" />
             </div>
-            <h3 className="font-display font-bold text-lg">⏰ Descanso Finalizado!</h3>
-            <p className="text-sm text-muted-foreground mt-1">Prepare-se para a próxima série 💪</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Série {currentSets.length + 1} de {targetSeries}</p>
-            <Button onClick={() => setPhase("input")} className="mt-4 h-12 px-8 text-base font-semibold">
-              <Play className="w-4 h-4 mr-2" /> Registrar Série
+            <h3 className="font-display font-bold text-xl">Descanso Finalizado!</h3>
+            <p className="text-base text-primary font-semibold mt-1">Hora da próxima série 💪</p>
+            <p className="text-sm text-muted-foreground mt-1">Série {currentSets.length + 1} de {targetSeries}</p>
+            <Button onClick={() => { setPhase("input"); setRestDoneFlash(false); }} className="mt-5 h-14 px-10 text-lg font-bold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+              <Play className="w-5 h-5 mr-2" /> Registrar Série
             </Button>
           </div>
         </div>
