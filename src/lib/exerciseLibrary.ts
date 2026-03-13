@@ -631,7 +631,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["panturrilha-sentado"],
+    alternativas: ["panturrilha-sentado", "agachamento-livre"],
     animacao: { frames: ["🦶 ↑", "🦶 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
