@@ -7,7 +7,7 @@ import {
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AnaliseCorporalSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { useNavigate } from "react-router-dom";
 import { format, subDays, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
 import { analyzeProgression, type ProgressionData } from "@/lib/bodyProgressionEngine";
