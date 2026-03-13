@@ -975,6 +975,68 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
+      {/* ===== INTENSITY TECHNIQUE INFO CARD ===== */}
+      {currentTechnique && showTechniqueInfo && (
+        <div className={`glass-card p-4 animate-slide-up border ${currentTechnique.technique.badgeClass.replace('text-', 'border-').split(' ')[2]}`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+              <span>{currentTechnique.technique.emoji}</span>
+              <span className={currentTechnique.technique.badgeClass.split(' ')[0]}>{currentTechnique.technique.label}</span>
+            </h3>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowTechniqueInfo(false)}><X className="w-4 h-4" /></Button>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">{currentTechnique.technique.description}</p>
+          <div className="space-y-1.5">
+            {currentTechnique.technique.instructions.map((inst, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                <p className="text-xs text-foreground/80 leading-relaxed">{inst}</p>
+              </div>
+            ))}
+          </div>
+          {currentTechnique.pairedWith && (
+            <div className="mt-3 p-2.5 rounded-lg bg-secondary/40 border border-border/30 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-blue-400 shrink-0" />
+              <p className="text-xs text-muted-foreground">Combinar com: <span className="font-semibold text-foreground">{currentTechnique.pairedWith}</span></p>
+            </div>
+          )}
+          <div className="mt-3 p-2 rounded-lg bg-primary/5 border border-primary/10">
+            <p className="text-[10px] text-muted-foreground italic">💡 {currentTechnique.technique.tooltip}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ===== PYRAMID SCHEME GUIDE ===== */}
+      {pyramidScheme && (
+        <div className="glass-card p-4 animate-slide-up">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+            {currentTechnique?.technique.emoji} Guia de Pirâmide
+          </h3>
+          <div className="space-y-2">
+            {pyramidScheme.map((step, i) => {
+              const isCurrentSet = i === currentSets.length;
+              const isDone = i < currentSets.length;
+              return (
+                <div key={i} className={`flex items-center justify-between p-2.5 rounded-xl transition-all ${
+                  isCurrentSet ? "bg-primary/10 border border-primary/20 shadow-[0_0_8px_hsl(var(--primary)/0.15)]" :
+                  isDone ? "bg-secondary/30 opacity-60" : "bg-secondary/40"
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                      isDone ? "bg-primary text-primary-foreground" : isCurrentSet ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                    }`}>{isDone ? "✓" : i + 1}</span>
+                    <span className="text-xs font-medium">{step.label}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-muted-foreground">{step.reps} reps</span>
+                    <span className="font-semibold text-foreground">{step.loadPct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {/* ===== SERIES DOTS + INDICATORS ===== */}
       <div className="glass-card p-4">
         <div className="grid grid-cols-3 gap-3 mb-3">
