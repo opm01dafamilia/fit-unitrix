@@ -279,16 +279,33 @@ export async function preloadAlternativeGifs(names: string[]): Promise<void> {
   await Promise.allSettled(promises);
 }
 
-// Preload all exercise GIFs in background
+// Preload exercise GIFs on demand only (no longer on app start)
+// Call this when the user navigates to a page that needs GIFs
+let preloadStarted = false;
 export function preloadExerciseGifs() {
+  // No-op on app start - GIFs are loaded on demand per exercise
+  // This prevents dozens of failing API calls on cold start
+}
+
+// Lazy preload: only called when user enters workout/library pages
+export function startLazyPreload() {
+  if (preloadStarted) return;
+  preloadStarted = true;
+  
   const cache = getCache();
   const uncached = Object.keys(exerciseSearchMap).filter((id) => !cache[id]);
+  if (uncached.length === 0) return;
 
   let index = 0;
-  const batchSize = 3;
-  const delay = 1000; // slower to avoid overwhelming
+  const batchSize = 2;
+  const delay = 2000;
 
   function fetchBatch() {
+    if (document.hidden) {
+      // Pause when tab is not visible
+      setTimeout(fetchBatch, 5000);
+      return;
+    }
     const batch = uncached.slice(index, index + batchSize);
     if (batch.length === 0) return;
 
@@ -300,6 +317,10 @@ export function preloadExerciseGifs() {
     }
   }
 
-  // Start preloading after a longer delay to not compete with page load
-  setTimeout(fetchBatch, 5000);
+  // Start after page is interactive
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(() => fetchBatch());
+  } else {
+    setTimeout(fetchBatch, 3000);
+  }
 }

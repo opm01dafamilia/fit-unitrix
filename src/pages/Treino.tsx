@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
@@ -17,6 +17,7 @@ import { ptBR } from "date-fns/locale";
 import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
+import { startLazyPreload } from "@/lib/exerciseGifs";
 
 type WorkoutSession = {
   id: string;
@@ -65,8 +66,9 @@ const Treino = () => {
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
   const [focusDay, setFocusDay] = useState<any | null>(null);
 
-  // Pre-fill from profile
+  // Pre-fill from profile & start lazy preload
   useEffect(() => {
+    startLazyPreload();
     if (profile?.objective) setObjetivo(profile.objective === "manter" ? "condicionamento" : profile.objective);
     if (profile?.experience_level) setNivel(profile.experience_level);
     if (profile?.experience_level) {
