@@ -563,16 +563,24 @@ const Treino = () => {
 
           <div className="grid sm:grid-cols-2 gap-4 mb-5">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Frequência de Cardio</label>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block flex items-center gap-1.5">
+                Frequência de Cardio
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Inteligente</span>
+              </label>
               <Select value={cardioFreq} onValueChange={(v) => setCardioFreq(v as CardioFrequency)}>
                 <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Sem cardio</SelectItem>
+                  <SelectItem value="0">Não faço cardio</SelectItem>
                   <SelectItem value="1-2">1–2x por semana</SelectItem>
                   <SelectItem value="3-4">3–4x por semana</SelectItem>
                   <SelectItem value="daily">Todos os dias</SelectItem>
                 </SelectContent>
               </Select>
+              {cardioFreq !== "0" && (
+                <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+                  💡 O cardio será adaptado ao seu objetivo e nível. Dias de perna recebem cardio leve automaticamente.
+                </p>
+              )}
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-2 block">Intensidade Geral</label>

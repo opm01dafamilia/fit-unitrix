@@ -50,8 +50,114 @@ export type CardioRecommendation = {
   duracao: string;
   desc: string;
   intensidade: string;
+  objetivo?: string;
+  tipo?: string;
 };
 
+// === SMART CARDIO PRESCRIPTION ENGINE ===
+export type CardioLevel = "iniciante" | "intermediario" | "avancado";
+
+export interface SmartCardioSession {
+  titulo: string;
+  duracao: string;
+  duracaoMinutos: number;
+  desc: string;
+  intensidade: "Baixa" | "Moderada" | "Alta";
+  tipo: string;
+  objetivo: string;
+  momento: "pos-treino" | "dia-descanso" | "qualquer";
+  emoji: string;
+}
+
+// Duration ranges by level (in minutes)
+const cardioDurationRange: Record<CardioLevel, [number, number]> = {
+  iniciante: [10, 15],
+  intermediario: [15, 25],
+  avancado: [25, 40],
+};
+
+// Full cardio exercise database by objective
+const smartCardioDB: Record<string, SmartCardioSession[]> = {
+  emagrecer: [
+    { titulo: "HIIT Esteira", duracao: "", duracaoMinutos: 0, desc: "30s sprint máximo + 30s caminhada. Máxima queima calórica em pouco tempo.", intensidade: "Alta", tipo: "HIIT", objetivo: "Queima intensa", momento: "pos-treino", emoji: "🔥" },
+    { titulo: "Caminhada Inclinada", duracao: "", duracaoMinutos: 0, desc: "Esteira com 10-12% de inclinação, ritmo constante. Queima gordura sem impactar recuperação.", intensidade: "Moderada", tipo: "Steady State", objetivo: "Queima de gordura", momento: "qualquer", emoji: "🚶" },
+    { titulo: "Bicicleta Moderada", duracao: "", duracaoMinutos: 0, desc: "Pedalada com resistência moderada, RPM entre 70-90.", intensidade: "Moderada", tipo: "Steady State", objetivo: "Resistência", momento: "qualquer", emoji: "🚴" },
+    { titulo: "Escada (StairMaster)", duracao: "", duracaoMinutos: 0, desc: "Ritmo constante no StairMaster, nível 5-8.", intensidade: "Moderada", tipo: "Steady State", objetivo: "Queima + glúteos", momento: "pos-treino", emoji: "🪜" },
+    { titulo: "Corrida Intervalada", duracao: "", duracaoMinutos: 0, desc: "Alterne 1min corrida forte + 1min trote leve.", intensidade: "Alta", tipo: "Intervalado", objetivo: "VO2max + queima", momento: "dia-descanso", emoji: "🏃" },
+    { titulo: "Pular Corda", duracao: "", duracaoMinutos: 0, desc: "1min pulando + 30s descanso. Excelente para coordenação e queima.", intensidade: "Alta", tipo: "HIIT", objetivo: "Coordenação + queima", momento: "pos-treino", emoji: "⏭️" },
+  ],
+  massa: [
+    { titulo: "Caminhada Leve", duracao: "", duracaoMinutos: 0, desc: "Caminhada em ritmo confortável para recuperação ativa sem comprometer ganhos.", intensidade: "Baixa", tipo: "Recuperação", objetivo: "Recuperação ativa", momento: "pos-treino", emoji: "🚶" },
+    { titulo: "Bike Leve", duracao: "", duracaoMinutos: 0, desc: "Pedalada suave, resistência baixa. Mantém saúde cardiovascular.", intensidade: "Baixa", tipo: "Recuperação", objetivo: "Saúde cardio", momento: "pos-treino", emoji: "🚴" },
+    { titulo: "Cardio Pós-Treino Curto", duracao: "", duracaoMinutos: 0, desc: "5-10min de esteira ou bike leve para auxiliar recuperação.", intensidade: "Baixa", tipo: "Recuperação", objetivo: "Cool down", momento: "pos-treino", emoji: "❄️" },
+    { titulo: "Caminhada Inclinada Leve", duracao: "", duracaoMinutos: 0, desc: "Esteira 5-8% inclinação, ritmo leve. Não afeta hipertrofia.", intensidade: "Baixa", tipo: "Steady State", objetivo: "Manutenção cardio", momento: "dia-descanso", emoji: "🪜" },
+  ],
+  condicionamento: [
+    { titulo: "HIIT Circuito", duracao: "", duracaoMinutos: 0, desc: "Circuito funcional: burpees, mountain climbers, box jump. 30s on/15s off.", intensidade: "Alta", tipo: "HIIT", objetivo: "Condicionamento geral", momento: "dia-descanso", emoji: "🔥" },
+    { titulo: "Corrida Contínua", duracao: "", duracaoMinutos: 0, desc: "Corrida em ritmo constante, zona 2-3 de FC.", intensidade: "Moderada", tipo: "Steady State", objetivo: "Resistência aeróbia", momento: "qualquer", emoji: "🏃" },
+    { titulo: "Bike Intensa", duracao: "", duracaoMinutos: 0, desc: "Pedalada com variação de intensidade: 2min forte + 1min leve.", intensidade: "Alta", tipo: "Intervalado", objetivo: "Potência aeróbia", momento: "dia-descanso", emoji: "🚴" },
+    { titulo: "Circuito Funcional", duracao: "", duracaoMinutos: 0, desc: "Kettlebell swings, battle ropes, agachamento com salto. Sem pausa entre estações.", intensidade: "Alta", tipo: "Funcional", objetivo: "Condicionamento", momento: "dia-descanso", emoji: "💪" },
+    { titulo: "Remo Ergométrico", duracao: "", duracaoMinutos: 0, desc: "Remada ritmada, foco em potência e resistência. 500m sprints.", intensidade: "Moderada", tipo: "Steady State", objetivo: "Full body cardio", momento: "qualquer", emoji: "🚣" },
+    { titulo: "Pular Corda Intervalado", duracao: "", duracaoMinutos: 0, desc: "1min duplo + 30s simples + 30s descanso.", intensidade: "Alta", tipo: "HIIT", objetivo: "Agilidade", momento: "pos-treino", emoji: "⏭️" },
+  ],
+};
+
+/**
+ * Get a smart cardio prescription for a specific workout day
+ */
+export function getSmartCardio(
+  objective: string | undefined,
+  level: string | undefined,
+  dayIntensity: string | undefined,
+  isLegDay: boolean,
+  cardioFreq: string,
+): SmartCardioSession | null {
+  if (!objective || cardioFreq === "0") return null;
+  
+  const obj = objective.toLowerCase();
+  const lvl = (level?.toLowerCase() || "intermediario") as CardioLevel;
+  const pool = smartCardioDB[obj] || smartCardioDB.condicionamento;
+  
+  // Duration based on level
+  const [minDur, maxDur] = cardioDurationRange[lvl] || cardioDurationRange.intermediario;
+  
+  // Filter: if leg day, only allow low intensity cardio
+  let filtered = pool;
+  if (isLegDay) {
+    filtered = pool.filter(c => c.intensidade === "Baixa");
+    if (filtered.length === 0) {
+      // Fallback: create a light version
+      filtered = [{ 
+        titulo: "Caminhada Leve", duracao: "", duracaoMinutos: 0, 
+        desc: "Caminhada leve pós-treino de perna para recuperação.", 
+        intensidade: "Baixa", tipo: "Recuperação", objetivo: "Recuperação", 
+        momento: "pos-treino", emoji: "🚶" 
+      }];
+    }
+  }
+  
+  // If day is intense, prefer post-workout or lower intensity
+  if (dayIntensity === "pesado" && !isLegDay) {
+    const moderate = filtered.filter(c => c.intensidade !== "Alta");
+    if (moderate.length > 0) filtered = moderate;
+  }
+  
+  // Pick a random session
+  const session = filtered[Math.floor(Math.random() * filtered.length)];
+  
+  // Calculate duration
+  const dur = isLegDay 
+    ? Math.min(minDur, 15) // Cap leg day cardio at 15min
+    : Math.round(minDur + Math.random() * (maxDur - minDur));
+  
+  return {
+    ...session,
+    duracao: `${dur} min`,
+    duracaoMinutos: dur,
+  };
+}
+
+// Legacy export for backward compat
 export const cardioByObjective: Record<string, CardioRecommendation[]> = {
   emagrecer: [
     { titulo: "Corrida Leve", duracao: "20 min", desc: "Ritmo confortável para queima de gordura.", intensidade: "Moderada" },
