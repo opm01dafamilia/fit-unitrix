@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
-import { fetchExerciseGifByName, preloadAlternativeGifs } from "@/lib/exerciseGifs";
+import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
@@ -94,6 +94,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [isReady, setIsReady] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
+
+  // Preload GIFs for all exercises in this day
+  useEffect(() => {
+    if (day?.exercicios) {
+      preloadWorkoutDayGifs(day.exercicios.map(ex => ({ nome: ex.nome })));
+    }
+  }, [day]);
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
   const [inputReps, setInputReps] = useState("");

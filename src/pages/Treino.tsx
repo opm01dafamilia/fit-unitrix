@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
@@ -18,6 +18,7 @@ import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workou
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
+import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
 
 type WorkoutSession = {
   id: string;
@@ -77,19 +78,27 @@ const Treino = () => {
     }
   }, [profile]);
 
-  // Fetch plans & sessions
+  // Fetch plans & sessions with smart cache
   useEffect(() => {
     if (!user) return;
+
+    // 1. Show cached data instantly
+    const cachedPlans = readCache<any[]>(CACHE_KEYS.workoutPlans(user.id), { maxAge: 30 * 60 * 1000 });
+    const cachedSessions = readCache<WorkoutSession[]>(CACHE_KEYS.workoutSessions(user.id), { maxAge: 10 * 60 * 1000 });
+    if (cachedPlans) { setSavedPlans(cachedPlans); setLoadingPlans(false); }
+    if (cachedSessions) { setSessions(cachedSessions); setLoadingSessions(false); }
+
+    // 2. Fetch fresh in background
     const fetchAll = async () => {
-      setLoadingPlans(true);
-      setLoadingSessions(true);
+      if (!cachedPlans) setLoadingPlans(true);
+      if (!cachedSessions) setLoadingSessions(true);
       const [plansRes, sessionsRes] = await Promise.all([
         supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
       ]);
-      if (plansRes.error) toast.error("Erro ao carregar planos");
-      setSavedPlans(plansRes.data || []);
-      setSessions((sessionsRes.data as WorkoutSession[]) || []);
+      if (plansRes.error) { if (!cachedPlans) toast.error("Erro ao carregar planos"); }
+      else { setSavedPlans(plansRes.data || []); writeCache(CACHE_KEYS.workoutPlans(user.id), plansRes.data || []); }
+      if (!sessionsRes.error) { setSessions((sessionsRes.data as WorkoutSession[]) || []); writeCache(CACHE_KEYS.workoutSessions(user.id), sessionsRes.data || []); }
       setLoadingPlans(false);
       setLoadingSessions(false);
     };
@@ -328,8 +337,10 @@ const Treino = () => {
       } as any);
       if (error) throw error;
       toast.success("Plano salvo!");
+      invalidateCache(CACHE_KEYS.workoutPlans(user.id));
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
+      writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
       setView("dashboard");
       setShowPlan(false);
     } catch { toast.error("Erro ao salvar plano."); }
@@ -386,6 +397,7 @@ const Treino = () => {
       // Refresh sessions
       const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("completed_at", { ascending: false });
       setSessions((data as WorkoutSession[]) || []);
+      writeCache(CACHE_KEYS.workoutSessions(user.id), data || []);
       toast.success("Treino concluído! 💪");
       setView("dashboard");
     } catch { toast.error("Erro ao salvar sessão"); }

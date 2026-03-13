@@ -5,8 +5,8 @@
  */
 
 const EXERCISEDB_API = "https://exercisedb-api.vercel.app/api/v1";
-const CACHE_KEY = "fitpulse_exercise_gifs_v2";
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+const CACHE_KEY = "fitpulse_exercise_gifs_v3";
+const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days (extended from 7)
 
 // In-memory cache to avoid repeated localStorage reads
 let memoryCache: GifCache | null = null;
@@ -279,12 +279,39 @@ export async function preloadAlternativeGifs(names: string[]): Promise<void> {
   await Promise.allSettled(promises);
 }
 
-// Preload exercise GIFs on demand only (no longer on app start)
-// Call this when the user navigates to a page that needs GIFs
+// Session-level image cache to avoid re-decoding
+const sessionImageCache = new Set<string>();
+
+/**
+ * Preload GIFs for a workout day's exercises (call when user opens a workout)
+ */
+export async function preloadWorkoutDayGifs(exercises: { id?: string; nome?: string }[]): Promise<void> {
+  const promises = exercises.map(async (ex) => {
+    let url: string | null = null;
+    if (ex.id && exerciseSearchMap[ex.id]) {
+      url = await fetchExerciseGif(ex.id);
+    } else if (ex.nome) {
+      url = await fetchExerciseGifByName(ex.nome);
+    }
+    if (url && !sessionImageCache.has(url)) {
+      await preloadGifImage(url);
+      sessionImageCache.add(url);
+    }
+  });
+  // Load first 3 immediately, rest lazily
+  const immediate = promises.slice(0, 3);
+  const lazy = promises.slice(3);
+  await Promise.allSettled(immediate);
+  if (lazy.length > 0) {
+    // Load rest after a short delay to not block UI
+    setTimeout(() => Promise.allSettled(lazy), 1000);
+  }
+}
+
+// Preload exercise GIFs on demand only
 let preloadStarted = false;
 export function preloadExerciseGifs() {
-  // No-op on app start - GIFs are loaded on demand per exercise
-  // This prevents dozens of failing API calls on cold start
+  // No-op - GIFs are loaded on demand per exercise
 }
 
 // Lazy preload: only called when user enters workout/library pages
@@ -298,11 +325,10 @@ export function startLazyPreload() {
 
   let index = 0;
   const batchSize = 2;
-  const delay = 2000;
+  const delay = 3000; // Increased from 2s to reduce API pressure
 
   function fetchBatch() {
     if (document.hidden) {
-      // Pause when tab is not visible
       setTimeout(fetchBatch, 5000);
       return;
     }
@@ -317,10 +343,9 @@ export function startLazyPreload() {
     }
   }
 
-  // Start after page is interactive
   if ('requestIdleCallback' in window) {
     (window as any).requestIdleCallback(() => fetchBatch());
   } else {
-    setTimeout(fetchBatch, 3000);
+    setTimeout(fetchBatch, 4000);
   }
 }
