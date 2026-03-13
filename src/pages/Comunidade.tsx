@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ComunidadeSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import ActivityFeedCard, { type Activity } from "@/components/community/ActivityFeedCard";
