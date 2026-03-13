@@ -30,6 +30,10 @@ const Dashboard = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [microProgress, setMicroProgress] = useState(getDailyProgress());
+  const [microStreak, setMicroStreak] = useState(getMicroStreak());
+  const [microXP, setMicroXP] = useState(getTodayXP());
+  const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
