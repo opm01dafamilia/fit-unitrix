@@ -397,6 +397,7 @@ const Treino = () => {
       // Refresh sessions
       const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("completed_at", { ascending: false });
       setSessions((data as WorkoutSession[]) || []);
+      writeCache(CACHE_KEYS.workoutSessions(user.id), data || []);
       toast.success("Treino concluído! 💪");
       setView("dashboard");
     } catch { toast.error("Erro ao salvar sessão"); }
