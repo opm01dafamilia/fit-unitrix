@@ -207,44 +207,92 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   // Rest timer - wall-clock based to prevent drift, works in background
   const restEndTimeRef = useRef<number | null>(null);
   const restPausedAtRef = useRef<number>(0);
+  const restDoneTriggered = useRef(false);
+  const [restDoneFlash, setRestDoneFlash] = useState(false);
+
+  // Premium alert system
+  const playRestDoneAlert = useCallback(() => {
+    // 1. Strong vibration pattern: long-short-long-short-long
+    try {
+      if (navigator.vibrate) {
+        navigator.vibrate([300, 150, 300, 150, 400]);
+      }
+    } catch {}
+
+    // 2. Multi-tone ascending alert sound (louder, longer, more distinct)
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playTone = (freq: number, startTime: number, duration: number, vol: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+        gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + startTime + 0.05);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + startTime + duration - 0.1);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration);
+      };
+      // 3-note ascending chime: C5 → E5 → G5, then repeat higher
+      playTone(523, 0, 0.25, 0.5);       // C5
+      playTone(659, 0.3, 0.25, 0.5);     // E5
+      playTone(784, 0.6, 0.35, 0.6);     // G5
+      // Second phrase - higher, more urgent
+      playTone(784, 1.1, 0.2, 0.5);      // G5
+      playTone(988, 1.35, 0.2, 0.5);     // B5
+      playTone(1047, 1.6, 0.5, 0.65);    // C6 (sustained)
+    } catch {}
+
+    // 3. Visual flash effect
+    setRestDoneFlash(true);
+    setTimeout(() => setRestDoneFlash(false), 2000);
+  }, []);
 
   useEffect(() => {
     if (phase === "resting" && !restPaused && restTime > 0) {
+      restDoneTriggered.current = false;
       if (!restEndTimeRef.current) {
         restEndTimeRef.current = Date.now() + restTime * 1000;
       }
       restIntervalRef.current = setInterval(() => {
         const remaining = Math.max(0, Math.ceil((restEndTimeRef.current! - Date.now()) / 1000));
         setRestTime(remaining);
-        if (remaining <= 0) {
+        if (remaining <= 0 && !restDoneTriggered.current) {
+          restDoneTriggered.current = true;
           clearInterval(restIntervalRef.current!);
           restEndTimeRef.current = null;
           setPhase("rest-done");
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-          try {
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.frequency.value = 880; gain.gain.value = 0.3;
-            osc.start(); osc.stop(ctx.currentTime + 0.5);
-            setTimeout(() => {
-              const osc2 = ctx.createOscillator();
-              const gain2 = ctx.createGain();
-              osc2.connect(gain2); gain2.connect(ctx.destination);
-              osc2.frequency.value = 1100; gain2.gain.value = 0.3;
-              osc2.start(); osc2.stop(ctx.currentTime + 0.3);
-            }, 600);
-          } catch {}
+          playRestDoneAlert();
         }
-      }, 250); // 250ms for smoother updates
+      }, 250);
     } else if (phase === "resting" && restPaused) {
-      // Paused: save remaining time
       restPausedAtRef.current = restTime;
       restEndTimeRef.current = null;
     }
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
-  }, [phase, restPaused]);
+  }, [phase, restPaused, playRestDoneAlert]);
+
+  // Keep timer alive when navigating within app (visibility change handler)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && restEndTimeRef.current && phase === "resting" && !restPaused) {
+        const remaining = Math.max(0, Math.ceil((restEndTimeRef.current - Date.now()) / 1000));
+        setRestTime(remaining);
+        if (remaining <= 0 && !restDoneTriggered.current) {
+          restDoneTriggered.current = true;
+          if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+          restEndTimeRef.current = null;
+          setPhase("rest-done");
+          playRestDoneAlert();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [phase, restPaused, playRestDoneAlert]);
 
   function parseRestTime(descanso: string): number {
     if (!descanso || descanso === "—") return 60;
