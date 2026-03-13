@@ -18,6 +18,7 @@ import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionC
 import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
 import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
 import { savePerformance, getProgressionDecision, getExerciseEvolution, getSessionSummary, type RPE, type ProgressionDecision, type WeightEvolutionPoint, type SessionProgressionSummary } from "@/lib/smartProgressionEngine";
+import { shouldTrainGroup, type FatigueAdjustment, type MuscleFatigueStatus } from "@/lib/muscleFatigueEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
@@ -172,6 +173,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
   const [showEvolutionChart, setShowEvolutionChart] = useState(false);
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
+  const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
@@ -207,6 +209,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       setTechniqueAssignments(assignments);
     }
   }, [exercises, experienceLevel, day]);
+
+  // Fatigue detection for current muscle group
+  useEffect(() => {
+    const grupo = day?.grupo?.toLowerCase() || "";
+    let muscleGroup = "geral";
+    for (const key of Object.keys(muscleGroupColors)) {
+      if (grupo.includes(key)) { muscleGroup = key; break; }
+    }
+    const result = shouldTrainGroup(muscleGroup);
+    if (result.fatigue.level === "high" || result.fatigue.level === "extreme") {
+      setFatigueStatus({ fatigue: result.fatigue, adjustment: result.adjustment });
+    }
+  }, [day]);
 
   // Current exercise technique
   const currentTechnique = useMemo(() => {
@@ -934,6 +949,44 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-[11px] text-muted-foreground">Treino adaptado para <span className="font-semibold text-foreground">casa</span>.</p>
           </div>
         )}
+        {/* Fatigue Alert on Preparation Screen */}
+        {fatigueStatus && (
+          <div className={`glass-card p-4 border ${
+            fatigueStatus.fatigue.level === "extreme" ? "border-destructive/20" : "border-amber-500/15"
+          }`}>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center shrink-0">
+                <span className="text-lg">{fatigueStatus.fatigue.emoji}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold">{fatigueStatus.fatigue.label}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{fatigueStatus.fatigue.message}</p>
+                {fatigueStatus.adjustment && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {fatigueStatus.adjustment.setsReduction > 0 && (
+                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-chart-2/10 text-chart-2">
+                        ↓ Séries -{Math.round(fatigueStatus.adjustment.setsReduction * 100)}%
+                      </span>
+                    )}
+                    {fatigueStatus.adjustment.restIncrease > 0 && (
+                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-chart-2/10 text-chart-2">
+                        ↑ Descanso +{fatigueStatus.adjustment.restIncrease}s
+                      </span>
+                    )}
+                    {fatigueStatus.adjustment.blockHeavy && (
+                      <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-destructive/10 text-destructive">
+                        🚫 Pesado bloqueado
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</p>
+            </div>
+          </div>
+        )}
         {/* Inline buttons - no fixed positioning issues */}
         <div className="mt-2 space-y-3">
           <Button className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20" onClick={() => setShowStretching(false)}>
@@ -980,6 +1033,24 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/15">
                 {cycleStatus.phaseEmoji} {cycleStatus.phaseLabel}
               </span>
+            )}
+            {fatigueStatus && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border cursor-help ${
+                      fatigueStatus.fatigue.level === "extreme"
+                        ? "bg-destructive/10 text-destructive border-destructive/15"
+                        : "bg-amber-500/10 text-amber-400 border-amber-500/15"
+                    }`}>
+                      {fatigueStatus.fatigue.emoji} Fadiga
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">{fatigueStatus.fatigue.message}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>
