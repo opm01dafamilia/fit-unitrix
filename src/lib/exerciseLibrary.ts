@@ -531,7 +531,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["agachamento-livre", "leg-press"],
+    alternativas: ["agachamento-livre", "leg-press", "agachamento-bulgaro", "cadeira-extensora"],
     animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
