@@ -198,4 +198,34 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* iOS performance optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .glass-card, .metric-card, .glow-border {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: auto;
+  }
+
+  /* Reduce animation complexity on low-power devices */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Optimize images for iOS */
+  img {
+    content-visibility: auto;
+  }
+
+  /* Smoother scrolling on iOS */
+  .overflow-y-auto, .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+  }
 }
