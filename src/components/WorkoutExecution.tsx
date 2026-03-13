@@ -54,6 +54,7 @@ type Props = {
   experienceLevel?: string;
   trainingLocation?: string;
   objective?: string;
+  cycleStatus?: CycleStatus;
   onFinish: () => void;
   onBack: () => void;
 };
