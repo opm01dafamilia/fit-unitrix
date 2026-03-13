@@ -606,7 +606,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["mesa-flexora"],
+    alternativas: ["mesa-flexora", "agachamento-livre", "agachamento-bulgaro"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
