@@ -17,6 +17,9 @@ const Perfil = () => {
   const [peso, setPeso] = useState("");
   const [objetivo, setObjetivo] = useState("");
   const [atividade, setAtividade] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
+  const [pais, setPais] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
