@@ -643,54 +643,70 @@ const Dieta = () => {
     }
   }, [profile]);
 
-  // Load saved plans and streak data
+  // Load saved plans and streak data with smart cache
   useEffect(() => {
     if (!user) return;
-    setLoadingPlans(true);
+
+    // 1. Show cached data instantly
+    const cachedPlans = readCache<any[]>(CACHE_KEYS.dietPlans(user.id), { maxAge: 30 * 60 * 1000 });
+    const cachedTracking = readCache<any[]>(CACHE_KEYS.dietTracking(user.id), { maxAge: 5 * 60 * 1000 });
+    const cachedWeight = readCache<number | undefined>(CACHE_KEYS.bodyTracking(user.id), { maxAge: 60 * 60 * 1000 });
+
+    if (cachedPlans) { setSavedPlans(cachedPlans); setLoadingPlans(false); }
+    if (cachedWeight !== null) setLatestWeight(cachedWeight);
+    if (cachedTracking) processTrackingData(cachedTracking);
+
+    // 2. Fetch fresh in background
+    if (!cachedPlans) setLoadingPlans(true);
     
     Promise.all([
       supabase.from("diet_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("diet_tracking").select("*").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(60),
       supabase.from("body_tracking").select("weight, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
     ]).then(([plansRes, trackingRes, bodyRes]) => {
-      if (plansRes.error) toast.error("Erro ao carregar planos salvos");
-      setSavedPlans(plansRes.data || []);
+      if (plansRes.error) { if (!cachedPlans) toast.error("Erro ao carregar planos salvos"); }
+      else { setSavedPlans(plansRes.data || []); writeCache(CACHE_KEYS.dietPlans(user.id), plansRes.data || []); }
       
-      // Set latest weight from body_tracking
       if (bodyRes.data && bodyRes.data.length > 0) {
-        setLatestWeight(Number(bodyRes.data[0].weight));
+        const w = Number(bodyRes.data[0].weight);
+        setLatestWeight(w);
+        writeCache(CACHE_KEYS.bodyTracking(user.id), w);
       }
       
-      // Calculate streak from tracking data
       const tracking = (trackingRes.data || []) as any[];
-      const completedDates = tracking.filter(t => t.all_completed).map(t => t.tracked_date).sort().reverse();
-      
-      let streak = 0;
-      if (completedDates.length > 0) {
-        const todayStr = format(new Date(), "yyyy-MM-dd");
-        const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
-        if (completedDates[0] === todayStr || completedDates[0] === yesterdayStr) {
-          for (let i = 0; i < completedDates.length; i++) {
-            const expected = format(subDays(new Date(), i + (completedDates[0] === todayStr ? 0 : 1)), "yyyy-MM-dd");
-            if (completedDates[i] === expected) streak++;
-            else break;
-          }
-        }
-      }
-      setDietStreak(streak);
-
-      // Weekly stats
-      const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
-      const weekData = tracking.filter(t => t.tracked_date >= weekAgo);
-      const wDone = weekData.reduce((a: number, t: any) => a + (t.meals_done || 0), 0);
-      const wTotal = weekData.reduce((a: number, t: any) => a + (t.meals_total || 0), 0);
-      setWeeklyMealsDone(wDone);
-      setWeeklyMealsTotal(wTotal);
-      setWeeklyAdherence(wTotal > 0 ? Math.round((wDone / wTotal) * 100) : 0);
+      writeCache(CACHE_KEYS.dietTracking(user.id), tracking);
+      processTrackingData(tracking);
       
       setLoadingPlans(false);
     });
   }, [user]);
+
+  // Extract tracking data processing to reusable function
+  const processTrackingData = useCallback((tracking: any[]) => {
+    const completedDates = tracking.filter(t => t.all_completed).map(t => t.tracked_date).sort().reverse();
+    
+    let streak = 0;
+    if (completedDates.length > 0) {
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      const yesterdayStr = format(subDays(new Date(), 1), "yyyy-MM-dd");
+      if (completedDates[0] === todayStr || completedDates[0] === yesterdayStr) {
+        for (let i = 0; i < completedDates.length; i++) {
+          const expected = format(subDays(new Date(), i + (completedDates[0] === todayStr ? 0 : 1)), "yyyy-MM-dd");
+          if (completedDates[i] === expected) streak++;
+          else break;
+        }
+      }
+    }
+    setDietStreak(streak);
+
+    const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
+    const weekData = tracking.filter(t => t.tracked_date >= weekAgo);
+    const wDone = weekData.reduce((a: number, t: any) => a + (t.meals_done || 0), 0);
+    const wTotal = weekData.reduce((a: number, t: any) => a + (t.meals_total || 0), 0);
+    setWeeklyMealsDone(wDone);
+    setWeeklyMealsTotal(wTotal);
+    setWeeklyAdherence(wTotal > 0 ? Math.round((wDone / wTotal) * 100) : 0);
+  }, []);
 
   // Save daily tracking when all meals are marked
   const saveDayTracking = useCallback(async (statuses: Record<string, MealStatus>, totalMeals: number) => {
