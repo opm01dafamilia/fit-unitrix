@@ -778,6 +778,7 @@ const Dieta = () => {
     if (status === "done") {
       const msg = getDietMotivationalMessage();
       toast.success(`${msg.emoji} ${msg.text}`);
+      registerMicroVictory("meal_tracked");
       // Haptic feedback on mobile
       if (navigator.vibrate) navigator.vibrate(50);
     } else if (status === "failed") {
