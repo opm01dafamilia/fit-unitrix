@@ -251,7 +251,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-reto", "supino-maquina"],
+    alternativas: ["supino-reto", "supino-maquina", "crucifixo", "cross-over"],
     animacao: { frames: ["🧎 ↓", "🧎 ↑"], cor: "hsl(152 69% 46%)" },
   },
 
