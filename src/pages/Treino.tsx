@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel } from "@/lib/workoutGenerator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
