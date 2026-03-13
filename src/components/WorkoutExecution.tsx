@@ -1546,8 +1546,77 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Histórico do Exercício</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}><X className="w-4 h-4" /></Button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  const data = getExerciseEvolution(currentEx.nome);
+                  setEvolutionData(data);
+                  setShowEvolutionChart(!showEvolutionChart);
+                }}
+                className={`text-[10px] px-2 py-1 rounded-md transition-colors ${showEvolutionChart ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                📊 Gráfico
+              </button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}><X className="w-4 h-4" /></Button>
+            </div>
           </div>
+
+          {/* Mini Evolution Chart */}
+          {showEvolutionChart && evolutionData.length > 1 && (
+            <div className="mb-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2">Evolução de Carga</p>
+              <div className="flex items-end gap-1 h-20">
+                {(() => {
+                  const maxW = Math.max(...evolutionData.map(d => d.weight));
+                  const minW = Math.min(...evolutionData.map(d => d.weight));
+                  const range = maxW - minW || 1;
+                  return evolutionData.map((point, i) => {
+                    const height = 20 + ((point.weight - minW) / range) * 60;
+                    const isLast = i === evolutionData.length - 1;
+                    return (
+                      <TooltipProvider key={i}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex flex-col items-center flex-1 gap-1">
+                              <div
+                                className={`w-full rounded-t-md transition-all ${isLast ? "bg-primary" : "bg-primary/40"}`}
+                                style={{ height: `${height}%` }}
+                              />
+                              <span className="text-[8px] text-muted-foreground">{point.date.slice(5)}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-[10px]">
+                            {point.weight}kg • {point.reps} reps{point.rpe ? ` • ${point.rpe}` : ""}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  });
+                })()}
+              </div>
+              {evolutionData.length >= 2 && (
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+                  <span className="text-[10px] text-muted-foreground">
+                    {evolutionData[0].weight}kg → {evolutionData[evolutionData.length - 1].weight}kg
+                  </span>
+                  <span className={`text-[10px] font-semibold ${
+                    evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "text-primary" :
+                    evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "text-destructive" :
+                    "text-muted-foreground"
+                  }`}>
+                    {evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "📈" : evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "📉" : "➡️"}
+                    {" "}{(evolutionData[evolutionData.length - 1].weight - evolutionData[0].weight).toFixed(1)}kg
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          {showEvolutionChart && evolutionData.length <= 1 && (
+            <div className="mb-3 p-3 rounded-xl bg-secondary/30 border border-border/30 text-center">
+              <p className="text-xs text-muted-foreground">Gráfico disponível após 2+ treinos registrados.</p>
+            </div>
+          )}
+
           {recentSessions.length === 0 ? (
             <p className="text-xs text-muted-foreground">Nenhum histórico encontrado.</p>
           ) : (
