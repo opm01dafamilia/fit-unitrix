@@ -74,6 +74,7 @@ const Acompanhamento = () => {
       });
       if (error) throw error;
       toast.success("Registro salvo com sucesso!");
+      registerMicroVictory("weight_logged");
       setNewPeso(""); setNewBodyFat(""); setNewCintura(""); setNewBraco(""); setNewPerna("");
       setShowForm(false); setErrors({});
       fetchRecords();
