@@ -144,6 +144,30 @@ const Treino = () => {
   }, [user, loadingSessions, sessions]);
 
 
+  // Cycle status + evolution timeline
+  useEffect(() => {
+    if (!activePlan || !user || loadingSessions) return;
+    const status = getCycleStatus(activePlan.created_at);
+    setCycleStatus(status);
+
+    const fetchTimeline = async () => {
+      const { data: histData } = await supabase
+        .from("exercise_history")
+        .select("weight, reps, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      
+      const timeline = buildEvolutionTimeline(
+        sessions.map(s => ({ completed_at: s.completed_at, exercises_completed: s.exercises_completed, exercises_total: s.exercises_total })),
+        (histData || []).map((h: any) => ({ weight: h.weight, reps: h.reps, created_at: h.created_at })),
+        activePlan.created_at,
+        6
+      );
+      setEvolutionTimeline(timeline);
+    };
+    fetchTimeline();
+  }, [activePlan, user, loadingSessions, sessions]);
 
   // Streak calculation
   const streak = useMemo(() => {
