@@ -273,6 +273,33 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -280,6 +307,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           experience_level: string | null
+          friend_code: string | null
           full_name: string | null
           gender: string | null
           height: number | null
@@ -298,6 +326,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           experience_level?: string | null
+          friend_code?: string | null
           full_name?: string | null
           gender?: string | null
           height?: number | null
@@ -316,6 +345,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           experience_level?: string | null
+          friend_code?: string | null
           full_name?: string | null
           gender?: string | null
           height?: number | null
