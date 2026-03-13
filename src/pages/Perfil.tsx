@@ -31,6 +31,9 @@ const Perfil = () => {
       setPeso(profile.weight ? String(profile.weight) : "");
       setObjetivo(profile.objective || "");
       setAtividade(profile.activity_level || "");
+      setCidade((profile as any).city || "");
+      setEstado((profile as any).state || "");
+      setPais((profile as any).country || "");
     }
   }, [profile]);
 
