@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Activity, Target, Menu, Flame, LogOut, User, X, 
-  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake, Medal, Brain
+  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake, Medal, Brain, Salad
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -15,7 +15,8 @@ const navItems = [
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/analise", icon: BarChart3, label: "Análise" },
-  { to: "/evolucao", icon: Brain, label: "Evolução" },
+  { to: "/evolucao", icon: Brain, label: "Evolução Treino" },
+  { to: "/evolucao-alimentar", icon: Salad, label: "Evolução Dieta" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/ranking", icon: Crown, label: "Ranking" },
   { to: "/comunidade", icon: Users, label: "Comunidade" },
