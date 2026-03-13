@@ -6,7 +6,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import UserPublicProfile from "@/components/community/UserPublicProfile";
-import { useAuth } from "@/contexts/AuthContext";
 import { RankingSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 import { format, startOfWeek, endOfWeek, subDays } from "date-fns";
