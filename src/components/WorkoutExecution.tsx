@@ -815,7 +815,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
           </h3>
           <div className="flex flex-row items-center gap-4">
-            <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} />
+            <MuscleBodyMap key={`muscles-${currentExIndex}-${swapKey}`} highlightedMuscles={libraryExercise.musculosDestacados} />
             <div className="flex-1 min-w-0 space-y-2">
               <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
                 <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
