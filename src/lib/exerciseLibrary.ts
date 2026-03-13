@@ -176,7 +176,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["cross-over", "crucifixo-maquina"],
+    alternativas: ["cross-over", "crucifixo-maquina", "supino-inclinado-halteres", "flexao"],
     animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
