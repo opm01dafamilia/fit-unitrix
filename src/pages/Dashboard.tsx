@@ -209,6 +209,25 @@ const Dashboard = () => {
         <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
 
+      {/* Comeback Alert */}
+      {comebackAlert && comebackAlert.dashboardAlert && (
+        <div className="glass-card p-4 lg:p-5 border border-primary/20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
+          <div className="relative z-10 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center shrink-0">
+              <Heart className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">⚠️ {comebackAlert.dashboardAlert}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 italic">💡 Consistência é mais importante que intensidade.</p>
+            </div>
+            <button onClick={() => navigate("/treino")} className="text-xs text-primary font-medium shrink-0 hover:underline">
+              Ir para treino →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* User Progress Indicator */}
       <div className="glass-card p-4 lg:p-5">
         <div className="flex items-center justify-between mb-3">
