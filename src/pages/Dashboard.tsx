@@ -29,6 +29,9 @@ const Dashboard = () => {
   const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Prefetch today's workout data + GIFs in background
+  useWorkoutPrefetch(user?.id);
+
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
