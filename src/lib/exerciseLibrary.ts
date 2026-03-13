@@ -830,7 +830,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["rosca-martelo", "rosca-scott"],
+    alternativas: ["rosca-martelo", "rosca-scott", "triceps-corda"],
     animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
