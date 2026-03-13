@@ -42,13 +42,16 @@ type Challenge = {
 const Ranking = () => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"ranking" | "weekly" | "challenges">("ranking");
+  const [tab, setTab] = useState<"ranking" | "weekly" | "city" | "challenges">("ranking");
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [weeklyRankings, setWeeklyRankings] = useState<RankingEntry[]>([]);
+  const [cityRankings, setCityRankings] = useState<RankingEntry[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userXP, setUserXP] = useState(0);
   const [previousRank, setPreviousRank] = useState(0);
   const [userGlobalPosition, setUserGlobalPosition] = useState<number | null>(null);
+  const [userCityPosition, setUserCityPosition] = useState<number | null>(null);
+  const [userCity, setUserCity] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<{ userId: string; userName: string } | null>(null);
 
   const computeAndSaveStats = async () => {
