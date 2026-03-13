@@ -198,6 +198,42 @@ const Ranking = () => {
         toast.success(`🎉 Você subiu ${previousRank - myGlobalPos} posições no ranking!`, { duration: 4000 });
       }
       setPreviousRank(myGlobalPos);
+
+      // Fetch city ranking
+      const myCity = (profile as any)?.city;
+      setUserCity(myCity || null);
+      if (myCity) {
+        // Get all user_ids in the same city (min 5 workouts)
+        const { data: cityProfiles } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("city", myCity);
+        
+        if (cityProfiles && cityProfiles.length > 0) {
+          const cityUserIds = cityProfiles.map((p: any) => p.user_id);
+          const { data: cityData } = await supabase
+            .from("user_ranking_stats")
+            .select("*")
+            .in("user_id", cityUserIds)
+            .gte("total_workouts", 5)
+            .order("total_xp" as any, { ascending: false })
+            .limit(100);
+          
+          // Deduplicate
+          const seenCity = new Set<string>();
+          const dedupedCity: any[] = [];
+          (cityData || []).forEach((r: any) => {
+            if (!seenCity.has(r.user_id)) {
+              seenCity.add(r.user_id);
+              dedupedCity.push(r);
+            }
+          });
+          setCityRankings(dedupedCity);
+          
+          const myCityPos = dedupedCity.findIndex((r: any) => r.user_id === user.id) + 1;
+          setUserCityPosition(myCityPos > 0 ? myCityPos : null);
+        }
+      }
     } catch {
       // silent
     }
