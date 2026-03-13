@@ -274,16 +274,27 @@ const Convites = () => {
 
       {/* Conditions */}
       <div className="glass-card p-5 lg:p-6">
-        <h3 className="font-display font-semibold text-sm mb-3">Como funciona?</h3>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-lg">📘</span>
+          <h3 className="font-display font-semibold text-sm">Como funciona?</h3>
+        </div>
         <div className="space-y-2 text-xs text-muted-foreground">
           <p>1. Compartilhe seu link de convite com amigos</p>
           <p>2. O convite é validado quando o amigo:</p>
           <div className="pl-4 space-y-1">
-            <p>• Faz cadastro no FitPulse</p>
+            <p>• Faz cadastro no Plataforma Hub</p>
             <p>• Assina um plano</p>
             <p>• Completa pelo menos 3 treinos</p>
           </div>
           <p>3. Você ganha XP social e sobe no ranking!</p>
+        </div>
+      </div>
+
+      {/* Platform growth card */}
+      <div className="glass-card p-4 lg:p-5 border-accent/20 bg-accent/5">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🌐</span>
+          <p className="text-sm text-muted-foreground">Convites ajudam a crescer toda a plataforma</p>
         </div>
       </div>
 
