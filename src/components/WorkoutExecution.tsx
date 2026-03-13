@@ -210,6 +210,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }
   }, [exercises, experienceLevel, day]);
 
+  // Fatigue detection for current muscle group
+  useEffect(() => {
+    const grupo = day?.grupo?.toLowerCase() || "";
+    let muscleGroup = "geral";
+    for (const key of Object.keys(muscleGroupColors)) {
+      if (grupo.includes(key)) { muscleGroup = key; break; }
+    }
+    const result = shouldTrainGroup(muscleGroup);
+    if (result.fatigue.level === "high" || result.fatigue.level === "extreme") {
+      setFatigueStatus({ fatigue: result.fatigue, adjustment: result.adjustment });
+    }
+  }, [day]);
+
   // Current exercise technique
   const currentTechnique = useMemo(() => {
     return techniqueAssignments.find(a => a.exerciseIndex === currentExIndex) || null;
