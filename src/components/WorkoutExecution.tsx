@@ -563,6 +563,17 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     ) || null;
   }, [currentEx.nome]);
 
+  // Muscle highlights: use library data or fallback to group
+  const activeMusclesToShow = useMemo<MuscleId[]>(() => {
+    if (libraryExercise) return libraryExercise.musculosDestacados;
+    // Fallback based on workout group
+    const grupo = day.grupo.toLowerCase();
+    for (const [key, muscles] of Object.entries(muscleGroupFallback)) {
+      if (grupo.includes(key)) return muscles;
+    }
+    return ["peitoral"];
+  }, [libraryExercise, day.grupo]);
+
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
     if (currentExHistory.length === 0) return [];
