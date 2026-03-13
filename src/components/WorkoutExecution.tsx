@@ -504,11 +504,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }, [currentExIndex]);
 
   const goToExercise = (idx: number) => {
+    // Save RPE performance if we had one selected for current exercise
+    if (selectedRPE && currentSets.length > 0) {
+      saveExercisePerformance(currentExIndex, selectedRPE);
+    }
     setCurrentExIndex(idx);
     setPhase("input");
     setRestTime(0);
     setInputKg("");
     setInputReps("");
+    setSelectedRPE(null);
   };
 
   const goNext = () => {
