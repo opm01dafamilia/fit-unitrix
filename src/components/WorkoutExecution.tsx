@@ -780,7 +780,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
         <div className="relative z-10 flex flex-col items-center w-full">
           {libraryExercise ? (
-            <ExerciseAnimation exercise={libraryExercise} size="lg" className="mb-3" />
+            <ExerciseAnimation key={`anim-${currentExIndex}-${swapKey}`} exercise={libraryExercise} size="lg" className="mb-3" />
           ) : (
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
               <Dumbbell className="w-10 h-10 text-primary" />
