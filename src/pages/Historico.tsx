@@ -85,11 +85,7 @@ const Historico = () => {
       </div>
 
       {/* Loading */}
-      {loading && (
-        <div className="space-y-2">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}
-        </div>
-      )}
+      {loading && <HistoricoSkeleton />}
 
       {/* Body Records */}
       {!loading && tab === "body" && data.map((r) => (

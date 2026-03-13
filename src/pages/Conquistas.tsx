@@ -176,16 +176,7 @@ const Conquistas = () => {
   const currentRank = getRankForXP(totalXP);
   const nextRankInfo = getNextRank(totalXP);
 
-  if (loading) {
-    return (
-      <div className="space-y-5 animate-slide-up">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <ConquistasSkeleton />;
 
   const phaseInfo = phaseLabels[currentPhase];
 
