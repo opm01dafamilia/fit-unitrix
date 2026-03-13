@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
-import { preloadExerciseGifs } from "@/lib/exerciseGifs";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Lazy load all pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
