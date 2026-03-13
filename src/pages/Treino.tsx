@@ -18,6 +18,7 @@ import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workou
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
+import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
 
 type WorkoutSession = {
   id: string;
