@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
-import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
+import { getComebackStatus } from "@/lib/comebackEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
