@@ -3,18 +3,32 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
   TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame,
-  CheckCircle2, ChevronDown
+  CheckCircle2, ChevronDown, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
-import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
+import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
+
+// Muscle group fallback map: when exercise not in library, use group to determine active muscles
+const muscleGroupFallback: Record<string, MuscleId[]> = {
+  peito: ["peitoral", "triceps", "deltoide-anterior"],
+  costas: ["dorsal", "biceps", "trapezio"],
+  pernas: ["quadriceps", "isquiotibiais", "gluteos"],
+  ombros: ["deltoide-anterior", "deltoide-lateral", "trapezio"],
+  biceps: ["biceps", "antebraco"],
+  triceps: ["triceps"],
+  abdomen: ["reto-abdominal", "obliquos", "core"],
+  hiit: ["quadriceps", "gluteos", "core"],
+  cardio: ["quadriceps", "isquiotibiais", "panturrilha"],
+};
 
 const muscleGroupColors: Record<string, string> = {
   peito: "from-red-500/20 to-red-600/10",
@@ -401,20 +415,35 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   // Track swap key to force remount of visual components
   const [swapKey, setSwapKey] = useState(0);
+  const [swapFading, setSwapFading] = useState(false);
 
-  const swapExercise = (newName: string) => {
+  const swapExercise = useCallback((newName: string) => {
     // Preload GIF for new exercise immediately
     fetchExerciseGifByName(newName);
     
-    setExercises(prev => {
-      const updated = [...prev];
-      updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
-      return updated;
-    });
-    setSwapKey(k => k + 1); // Force remount of ExerciseAnimation and MuscleBodyMap
-    setShowAlternatives(false);
-    toast.success(`Exercício trocado para ${newName}`);
-  };
+    // Fade-out animation
+    setSwapFading(true);
+    
+    // Short delay for fade-out then swap
+    setTimeout(() => {
+      setExercises(prev => {
+        const updated = [...prev];
+        updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
+        return updated;
+      });
+      setSwapKey(k => k + 1);
+      setShowAlternatives(false);
+      setSwapFading(false);
+      
+      // Haptic feedback
+      try { if (navigator.vibrate) navigator.vibrate([30, 50, 30]); } catch {}
+      
+      toast.success("Exercício atualizado com sucesso", {
+        icon: <Sparkles className="w-4 h-4 text-primary" />,
+        duration: 2500,
+      });
+    }, 200);
+  }, [currentExIndex]);
 
   const goToExercise = (idx: number) => {
     setCurrentExIndex(idx);
@@ -533,6 +562,17 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       name.includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(name)
     ) || null;
   }, [currentEx.nome]);
+
+  // Muscle highlights: use library data or fallback to group
+  const activeMusclesToShow = useMemo<MuscleId[]>(() => {
+    if (libraryExercise) return libraryExercise.musculosDestacados;
+    // Fallback based on workout group
+    const grupo = day.grupo.toLowerCase();
+    for (const [key, muscles] of Object.entries(muscleGroupFallback)) {
+      if (grupo.includes(key)) return muscles;
+    }
+    return ["peitoral"];
+  }, [libraryExercise, day.grupo]);
 
   const currentExHistory = exerciseHistories[currentEx.nome] || [];
   const recentSessions = useMemo(() => {
@@ -776,15 +816,23 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       </div>
 
       {/* ===== EXERCISE HERO ===== */}
-      <div className="glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className={`glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden transition-opacity duration-200 ${swapFading ? 'opacity-30 scale-[0.98]' : 'opacity-100 scale-100'}`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
         <div className="relative z-10 flex flex-col items-center w-full">
           {libraryExercise ? (
             <ExerciseAnimation key={`anim-${currentExIndex}-${swapKey}`} exercise={libraryExercise} size="lg" className="mb-3" />
           ) : (
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
-              <Dumbbell className="w-10 h-10 text-primary" />
-            </div>
+            <ExerciseAnimation 
+              key={`anim-fallback-${currentExIndex}-${swapKey}`} 
+              exercise={{ 
+                id: `custom-${currentExIndex}`, nome: currentEx.nome, grupo: (day.grupo.toLowerCase() as any) || "peito",
+                grupoLabel: day.grupo, musculos: [day.grupo], musculosDestacados: activeMusclesToShow,
+                instrucoes: [], dicas: [], equipamento: "Variado", dificuldade: "intermediário",
+                tipo: "composto", tipoExercicio: "musculação", alternativas: [],
+                animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(152 69% 46%)" },
+              }} 
+              size="lg" className="mb-3" 
+            />
           )}
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
           {libraryExercise && (
@@ -809,42 +857,40 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       </div>
 
       {/* ===== MUSCLE BODY MAP ===== */}
-      {libraryExercise && (
-        <div className="glass-card p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
-          </h3>
-          <div className="flex flex-row items-center gap-4">
-            <MuscleBodyMap key={`muscles-${currentExIndex}-${swapKey}`} highlightedMuscles={libraryExercise.musculosDestacados} />
-            <div className="flex-1 min-w-0 space-y-2">
-              <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
-                <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
-                  <Target className="w-3 h-3" /> Principal
-                </span>
-                <p className="text-sm font-semibold mt-0.5">{libraryExercise.musculos[0]}</p>
-              </div>
-              {libraryExercise.musculos.length > 1 && (
-                <div className="p-2 rounded-lg bg-secondary/40 border border-border/30">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {libraryExercise.musculos.slice(1).map((m, i) => (
-                      <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border border-border/30 font-medium">{m}</span>
-                    ))}
-                  </div>
+      <div className={`glass-card p-4 transition-opacity duration-200 ${swapFading ? 'opacity-30' : 'opacity-100'}`}>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+          <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
+        </h3>
+        <div className="flex flex-row items-center gap-4">
+          <MuscleBodyMap key={`muscles-${currentExIndex}-${swapKey}`} highlightedMuscles={activeMusclesToShow} />
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
+              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
+                <Target className="w-3 h-3" /> Principal
+              </span>
+              <p className="text-sm font-semibold mt-0.5">{libraryExercise?.musculos[0] || day.grupo}</p>
+            </div>
+            {(libraryExercise?.musculos?.length ?? 0) > 1 && (
+              <div className="p-2 rounded-lg bg-secondary/40 border border-border/30">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {libraryExercise!.musculos.slice(1).map((m, i) => (
+                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border border-border/30 font-medium">{m}</span>
+                  ))}
                 </div>
-              )}
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30 flex items-center gap-1">
-                  <Dumbbell className="w-2.5 h-2.5" /> {libraryExercise.equipamento}
-                </span>
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30">
-                  {libraryExercise.dificuldade}
-                </span>
               </div>
+            )}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30 flex items-center gap-1">
+                <Dumbbell className="w-2.5 h-2.5" /> {libraryExercise?.equipamento || "Variado"}
+              </span>
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30">
+                {libraryExercise?.dificuldade || "intermediário"}
+              </span>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* ===== PROGRESSION FEEDBACK ===== */}
       {currentProgression && currentProgression.feedback !== "first_time" && (
@@ -1244,37 +1290,36 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== ALTERNATIVES PANEL ===== */}
-      {showAlternatives && (
-        <div className="glass-card p-4 glow-border animate-slide-up">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-display font-semibold text-sm">Exercícios Alternativos</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAlternatives(false)}><X className="w-4 h-4" /></Button>
-          </div>
-          <div className="space-y-3">
+      {/* ===== ALTERNATIVES SHEET MODAL ===== */}
+      <Sheet open={showAlternatives} onOpenChange={setShowAlternatives}>
+        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-2xl px-4 pb-8 overflow-y-auto">
+          <SheetHeader className="pb-3">
+            <SheetTitle className="font-display text-base flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-primary" /> Trocar Exercício
+            </SheetTitle>
+            <p className="text-xs text-muted-foreground">Selecione uma alternativa para <span className="font-semibold text-foreground">{currentEx.nome}</span></p>
+          </SheetHeader>
+          <div className="space-y-2.5 mt-2">
             {alternatives.map((alt, i) => {
               const altLibrary = exerciseLibrary.find(e => 
                 alt.nome.toLowerCase().includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(alt.nome.toLowerCase())
               );
               return (
                 <button key={i} onClick={() => swapExercise(alt.nome)}
-                  className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all flex items-start gap-3 group">
-                  {/* Exercise preview image */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
+                  className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all active:scale-[0.98] flex items-start gap-3 group">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
                     {altLibrary ? (
                       <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
                     ) : (
                       <AltGifPreview name={alt.nome} isHome={!!alt.tag?.includes("Casa")} />
                     )}
                   </div>
-                  {/* Exercise details */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{alt.nome}</span>
                     </div>
-                    {alt.desc && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{alt.desc}</p>}
-                    {/* Tags row */}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {alt.desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">{alt.desc}</p>}
+                    <div className="flex flex-wrap items-center gap-1 mt-1.5">
                       {alt.tag && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">{alt.tag}</span>
                       )}
@@ -1286,23 +1331,25 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                           <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 capitalize">
                             {altLibrary.dificuldade}
                           </span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 flex items-center gap-0.5">
-                            <Dumbbell className="w-2.5 h-2.5" /> {altLibrary.equipamento}
-                          </span>
                         </>
                       )}
                     </div>
                   </div>
-                  {/* Swap arrow */}
-                  <div className="shrink-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <RefreshCw className="w-4 h-4 text-primary" />
+                  <div className="shrink-0 mt-3">
+                    <RefreshCw className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </button>
               );
             })}
+            {alternatives.length === 0 && (
+              <div className="text-center py-8">
+                <Dumbbell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Nenhuma alternativa disponível</p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {/* ===== BOTTOM NAVIGATION ===== */}
       <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50 safe-area-inset-bottom">
