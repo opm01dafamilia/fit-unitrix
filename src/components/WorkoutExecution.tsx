@@ -208,13 +208,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     loadHistory();
   }, [userId, exercises, experienceLevel]);
 
-  // Pre-fill recommended weight
+  // Pre-fill recommended weight with cycle adjustments
   useEffect(() => {
     const prog = progressions[currentEx.nome];
     if (prog && prog.feedback !== "first_time" && !inputKg) {
-      setInputKg(String(prog.recommendedWeight));
+      let weight = prog.recommendedWeight;
+      // Apply cycle multiplier if available
+      if (cycleStatus && weight > 0) {
+        weight = Math.round(weight * cycleStatus.loadMultiplier * 2) / 2;
+      }
+      setInputKg(String(weight));
     }
-  }, [currentExIndex, progressions, currentEx.nome]);
+  }, [currentExIndex, progressions, currentEx.nome, cycleStatus]);
 
   // Workout timer - wall-clock based to prevent drift
   const workoutStartRef = useRef(Date.now());
