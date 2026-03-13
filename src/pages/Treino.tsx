@@ -1182,6 +1182,47 @@ const Treino = () => {
             )}
           </div>
 
+          {/* Evolution Timeline */}
+          {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
+            <div className="glass-card p-4 lg:p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                  <Activity className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Histórico de Evolução</p>
+                  <p className="text-[10px] text-muted-foreground">Últimas {evolutionTimeline.length} semanas</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {evolutionTimeline.map((entry, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-16 shrink-0">
+                      <p className="text-[10px] text-muted-foreground font-medium">{entry.weekLabel}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500" 
+                               style={{ width: `${entry.consistency}%` }} />
+                        </div>
+                        <span className="text-[10px] font-bold text-foreground w-8 text-right">{entry.consistency}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px]">{entry.phaseEmoji}</span>
+                        <span className="text-[9px] text-muted-foreground">{entry.phaseLabel}</span>
+                        {entry.avgLoad > 0 && (
+                          <span className="text-[9px] text-primary font-medium">~{entry.avgLoad}kg</span>
+                        )}
+                        <span className="text-[9px] text-muted-foreground">{entry.sessionsCount} treinos</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Calendar */}
           <div className="glass-card p-5 lg:p-6">
             <div className="flex items-center justify-between mb-4">
