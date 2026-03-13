@@ -17,6 +17,7 @@ import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerc
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
 import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
 import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
+import { savePerformance, getProgressionDecision, getExerciseEvolution, getSessionSummary, type RPE, type ProgressionDecision, type WeightEvolutionPoint, type SessionProgressionSummary } from "@/lib/smartProgressionEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
