@@ -186,6 +186,17 @@ const Dashboard = () => {
 
   const hasData = bodyRecords.length > 0 || goals.length > 0 || workoutPlans.length > 0;
 
+  // Comeback mode detection for dashboard alert
+  const comebackAlert = (() => {
+    if (sessions.length === 0 || workoutPlans.length === 0) return null;
+    const daysPerWeek = workoutPlans[0]?.days_per_week || 4;
+    const status = getComebackStatus(
+      sessions.map((s: any) => ({ completed_at: s.completed_at })),
+      daysPerWeek
+    );
+    return status.dashboardAlert ? status : null;
+  })();
+
   if (loading) return <DashboardSkeleton />;
 
   return (
