@@ -864,7 +864,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
-              Peso recomendado: {currentProgression.recommendedWeight} kg
+              Peso recomendado: {cycleStatus && currentProgression.recommendedWeight > 0
+                ? Math.round(currentProgression.recommendedWeight * cycleStatus.loadMultiplier * 2) / 2
+                : currentProgression.recommendedWeight
+              } kg
+              {cycleStatus && cycleStatus.phase !== "adaptacao" && currentProgression.recommendedWeight > 0 && (
+                <span className="text-[9px] opacity-70 ml-1">({cycleStatus.phaseEmoji} {cycleStatus.phaseLabel})</span>
+              )}
             </div>
           )}
         </div>
