@@ -3,7 +3,7 @@ import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCro
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PerfilFitnessSkeleton } from "@/components/skeletons/SkeletonPremium";
 import {
   calculateAchievements, calculateTotalXP, getRankForXP, getNextRank,
   getCurrentPhase, getLegendaryAchievements, getNextPhaseProgress,
@@ -201,17 +201,7 @@ const PerfilFitness = () => {
     ? Math.min(100, Math.max(0, Math.round(Math.abs(initialWeight - currentWeight) / Math.abs(initialWeight - goalWeight) * 100)))
     : 0;
 
-  if (loading) {
-    return (
-      <div className="space-y-5 animate-slide-up">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-40 rounded-2xl" />
-        <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PerfilFitnessSkeleton />;
 
   return (
     <div className="space-y-5 animate-slide-up">

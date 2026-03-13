@@ -3,7 +3,7 @@ import { Trophy, Lock, Flame, TrendingUp, Dumbbell, ArrowLeft, Star, Sparkles, C
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ConquistasSkeleton } from "@/components/skeletons/SkeletonPremium";
 import {
   calculateAchievements, calculateTotalXP, getRankForXP, getNextRank,
   getNextPhaseProgress, getCurrentPhase, getLegendaryAchievements,
@@ -176,16 +176,7 @@ const Conquistas = () => {
   const currentRank = getRankForXP(totalXP);
   const nextRankInfo = getNextRank(totalXP);
 
-  if (loading) {
-    return (
-      <div className="space-y-5 animate-slide-up">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <ConquistasSkeleton />;
 
   const phaseInfo = phaseLabels[currentPhase];
 

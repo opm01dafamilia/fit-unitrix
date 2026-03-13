@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel } from "@/lib/workoutGenerator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -548,9 +548,7 @@ const Treino = () => {
 
         {/* Saved Plans */}
         {loadingPlans ? (
-          <div className="glass-card p-5 lg:p-6 space-y-2">
-            {[1,2].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
-          </div>
+          <TreinoPlansSkeleton />
         ) : savedPlans.length > 0 && (
           <div className="glass-card p-5 lg:p-6">
             <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider">Planos Salvos</h3>
@@ -658,37 +656,7 @@ const Treino = () => {
       </div>
 
       {loadingPlans || loadingSessions ? (
-        <div className="space-y-4">
-          <div className="glass-card p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="w-14 h-14 rounded-2xl" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-5 w-40 rounded-lg" />
-                <Skeleton className="h-3 w-24 rounded-lg" />
-              </div>
-              <Skeleton className="h-10 w-28 rounded-xl" />
-            </div>
-            <Skeleton className="h-2 w-full rounded-full" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="glass-card p-5 space-y-3">
-              <Skeleton className="w-10 h-10 rounded-xl" />
-              <Skeleton className="h-7 w-16 rounded-lg" />
-              <Skeleton className="h-3 w-24 rounded-lg" />
-            </div>
-            <div className="glass-card p-5 space-y-3">
-              <Skeleton className="w-10 h-10 rounded-xl" />
-              <Skeleton className="h-7 w-16 rounded-lg" />
-              <Skeleton className="h-3 w-24 rounded-lg" />
-            </div>
-          </div>
-          <div className="glass-card p-5 space-y-3">
-            <Skeleton className="h-4 w-32 rounded-lg" />
-            {[1, 2, 3].map(i => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
-            ))}
-          </div>
-        </div>
+        <TreinoDashboardSkeleton />
       ) : !activePlan ? (
         <div className="empty-state py-16">
           <Dumbbell className="w-12 h-12 text-primary mx-auto mb-4 opacity-60" />

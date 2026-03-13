@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RankingSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 import { format, startOfWeek, endOfWeek, subDays } from "date-fns";
 import { Progress } from "@/components/ui/progress";
@@ -296,17 +296,7 @@ const Ranking = () => {
     </div>
   );
 
-  if (loading) {
-    return (
-      <div className="space-y-7 animate-slide-up">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-        </div>
-        <Skeleton className="h-80 rounded-2xl" />
-      </div>
-    );
-  }
+  if (loading) return <RankingSkeleton />;
 
   return (
     <div className="space-y-7 animate-slide-up">

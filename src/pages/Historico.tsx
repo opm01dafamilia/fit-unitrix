@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { History, Dumbbell, UtensilsCrossed, Scale, Target, ChevronDown, ChevronUp, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { HistoricoSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 
 type Tab = "body" | "workout" | "diet" | "goals";
@@ -85,11 +85,7 @@ const Historico = () => {
       </div>
 
       {/* Loading */}
-      {loading && (
-        <div className="space-y-2">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}
-        </div>
-      )}
+      {loading && <HistoricoSkeleton />}
 
       {/* Body Records */}
       {!loading && tab === "body" && data.map((r) => (

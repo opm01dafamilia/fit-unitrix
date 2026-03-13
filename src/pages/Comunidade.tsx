@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ComunidadeSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import ActivityFeedCard, { type Activity } from "@/components/community/ActivityFeedCard";
@@ -141,15 +141,7 @@ const Comunidade = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-7 animate-slide-up">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 rounded-2xl" />
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-      </div>
-    );
-  }
+  if (loading) return <ComunidadeSkeleton />;
 
   return (
     <div className="space-y-7 animate-slide-up">

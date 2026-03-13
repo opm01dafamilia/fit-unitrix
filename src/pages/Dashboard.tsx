@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 
@@ -181,26 +181,7 @@ const Dashboard = () => {
 
   const hasData = bodyRecords.length > 0 || goals.length > 0 || workoutPlans.length > 0;
 
-  if (loading) {
-    return (
-      <div className="space-y-7 animate-slide-up">
-        <div>
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="metric-card p-4 lg:p-5">
-              <Skeleton className="h-9 w-9 rounded-xl mb-3" />
-              <Skeleton className="h-8 w-20 mb-1" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          ))}
-        </div>
-        <Skeleton className="h-64 rounded-2xl" />
-      </div>
-    );
-  }
+  if (loading) return <DashboardSkeleton />;
 
   return (
     <div className="space-y-7 animate-slide-up">
