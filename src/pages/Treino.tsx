@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
 import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
 import { getCycleStatus, buildEvolutionTimeline, checkOvertrain, type CycleStatus, type EvolutionEntry } from "@/lib/progressionCycleEngine";
+import { getComebackStatus, getComebackProgress, getComebackFeedback, type ComebackStatus } from "@/lib/comebackEngine";
 
 type WorkoutSession = {
   id: string;
