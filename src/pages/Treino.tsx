@@ -206,6 +206,17 @@ const Treino = () => {
     return getInactivitySuggestion(daysSince);
   }, [sessions]);
 
+  // Comeback mode detection
+  useEffect(() => {
+    if (!activePlan || loadingSessions) return;
+    const status = getComebackStatus(
+      sessions.map(s => ({ completed_at: s.completed_at })),
+      activePlan.days_per_week,
+      comebackWorkouts
+    );
+    setComebackStatus(status);
+  }, [sessions, activePlan, loadingSessions, comebackWorkouts]);
+
   // Active plan (most recent)
   const activePlan = savedPlans[0];
   const activePlanData = activePlan ? (activePlan.plan_data as any[]) : null;
