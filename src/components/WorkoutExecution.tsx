@@ -1288,19 +1288,71 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-xs text-muted-foreground mt-0.5">
               {currentSets.length} séries • {currentSets.reduce((a, s) => a + s.kg * s.reps, 0).toFixed(0)}kg volume
             </p>
+
+            {/* RPE Selector */}
+            <div className="w-full mt-4 p-3.5 rounded-xl bg-secondary/40 border border-border/30">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Como foi a dificuldade?</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
+                  { value: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
+                  { value: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                ]).map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSelectedRPE(option.value);
+                      saveExercisePerformance(currentExIndex, option.value);
+                    }}
+                    className={`p-3 rounded-xl border-2 transition-all text-center ${
+                      selectedRPE === option.value
+                        ? `${option.color} scale-105 shadow-md`
+                        : "border-border/30 bg-secondary/30 hover:border-border/60"
+                    }`}
+                  >
+                    <span className="text-xl block mb-1">{option.emoji}</span>
+                    <span className="text-[11px] font-semibold block">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Progression Decision Feedback */}
+            {selectedRPE && progressionDecisions[currentExIndex] && (
+              <div className={`w-full mt-3 p-3.5 rounded-xl animate-fade-in border ${
+                progressionDecisions[currentExIndex].type === "evolution" ? "border-primary/20 bg-primary/5" :
+                progressionDecisions[currentExIndex].type === "overload" ? "border-destructive/20 bg-destructive/5" :
+                "border-border/30 bg-secondary/30"
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{progressionDecisions[currentExIndex].emoji}</span>
+                  <span className="text-sm font-semibold">
+                    {progressionDecisions[currentExIndex].type === "evolution" ? "Evolução detectada" :
+                     progressionDecisions[currentExIndex].type === "overload" ? "Treino muito pesado" :
+                     "Manter ritmo"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">{progressionDecisions[currentExIndex].label}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">{progressionDecisions[currentExIndex].detail}</p>
+              </div>
+            )}
+
             <div className="flex gap-3 mt-5 w-full">
               {currentExIndex < totalExercises - 1 ? (
-                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
                   Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
                   <Trophy className="w-5 h-5 mr-2" /> Finalizar Treino
                 </Button>
               )}
             </div>
+            {!selectedRPE && (
+              <p className="text-[10px] text-muted-foreground mt-2 italic">Selecione a dificuldade para continuar</p>
+            )}
             {currentSets.length < targetSeries && (
-              <button onClick={() => setPhase("input")} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              <button onClick={() => { setPhase("input"); setSelectedRPE(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
                 + Adicionar mais séries
               </button>
             )}
