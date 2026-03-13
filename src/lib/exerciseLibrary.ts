@@ -328,7 +328,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["pulldown", "barra-fixa"],
+    alternativas: ["pulldown", "barra-fixa", "remada-baixa", "remada-curvada"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(199 89% 48%)" },
   },
   {
