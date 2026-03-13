@@ -15,6 +15,8 @@ import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs }
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
+import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
 
