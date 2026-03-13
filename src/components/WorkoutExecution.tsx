@@ -240,6 +240,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   useEffect(() => {
     if (day && exercises.length > 0) {
       setIsReady(true);
+      // Register workout_started micro-victory
+      const v = registerMicroVictory("workout_started");
+      if (v) toast.success(`✨ ${getVictoryMessage()}`, { duration: 2000 });
     } else if (day) {
       setExercises(day.exercicios);
       setIsReady(true);
