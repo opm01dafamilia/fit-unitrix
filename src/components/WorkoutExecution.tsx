@@ -399,12 +399,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     toast.success("Série removida");
   };
 
+  // Track swap key to force remount of visual components
+  const [swapKey, setSwapKey] = useState(0);
+
   const swapExercise = (newName: string) => {
+    // Preload GIF for new exercise immediately
+    fetchExerciseGifByName(newName);
+    
     setExercises(prev => {
       const updated = [...prev];
       updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
       return updated;
     });
+    setSwapKey(k => k + 1); // Force remount of ExerciseAnimation and MuscleBodyMap
     setShowAlternatives(false);
     toast.success(`Exercício trocado para ${newName}`);
   };
