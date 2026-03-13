@@ -470,8 +470,8 @@ const Ranking = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-lg bg-secondary/50 w-fit">
-        {([["ranking", "🏆 Global"], ["weekly", "📅 Semanal"], ["challenges", "⚡ Desafios"]] as [typeof tab, string][]).map(([key, label]) => (
+      <div className="flex gap-1 p-1 rounded-lg bg-secondary/50 w-fit flex-wrap">
+        {([["ranking", "🏆 Global"], ["weekly", "📅 Semanal"], ["city", "📍 Cidade"], ["challenges", "⚡ Desafios"]] as [typeof tab, string][]).map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={`px-4 py-2 text-xs font-medium rounded-md transition-all ${tab === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {label}
@@ -481,6 +481,62 @@ const Ranking = () => {
 
       {tab === "ranking" && renderRankingList(rankings, "total_xp", "Top 100 — Ranking Global")}
       {tab === "weekly" && renderRankingList(weeklyRankings, "weekly_xp", "Ranking da Semana")}
+
+      {tab === "city" && (
+        <div className="space-y-4">
+          {!userCity ? (
+            <div className="glass-card p-6 text-center">
+              <MapPin className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-2">Cadastre sua cidade no perfil para ver o ranking local.</p>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = "/perfil"}>
+                Editar Perfil
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* City position card */}
+              {userCityPosition && (
+                <div className="glass-card p-5 border-primary/15 bg-primary/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">
+                          🔥 Você está em <span className="text-primary font-bold">#{userCityPosition}</span> em {userCity}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">{cityRankings.length} competidores na sua cidade</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+                      const text = `💪 Estou em #${userCityPosition} no ranking fitness de ${userCity}! Vem competir comigo no FitPulse!`;
+                      if (navigator.share) {
+                        navigator.share({ title: "FitPulse Ranking", text }).catch(() => {});
+                      } else {
+                        navigator.clipboard.writeText(text);
+                        toast.success("Texto copiado para compartilhar!");
+                      }
+                    }}>
+                      <Share2 className="w-3.5 h-3.5" />
+                      Compartilhar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {renderRankingList(cityRankings, "total_xp", `Ranking — ${userCity}`)}
+
+              {cityRankings.length === 0 && (
+                <div className="glass-card p-6 text-center">
+                  <MapPin className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Nenhum competidor na sua cidade ainda. Convide amigos!</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {tab === "challenges" && (
         <div className="space-y-4">
