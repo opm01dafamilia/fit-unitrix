@@ -48,6 +48,8 @@ const Ranking = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userXP, setUserXP] = useState(0);
   const [previousRank, setPreviousRank] = useState(0);
+  const [userGlobalPosition, setUserGlobalPosition] = useState<number | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<{ userId: string; userName: string } | null>(null);
 
   const computeAndSaveStats = async () => {
     if (!user) return;
