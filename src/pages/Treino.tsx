@@ -911,6 +911,75 @@ const Treino = () => {
             </div>
           )}
 
+          {/* Muscle Fatigue Alert */}
+          {fatigueSummary && fatigueSummary.fatigued.length > 0 && (
+            <TooltipProvider>
+              <div className="glass-card p-4 lg:p-5 border border-amber-500/15 animate-fade-in">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center shrink-0">
+                    <span className="text-lg">⚠️</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      Fadiga Muscular Detectada
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-[9px] uppercase tracking-wider text-amber-400 font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/15 cursor-help">
+                            Proteção
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs max-w-[200px]">Consistência é mais importante que intensidade. O sistema protege seus músculos automaticamente.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Seus músculos precisam recuperar. Vamos ajustar o treino para manter evolução sem risco.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {fatigueSummary.fatigued.map(f => (
+                    <span key={f.group} className={`text-[10px] font-medium px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                      f.level === "extreme"
+                        ? "bg-destructive/10 text-destructive border border-destructive/15"
+                        : "bg-amber-500/10 text-amber-400 border border-amber-500/15"
+                    }`}>
+                      {f.emoji} {f.group} — {f.label}
+                      <span className="text-muted-foreground">({f.weeklysets}/{f.maxWeeklySets} séries)</span>
+                    </span>
+                  ))}
+                </div>
+                {fatigueSummary.adjustment && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {fatigueSummary.adjustment.setsReduction > 0 && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                        ↓ Séries -{Math.round(fatigueSummary.adjustment.setsReduction * 100)}%
+                      </span>
+                    )}
+                    {fatigueSummary.adjustment.loadReduction > 0 && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                        ↓ Carga -{Math.round(fatigueSummary.adjustment.loadReduction * 100)}%
+                      </span>
+                    )}
+                    {fatigueSummary.adjustment.restIncrease > 0 && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                        ↑ Descanso +{fatigueSummary.adjustment.restIncrease}s
+                      </span>
+                    )}
+                    {fatigueSummary.adjustment.blockHeavy && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive">
+                        🚫 Treino pesado bloqueado
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                  <p className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</p>
+                </div>
+              </div>
+            </TooltipProvider>
+
           {/* Next Workout Hero Card */}
           {nextWorkout && (
             <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
