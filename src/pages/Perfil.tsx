@@ -167,6 +167,18 @@ const Perfil = () => {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Cidade *</label>
+            <Input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Ex: São Paulo" className="bg-secondary/50 border-border/50" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Estado</label>
+            <Input value={estado} onChange={(e) => setEstado(e.target.value)} placeholder="Ex: SP" className="bg-secondary/50 border-border/50" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">País</label>
+            <Input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="Ex: Brasil" className="bg-secondary/50 border-border/50" />
+          </div>
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
