@@ -794,8 +794,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               </p>
             </div>
           </div>
-          <span className="text-xs font-bold text-primary">{progress}%</span>
-        </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-primary">{progress}%</span>
+            {cycleStatus && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/15">
+                {cycleStatus.phaseEmoji} {cycleStatus.phaseLabel}
+              </span>
+            )}
+          </div>
         {/* Full-width progress bar */}
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
