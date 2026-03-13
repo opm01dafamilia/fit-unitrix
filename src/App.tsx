@@ -31,6 +31,7 @@ const InviteLanding = lazy(() => import("./pages/InviteLanding"));
 const PerfilFitness = lazy(() => import("./pages/PerfilFitness"));
 const MinhaLiga = lazy(() => import("./pages/MinhaLiga"));
 const EvolucaoTreino = lazy(() => import("./pages/EvolucaoTreino"));
+const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
