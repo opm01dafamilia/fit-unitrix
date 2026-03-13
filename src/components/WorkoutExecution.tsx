@@ -630,6 +630,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
       setSessionSummary(summary);
       setShowCompletion(true);
+      // Register workout_completed micro-victory
+      registerMicroVictory("workout_completed");
+      registerMicroVictory("exercise_completed"); // last exercise
     } catch {
       toast.error("Erro ao salvar sessão");
     }
