@@ -24,6 +24,7 @@ const AnaliseCorporal = lazy(() => import("./pages/AnaliseCorporal"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Comunidade = lazy(() => import("./pages/Comunidade"));
 const Desafios = lazy(() => import("./pages/Desafios"));
+const Temporadas = lazy(() => import("./pages/Temporadas"));
 const Convites = lazy(() => import("./pages/Convites"));
 const Amigos = lazy(() => import("./pages/Amigos"));
 const InviteLanding = lazy(() => import("./pages/InviteLanding"));
