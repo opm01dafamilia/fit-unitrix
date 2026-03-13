@@ -207,44 +207,92 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   // Rest timer - wall-clock based to prevent drift, works in background
   const restEndTimeRef = useRef<number | null>(null);
   const restPausedAtRef = useRef<number>(0);
+  const restDoneTriggered = useRef(false);
+  const [restDoneFlash, setRestDoneFlash] = useState(false);
+
+  // Premium alert system
+  const playRestDoneAlert = useCallback(() => {
+    // 1. Strong vibration pattern: long-short-long-short-long
+    try {
+      if (navigator.vibrate) {
+        navigator.vibrate([300, 150, 300, 150, 400]);
+      }
+    } catch {}
+
+    // 2. Multi-tone ascending alert sound (louder, longer, more distinct)
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const playTone = (freq: number, startTime: number, duration: number, vol: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+        gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + startTime + 0.05);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + startTime + duration - 0.1);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + startTime + duration);
+        osc.start(ctx.currentTime + startTime);
+        osc.stop(ctx.currentTime + startTime + duration);
+      };
+      // 3-note ascending chime: C5 → E5 → G5, then repeat higher
+      playTone(523, 0, 0.25, 0.5);       // C5
+      playTone(659, 0.3, 0.25, 0.5);     // E5
+      playTone(784, 0.6, 0.35, 0.6);     // G5
+      // Second phrase - higher, more urgent
+      playTone(784, 1.1, 0.2, 0.5);      // G5
+      playTone(988, 1.35, 0.2, 0.5);     // B5
+      playTone(1047, 1.6, 0.5, 0.65);    // C6 (sustained)
+    } catch {}
+
+    // 3. Visual flash effect
+    setRestDoneFlash(true);
+    setTimeout(() => setRestDoneFlash(false), 2000);
+  }, []);
 
   useEffect(() => {
     if (phase === "resting" && !restPaused && restTime > 0) {
+      restDoneTriggered.current = false;
       if (!restEndTimeRef.current) {
         restEndTimeRef.current = Date.now() + restTime * 1000;
       }
       restIntervalRef.current = setInterval(() => {
         const remaining = Math.max(0, Math.ceil((restEndTimeRef.current! - Date.now()) / 1000));
         setRestTime(remaining);
-        if (remaining <= 0) {
+        if (remaining <= 0 && !restDoneTriggered.current) {
+          restDoneTriggered.current = true;
           clearInterval(restIntervalRef.current!);
           restEndTimeRef.current = null;
           setPhase("rest-done");
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-          try {
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.frequency.value = 880; gain.gain.value = 0.3;
-            osc.start(); osc.stop(ctx.currentTime + 0.5);
-            setTimeout(() => {
-              const osc2 = ctx.createOscillator();
-              const gain2 = ctx.createGain();
-              osc2.connect(gain2); gain2.connect(ctx.destination);
-              osc2.frequency.value = 1100; gain2.gain.value = 0.3;
-              osc2.start(); osc2.stop(ctx.currentTime + 0.3);
-            }, 600);
-          } catch {}
+          playRestDoneAlert();
         }
-      }, 250); // 250ms for smoother updates
+      }, 250);
     } else if (phase === "resting" && restPaused) {
-      // Paused: save remaining time
       restPausedAtRef.current = restTime;
       restEndTimeRef.current = null;
     }
     return () => { if (restIntervalRef.current) clearInterval(restIntervalRef.current); };
-  }, [phase, restPaused]);
+  }, [phase, restPaused, playRestDoneAlert]);
+
+  // Keep timer alive when navigating within app (visibility change handler)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && restEndTimeRef.current && phase === "resting" && !restPaused) {
+        const remaining = Math.max(0, Math.ceil((restEndTimeRef.current - Date.now()) / 1000));
+        setRestTime(remaining);
+        if (remaining <= 0 && !restDoneTriggered.current) {
+          restDoneTriggered.current = true;
+          if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+          restEndTimeRef.current = null;
+          setPhase("rest-done");
+          playRestDoneAlert();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [phase, restPaused, playRestDoneAlert]);
 
   function parseRestTime(descanso: string): number {
     if (!descanso || descanso === "—") return 60;
@@ -963,18 +1011,20 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== REST DONE ALERT ===== */}
+      {/* ===== REST DONE ALERT (enhanced) ===== */}
       {phase === "rest-done" && (
-        <div className="glass-card p-5 glow-border animate-scale-in border border-primary/30">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-pulse">
-              <Zap className="w-8 h-8 text-primary" />
+        <div className={`glass-card p-6 animate-scale-in border-2 border-primary/40 relative overflow-hidden ${restDoneFlash ? 'shadow-[0_0_40px_hsl(var(--primary)/0.3)]' : ''}`}>
+          {/* Animated glow background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent animate-pulse" />
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mb-4 shadow-[0_0_30px_hsl(var(--primary)/0.25)] animate-bounce" style={{ animationDuration: '1.5s' }}>
+              <Zap className="w-10 h-10 text-primary" />
             </div>
-            <h3 className="font-display font-bold text-lg">⏰ Descanso Finalizado!</h3>
-            <p className="text-sm text-muted-foreground mt-1">Prepare-se para a próxima série 💪</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Série {currentSets.length + 1} de {targetSeries}</p>
-            <Button onClick={() => setPhase("input")} className="mt-4 h-12 px-8 text-base font-semibold">
-              <Play className="w-4 h-4 mr-2" /> Registrar Série
+            <h3 className="font-display font-bold text-xl">Descanso Finalizado!</h3>
+            <p className="text-base text-primary font-semibold mt-1">Hora da próxima série 💪</p>
+            <p className="text-sm text-muted-foreground mt-1">Série {currentSets.length + 1} de {targetSeries}</p>
+            <Button onClick={() => { setPhase("input"); setRestDoneFlash(false); }} className="mt-5 h-14 px-10 text-lg font-bold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+              <Play className="w-5 h-5 mr-2" /> Registrar Série
             </Button>
           </div>
         </div>
