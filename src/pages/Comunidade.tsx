@@ -320,9 +320,32 @@ const Comunidade = () => {
         </div>
       </div>
 
-      {/* Activity Feed */}
+      {/* Filter Tabs + Feed */}
       <div>
-        <h3 className="font-display font-semibold text-base mb-4">Feed de Atividades</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => { setFeedFilter("global"); setActivities([]); setHasMore(true); }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              feedFilter === "global"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-secondary/40 text-muted-foreground border border-border/20 hover:bg-secondary/60"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            Global
+          </button>
+          <button
+            onClick={() => { setFeedFilter("friends"); setActivities([]); setHasMore(true); }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              feedFilter === "friends"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-secondary/40 text-muted-foreground border border-border/20 hover:bg-secondary/60"
+            }`}
+          >
+            <UserCheck className="w-4 h-4" />
+            Amigos
+          </button>
+        </div>
         {activities.length > 0 ? (
           <div className="space-y-3">
             {activities.map(activity => (
