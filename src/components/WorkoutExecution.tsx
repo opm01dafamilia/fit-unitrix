@@ -175,6 +175,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const stretching = useMemo(() => getStretchingForDay(day?.grupo || ""), [day?.grupo]);
   const cardioRec = useMemo(() => getCardioRecommendation(objective), [objective]);
 
+  // Smart cardio for this specific day
+  const isLegDay = useMemo(() => {
+    const g = day?.grupo?.toLowerCase() || "";
+    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo");
+  }, [day?.grupo]);
+  
+  const smartCardio = useMemo(() => {
+    return getSmartCardio(objective, experienceLevel, (day as any)?.intensidade, isLegDay, "daily");
+  }, [objective, experienceLevel, day, isLegDay]);
+
   // Assign intensity techniques once when exercises are ready
   useEffect(() => {
     if (exercises.length > 0) {
