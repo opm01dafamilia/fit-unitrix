@@ -16,6 +16,7 @@ import { getAlternatives, getStretchingForDay, getCardioRecommendation, getSmart
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
 import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
+import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
@@ -57,6 +58,7 @@ type Props = {
   trainingLocation?: string;
   objective?: string;
   cycleStatus?: CycleStatus;
+  comebackStatus?: ComebackStatus;
   onFinish: () => void;
   onBack: () => void;
 };
@@ -113,7 +115,7 @@ const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   );
 };
 
-export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, cycleStatus, onFinish, onBack }: Props) {
+export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, cycleStatus, comebackStatus, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
   const day = useMemo(() => planData[dayIndex], [planData, dayIndex]);
   const [isReady, setIsReady] = useState(false);
@@ -882,7 +884,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-primary">{progress}%</span>
-            {cycleStatus && (
+            {comebackStatus?.isInComebackMode && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-chart-2/10 text-chart-2 border border-chart-2/15">
+                🔥 Retomada
+              </span>
+            )}
+            {cycleStatus && !comebackStatus?.isInComebackMode && (
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/15">
                 {cycleStatus.phaseEmoji} {cycleStatus.phaseLabel}
               </span>

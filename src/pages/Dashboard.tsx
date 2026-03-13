@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
-import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
+import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
+import { getComebackStatus } from "@/lib/comebackEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -185,6 +186,17 @@ const Dashboard = () => {
 
   const hasData = bodyRecords.length > 0 || goals.length > 0 || workoutPlans.length > 0;
 
+  // Comeback mode detection for dashboard alert
+  const comebackAlert = (() => {
+    if (sessions.length === 0 || workoutPlans.length === 0) return null;
+    const daysPerWeek = workoutPlans[0]?.days_per_week || 4;
+    const status = getComebackStatus(
+      sessions.map((s: any) => ({ completed_at: s.completed_at })),
+      daysPerWeek
+    );
+    return status.dashboardAlert ? status : null;
+  })();
+
   if (loading) return <DashboardSkeleton />;
 
   return (
@@ -196,6 +208,25 @@ const Dashboard = () => {
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
+
+      {/* Comeback Alert */}
+      {comebackAlert && comebackAlert.dashboardAlert && (
+        <div className="glass-card p-4 lg:p-5 border border-primary/20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
+          <div className="relative z-10 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center shrink-0">
+              <Heart className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold">⚠️ {comebackAlert.dashboardAlert}</p>
+              <p className="text-[10px] text-muted-foreground mt-1 italic">💡 Consistência é mais importante que intensidade.</p>
+            </div>
+            <button onClick={() => navigate("/treino")} className="text-xs text-primary font-medium shrink-0 hover:underline">
+              Ir para treino →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* User Progress Indicator */}
       <div className="glass-card p-4 lg:p-5">

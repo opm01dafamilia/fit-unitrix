@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
 import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
 import { getCycleStatus, buildEvolutionTimeline, checkOvertrain, type CycleStatus, type EvolutionEntry } from "@/lib/progressionCycleEngine";
+import { getComebackStatus, getComebackProgress, getComebackFeedback, type ComebackStatus } from "@/lib/comebackEngine";
 
 type WorkoutSession = {
   id: string;
@@ -72,6 +73,8 @@ const Treino = () => {
   const [focusDay, setFocusDay] = useState<any | null>(null);
   const [cycleStatus, setCycleStatus] = useState<CycleStatus | null>(null);
   const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
+  const [comebackStatus, setComebackStatus] = useState<ComebackStatus | null>(null);
+  const [comebackWorkouts, setComebackWorkouts] = useState(0);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
@@ -206,6 +209,17 @@ const Treino = () => {
   // Active plan (most recent)
   const activePlan = savedPlans[0];
   const activePlanData = activePlan ? (activePlan.plan_data as any[]) : null;
+
+  // Comeback mode detection
+  useEffect(() => {
+    if (!activePlan || loadingSessions) return;
+    const status = getComebackStatus(
+      sessions.map(s => ({ completed_at: s.completed_at })),
+      activePlan.days_per_week,
+      comebackWorkouts
+    );
+    setComebackStatus(status);
+  }, [sessions, activePlan, loadingSessions, comebackWorkouts]);
 
   // Cycle status + evolution timeline
   useEffect(() => {
@@ -460,25 +474,34 @@ const Treino = () => {
         trainingLocation={profile?.training_location || undefined}
         objective={profile?.objective || undefined}
         cycleStatus={cycleStatus || undefined}
+        comebackStatus={comebackStatus || undefined}
         onFinish={async () => {
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
           const newSessions = (data as WorkoutSession[]) || [];
           setSessions(newSessions);
           
-          // Motivational message with streak info
-          const uniqueDays = [...new Set(newSessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
-          let newStreak = 0;
-          const today = format(new Date(), "yyyy-MM-dd");
-          const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-          if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
-            for (let i = 0; i < uniqueDays.length; i++) {
-              const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
-              if (uniqueDays[i] === expected) newStreak++;
-              else break;
+          // Track comeback progress
+          if (comebackStatus?.isInComebackMode) {
+            const newCount = comebackWorkouts + 1;
+            setComebackWorkouts(newCount);
+            const feedback = getComebackFeedback(comebackStatus.daysSinceLastWorkout, newCount);
+            toast.success(`${feedback.emoji} ${feedback.title}`, { description: feedback.description, duration: 5000 });
+          } else {
+            // Normal motivational message with streak info
+            const uniqueDays = [...new Set(newSessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
+            let newStreak = 0;
+            const today = format(new Date(), "yyyy-MM-dd");
+            const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+            if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+              for (let i = 0; i < uniqueDays.length; i++) {
+                const expected = format(subDays(new Date(), i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+                if (uniqueDays[i] === expected) newStreak++;
+                else break;
+              }
             }
+            const msg = getMotivationalMessage(newStreak);
+            toast.success(`${msg.emoji} ${msg.text}`, { description: msg.streakText, duration: 5000 });
           }
-          const msg = getMotivationalMessage(newStreak);
-          toast.success(`${msg.emoji} ${msg.text}`, { description: msg.streakText, duration: 5000 });
           
           setView("dashboard");
         }}
@@ -806,6 +829,74 @@ const Treino = () => {
                 <Button onClick={() => startWorkout(activePlan, inProgressDay)} className="h-11 px-6 font-semibold bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0">
                   <Play className="w-4 h-4 mr-2" /> Continuar
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Comeback Mode Banner */}
+          {comebackStatus && comebackStatus.level === "comeback" && comebackStatus.isInComebackMode && (
+            <div className="glass-card p-5 relative overflow-hidden border border-primary/20 animate-fade-in">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5" />
+              <div className="relative z-10">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center shadow-lg shrink-0">
+                    <span className="text-2xl">🔥</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      Modo Retomada
+                      <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Ativo</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {comebackStatus.message}
+                    </p>
+                  </div>
+                </div>
+                {/* Comeback progress */}
+                {(() => {
+                  const progress = getComebackProgress(comebackWorkouts, comebackStatus.comebackDaysRemaining + comebackWorkouts);
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[11px] text-muted-foreground">Progresso de retomada</span>
+                        <span className="text-[11px] font-bold text-primary">{progress.workoutsCompleted}/{progress.workoutsNeeded} treinos</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700" style={{ width: `${progress.progressPct}%` }} />
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                {/* Adjustments summary */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                    ↓ Volume -{Math.round(comebackStatus.volumeReduction * 100)}%
+                  </span>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                    ↓ Intensidade reduzida
+                  </span>
+                  {comebackStatus.cardioReduction && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                      🚶 Cardio leve apenas
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Alert Level (light warning, not comeback) */}
+          {comebackStatus && comebackStatus.level === "alert" && (
+            <div className="glass-card p-4 border border-amber-500/15">
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{comebackStatus.messageEmoji}</span>
+                <div>
+                  <p className="text-sm font-medium">{comebackStatus.message}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 italic">{comebackStatus.tooltip}</p>
+                </div>
               </div>
             </div>
           )}
