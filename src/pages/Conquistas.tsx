@@ -3,7 +3,7 @@ import { Trophy, Lock, Flame, TrendingUp, Dumbbell, ArrowLeft, Star, Sparkles, C
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ConquistasSkeleton } from "@/components/skeletons/SkeletonPremium";
 import {
   calculateAchievements, calculateTotalXP, getRankForXP, getNextRank,
   getNextPhaseProgress, getCurrentPhase, getLegendaryAchievements,
