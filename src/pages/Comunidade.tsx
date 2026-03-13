@@ -98,9 +98,15 @@ const Comunidade = () => {
         comments: commentsMap.get(a.id) || [],
       }));
 
+      // Filter by tab
+      let filtered = mapped;
+      if (feedFilter === "friends" && user) {
+        filtered = mapped.filter(a => friendIds.includes(a.user_id) || a.user_id === user.id);
+      }
+
       // Sort: friends first, then same city, then global
-      if (user) {
-        mapped.sort((a, b) => {
+      if (user && feedFilter === "global") {
+        filtered.sort((a, b) => {
           const aFriend = friendIds.includes(a.user_id) || a.user_id === user.id;
           const bFriend = friendIds.includes(b.user_id) || b.user_id === user.id;
           if (aFriend && !bFriend) return -1;
