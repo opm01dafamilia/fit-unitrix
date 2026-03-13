@@ -14,6 +14,7 @@ import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
+import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
 
@@ -53,6 +54,7 @@ type Props = {
   experienceLevel?: string;
   trainingLocation?: string;
   objective?: string;
+  cycleStatus?: CycleStatus;
   onFinish: () => void;
   onBack: () => void;
 };
@@ -109,7 +111,7 @@ const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   );
 };
 
-export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
+export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, cycleStatus, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
   const day = useMemo(() => planData[dayIndex], [planData, dayIndex]);
   const [isReady, setIsReady] = useState(false);
@@ -206,13 +208,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     loadHistory();
   }, [userId, exercises, experienceLevel]);
 
-  // Pre-fill recommended weight
+  // Pre-fill recommended weight with cycle adjustments
   useEffect(() => {
     const prog = progressions[currentEx.nome];
     if (prog && prog.feedback !== "first_time" && !inputKg) {
-      setInputKg(String(prog.recommendedWeight));
+      let weight = prog.recommendedWeight;
+      // Apply cycle multiplier if available
+      if (cycleStatus && weight > 0) {
+        weight = Math.round(weight * cycleStatus.loadMultiplier * 2) / 2;
+      }
+      setInputKg(String(weight));
     }
-  }, [currentExIndex, progressions, currentEx.nome]);
+  }, [currentExIndex, progressions, currentEx.nome, cycleStatus]);
 
   // Workout timer - wall-clock based to prevent drift
   const workoutStartRef = useRef(Date.now());
@@ -787,7 +794,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               </p>
             </div>
           </div>
-          <span className="text-xs font-bold text-primary">{progress}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-primary">{progress}%</span>
+            {cycleStatus && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/15">
+                {cycleStatus.phaseEmoji} {cycleStatus.phaseLabel}
+              </span>
+            )}
+          </div>
         </div>
         {/* Full-width progress bar */}
         <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -850,7 +864,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
-              Peso recomendado: {currentProgression.recommendedWeight} kg
+              Peso recomendado: {cycleStatus && currentProgression.recommendedWeight > 0
+                ? Math.round(currentProgression.recommendedWeight * cycleStatus.loadMultiplier * 2) / 2
+                : currentProgression.recommendedWeight
+              } kg
+              {cycleStatus && cycleStatus.phase !== "adaptacao" && currentProgression.recommendedWeight > 0 && (
+                <span className="text-[9px] opacity-70 ml-1">({cycleStatus.phaseEmoji} {cycleStatus.phaseLabel})</span>
+              )}
             </div>
           )}
         </div>

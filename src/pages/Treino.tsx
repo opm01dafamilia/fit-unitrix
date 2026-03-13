@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { calculateAchievements, getMotivationalMessage, type UserStats } from "@
 import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
 import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
+import { getCycleStatus, buildEvolutionTimeline, checkOvertrain, type CycleStatus, type EvolutionEntry } from "@/lib/progressionCycleEngine";
 
 type WorkoutSession = {
   id: string;
@@ -69,6 +70,8 @@ const Treino = () => {
   // Weekly evolution
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
   const [focusDay, setFocusDay] = useState<any | null>(null);
+  const [cycleStatus, setCycleStatus] = useState<CycleStatus | null>(null);
+  const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
@@ -140,6 +143,9 @@ const Treino = () => {
     fetchWeeklyEvolution();
   }, [user, loadingSessions, sessions]);
 
+
+
+
   // Streak calculation
   const streak = useMemo(() => {
     if (sessions.length === 0) return 0;
@@ -201,7 +207,30 @@ const Treino = () => {
   const activePlan = savedPlans[0];
   const activePlanData = activePlan ? (activePlan.plan_data as any[]) : null;
 
-  // Next workout day
+  // Cycle status + evolution timeline
+  useEffect(() => {
+    if (!activePlan || !user || loadingSessions) return;
+    const status = getCycleStatus(activePlan.created_at);
+    setCycleStatus(status);
+
+    const fetchTimeline = async () => {
+      const { data: histData } = await supabase
+        .from("exercise_history")
+        .select("weight, reps, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      const timeline = buildEvolutionTimeline(
+        sessions.map(s => ({ completed_at: s.completed_at, exercises_completed: s.exercises_completed, exercises_total: s.exercises_total })),
+        (histData || []).map((h: any) => ({ weight: h.weight, reps: h.reps, created_at: h.created_at })),
+        activePlan.created_at,
+        6
+      );
+      setEvolutionTimeline(timeline);
+    };
+    fetchTimeline();
+  }, [activePlan, user, loadingSessions, sessions]);
+
   const nextDayIndex = useMemo(() => {
     if (!activePlanData) return 0;
     const todaySessions = sessions.filter(s => 
@@ -368,13 +397,23 @@ const Treino = () => {
       toast.info("✅ Treino de hoje concluído. Continue amanhã!", { duration: 4000 });
       return;
     }
-    // Set all execution state synchronously, then switch view
+    // Overtraining check
+    const planData = plan.plan_data as any[];
+    const targetGroup = planData[dayIndex]?.grupo || "";
+    const overtrainCheck = checkOvertrain(
+      targetGroup,
+      sessions.map(s => ({ muscle_group: s.muscle_group, completed_at: s.completed_at }))
+    );
+    if (!overtrainCheck.safe) {
+      toast.warning(`⚠️ ${overtrainCheck.warning}`, { duration: 5000 });
+      // Allow but warn — don't block
+    }
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
     setExecutionKey(k => k + 1);
     setView("execution");
-  }, [todayCompleted]);
+  }, [todayCompleted, sessions]);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
@@ -420,6 +459,7 @@ const Treino = () => {
         experienceLevel={profile?.experience_level || "intermediario"}
         trainingLocation={profile?.training_location || undefined}
         objective={profile?.objective || undefined}
+        cycleStatus={cycleStatus || undefined}
         onFinish={async () => {
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
           const newSessions = (data as WorkoutSession[]) || [];
@@ -816,6 +856,82 @@ const Treino = () => {
             </div>
           )}
 
+          {/* Cycle Progression Status */}
+          {cycleStatus && (
+            <div className="glass-card p-4 lg:p-5 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                      <span className="text-lg">{cycleStatus.phaseEmoji}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold">{cycleStatus.phaseLabel}</p>
+                        <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">
+                          Semana {cycleStatus.currentWeek}/5
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{cycleStatus.phaseDescription}</p>
+                    </div>
+                  </div>
+                  {cycleStatus.totalCycles > 0 && (
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <RotateCcw className="w-3 h-3" />
+                      <span>{cycleStatus.totalCycles}º ciclo</span>
+                    </div>
+                  )}
+                </div>
+                {/* Cycle progress dots */}
+                <div className="flex items-center gap-2 mt-3">
+                  {(["adaptacao", "aumento", "moderado", "intenso", "deload"] as const).map((phase, i) => {
+                    const isActive = i + 1 === cycleStatus.currentWeek;
+                    const isPast = i + 1 < cycleStatus.currentWeek;
+                    const labels = ["🌱", "📈", "⚡", "🔥", "🧘"];
+                    return (
+                      <div key={phase} className="flex-1 flex flex-col items-center gap-1">
+                        <div className={`w-full h-2 rounded-full transition-all ${
+                          isActive ? "bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]" :
+                          isPast ? "bg-primary/40" : "bg-muted"
+                        }`} />
+                        <span className={`text-[9px] ${isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                          {labels[i]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Adjustments summary */}
+                {cycleStatus.phase !== "adaptacao" && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {cycleStatus.loadMultiplier !== 1.0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.loadMultiplier > 1 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        {cycleStatus.loadMultiplier > 1 ? "↑" : "↓"} Carga {Math.round((cycleStatus.loadMultiplier - 1) * 100)}%
+                      </span>
+                    )}
+                    {cycleStatus.volumeAdjust !== 0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.volumeAdjust > 0 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        {cycleStatus.volumeAdjust > 0 ? "+" : ""}{cycleStatus.volumeAdjust} série
+                      </span>
+                    )}
+                    {cycleStatus.restAdjust !== 0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.restAdjust < 0 ? "bg-orange-500/10 text-orange-400" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        Descanso {cycleStatus.restAdjust > 0 ? "+" : ""}{cycleStatus.restAdjust}s
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Streak + Stats Row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="glass-card p-4 lg:p-5">
@@ -1076,6 +1192,47 @@ const Treino = () => {
               </div>
             )}
           </div>
+
+          {/* Evolution Timeline */}
+          {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
+            <div className="glass-card p-4 lg:p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                  <Activity className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Histórico de Evolução</p>
+                  <p className="text-[10px] text-muted-foreground">Últimas {evolutionTimeline.length} semanas</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {evolutionTimeline.map((entry, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-16 shrink-0">
+                      <p className="text-[10px] text-muted-foreground font-medium">{entry.weekLabel}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500" 
+                               style={{ width: `${entry.consistency}%` }} />
+                        </div>
+                        <span className="text-[10px] font-bold text-foreground w-8 text-right">{entry.consistency}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px]">{entry.phaseEmoji}</span>
+                        <span className="text-[9px] text-muted-foreground">{entry.phaseLabel}</span>
+                        {entry.avgLoad > 0 && (
+                          <span className="text-[9px] text-primary font-medium">~{entry.avgLoad}kg</span>
+                        )}
+                        <span className="text-[9px] text-muted-foreground">{entry.sessionsCount} treinos</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Calendar */}
           <div className="glass-card p-5 lg:p-6">
