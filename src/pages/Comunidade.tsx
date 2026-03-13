@@ -35,6 +35,7 @@ const Comunidade = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [friendIds, setFriendIds] = useState<string[]>([]);
   const [userCity, setUserCity] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<"global" | "friends">("global");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Load friend IDs and user city
