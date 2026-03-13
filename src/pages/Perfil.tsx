@@ -58,7 +58,10 @@ const Perfil = () => {
       weight: Number(peso),
       objective: objetivo || null,
       activity_level: atividade || null,
-    }).eq("id", profile.id);
+      city: cidade.trim() || null,
+      state: estado.trim() || null,
+      country: pais.trim() || null,
+    } as any).eq("id", profile.id);
     setSaving(false);
     if (error) toast.error("Erro ao salvar");
     else {
