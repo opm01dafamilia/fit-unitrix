@@ -99,44 +99,104 @@ export const exerciseNameSearchMap: Record<string, string> = {
   "Supino Inclinado Barra": "barbell incline bench press",
   "Supino Inclinado Máquina": "machine incline chest press",
   "Supino Smith": "smith machine bench press",
+  "Supino Máquina": "machine chest press",
+  "Supino Inclinado": "incline bench press",
+  "Supino Reto": "barbell bench press",
+  "Supino Reto Máquina": "machine chest press",
   "Peck Deck": "pec deck fly",
   "Crucifixo Inclinado": "dumbbell incline fly",
+  "Crucifixo": "dumbbell fly",
+  "Crucifixo Máquina": "pec deck fly",
+  "Cross Over": "cable crossover",
   "Barra Fixa Supinada": "chin up",
+  "Barra Fixa": "pull up",
+  "Barra Fixa com Peso": "weighted pull up",
   "Remada Alta": "barbell upright row",
   "Remada Cavaleiro": "t bar row",
   "Remada Curvada Pronada": "barbell pronated bent over row",
-  "Pullover Cabo": "cable pullover",
+  "Remada Curvada": "barbell bent over row",
+  "Remada Máquina": "machine seated row",
+  "Remada Unilateral": "dumbbell one arm row",
+  "Remada Baixa": "cable seated row",
   "Remada Invertida": "inverted row",
+  "Remada Sentado com Elástico": "resistance band seated row",
+  "Pullover Cabo": "cable pullover",
+  "Pulldown": "lat pulldown",
+  "Pulldown Pegada Fechada": "close grip lat pulldown",
   "Agachamento Smith": "smith machine squat",
+  "Agachamento Livre": "barbell full squat",
+  "Agachamento Búlgaro": "dumbbell bulgarian split squat",
+  "Agachamento Goblet": "dumbbell goblet squat",
+  "Agachamento Isométrico": "wall sit",
+  "Agachamento com Mochila": "bodyweight squat",
   "Avanço": "dumbbell lunge",
   "Flexão de Pernas em Pé": "standing leg curl",
   "Boa Manhã": "barbell good morning",
   "Levantamento Terra": "barbell deadlift",
   "Hack Squat": "hack squat",
   "Panturrilha no Leg Press": "calf press on leg press",
+  "Panturrilha em Pé": "standing calf raise",
+  "Panturrilha Sentado": "seated calf raise",
+  "Elevação de Panturrilha": "standing calf raise",
   "Extensão de Pernas": "leg extension",
-  "Agachamento Isométrico": "wall sit",
+  "Cadeira Extensora": "leg extension",
+  "Mesa Flexora": "lying leg curl",
+  "Stiff": "barbell stiff leg deadlift",
+  "Stiff Unilateral": "single leg deadlift",
   "Elevação Pélvica": "barbell hip thrust",
+  "Leg Press": "leg press",
+  "Leg Press 45°": "leg press",
   "Desenvolvimento Halteres": "dumbbell shoulder press",
+  "Desenvolvimento Militar": "barbell overhead press",
+  "Desenvolvimento Arnold": "dumbbell arnold press",
+  "Desenvolvimento Máquina": "machine shoulder press",
+  "Elevação Lateral": "dumbbell lateral raise",
   "Elevação Lateral Cabo": "cable lateral raise",
   "Elevação Lateral Máquina": "machine lateral raise",
-  "Crucifixo Inverso": "reverse machine fly",
-  "Elevação Frontal com Barra": "barbell front raise",
+  "Elevação Frontal": "dumbbell front raise",
   "Elevação Frontal Alternada": "dumbbell alternate front raise",
+  "Elevação Frontal com Barra": "barbell front raise",
+  "Crucifixo Inverso": "reverse machine fly",
+  "Face Pull": "cable face pull",
+  "Rosca Direta": "barbell curl",
   "Rosca Alternada": "dumbbell alternate bicep curl",
   "Rosca Concentrada": "dumbbell concentration curl",
   "Rosca Direta Barra": "ez bar curl",
+  "Rosca Martelo": "dumbbell hammer curl",
+  "Rosca Scott": "barbell preacher curl",
   "Tríceps Francês": "dumbbell overhead triceps extension",
   "Tríceps Barra": "cable straight bar pushdown",
   "Tríceps Banco": "bench dip",
+  "Tríceps Corda": "cable rope pushdown",
+  "Tríceps Testa": "barbell lying triceps extension",
+  "Mergulho Paralelas": "dips",
+  "Mergulho em Cadeiras": "bench dip",
+  "Prancha Frontal": "front plank",
   "Prancha Lateral": "side plank",
   "Prancha Dinâmica": "dynamic plank",
+  "Abdominal Crunch": "crunch",
+  "Abdominal Bicicleta": "bicycle crunch",
   "Abdominal Infra": "reverse crunch",
   "Abdominal na Roldana": "cable crunch",
+  "Elevação de Pernas": "lying leg raise",
   "Dragon Flag": "dragon flag",
   "Pike Push-Up": "pike push up",
   "Remada com Elástico": "resistance band bent over row",
   "Ponte de Glúteo": "glute bridge",
+  "Rosca com Galão": "dumbbell curl",
+  "Flexão com Elástico": "push up",
+  "Pike Push-Up com Rotação": "pike push up",
+  "Elevação Lateral com Garrafas": "dumbbell lateral raise",
+  "Elevação Frontal com Garrafas": "dumbbell front raise",
+  "Rosca Martelo com Galão": "dumbbell hammer curl",
+  "Tríceps no Banco": "bench dip",
+  "Remada Unilateral com Galão": "dumbbell one arm row",
+  "Remada Invertida Supinada": "inverted row",
+  "Remada Invertida Pronada": "inverted row",
+  "Pullover com Galão": "dumbbell pullover",
+  "Abdominal com Toalha": "ab wheel rollout",
+  "Face Pull com Elástico": "face pull",
+  "Remada com Galão de Água": "dumbbell bent over row",
 };
 
 interface CachedGif {
@@ -243,11 +303,58 @@ export async function fetchExerciseGifByName(exerciseName: string): Promise<stri
   if (cache[cacheKey]) return cache[cacheKey].gifUrl;
 
   const searchTerm = exerciseNameSearchMap[exerciseName];
-  if (!searchTerm) return null;
+  if (!searchTerm) {
+    // Fallback: try generic search with the exercise name itself
+    return fetchExerciseGifGeneric(exerciseName);
+  }
 
   if (pendingRequests.has(cacheKey)) {
     return pendingRequests.get(cacheKey)!;
   }
+
+  const promise = fetchFromAPI(searchTerm, cacheKey).then(async (url) => {
+    if (url) return url;
+    // Retry with generic name search as fallback
+    return fetchExerciseGifGeneric(exerciseName);
+  }).finally(() => {
+    pendingRequests.delete(cacheKey);
+  });
+  pendingRequests.set(cacheKey, promise);
+  return promise;
+}
+
+/**
+ * Generic fallback: search ExerciseDB with simplified exercise name
+ */
+async function fetchExerciseGifGeneric(exerciseName: string): Promise<string | null> {
+  const cacheKey = `generic_${exerciseName}`;
+  const cache = getCache();
+  if (cache[cacheKey]) return cache[cacheKey].gifUrl;
+
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey)!;
+  }
+
+  // Simplify Portuguese name to English keywords
+  const simplified = exerciseName
+    .toLowerCase()
+    .replace(/á|à|ã|â/g, 'a').replace(/é|ê/g, 'e').replace(/í/g, 'i')
+    .replace(/ó|ô|õ/g, 'o').replace(/ú/g, 'u').replace(/ç/g, 'c');
+  
+  const keywordMap: Record<string, string> = {
+    'supino': 'bench press', 'flexao': 'push up', 'agachamento': 'squat',
+    'rosca': 'curl', 'triceps': 'triceps', 'remada': 'row',
+    'elevacao': 'raise', 'prancha': 'plank', 'abdominal': 'crunch',
+    'desenvolvimento': 'shoulder press', 'crucifixo': 'fly',
+    'pulldown': 'pulldown', 'leg press': 'leg press', 'stiff': 'deadlift',
+    'panturrilha': 'calf raise', 'mergulho': 'dip', 'barra fixa': 'pull up',
+  };
+
+  let searchTerm = '';
+  for (const [pt, en] of Object.entries(keywordMap)) {
+    if (simplified.includes(pt)) { searchTerm = en; break; }
+  }
+  if (!searchTerm) return null;
 
   const promise = fetchFromAPI(searchTerm, cacheKey).finally(() => {
     pendingRequests.delete(cacheKey);

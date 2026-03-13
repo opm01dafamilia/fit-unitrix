@@ -50,25 +50,32 @@ type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoaded(false);
+    setError(false);
+    setGifUrl(null);
     fetchExerciseGifByName(name).then(url => {
-      if (!cancelled) setGifUrl(url);
+      if (!cancelled) {
+        if (url) setGifUrl(url);
+        else setError(true);
+      }
     });
     return () => { cancelled = true; };
   }, [name]);
 
-  if (gifUrl) {
+  if (gifUrl && !error) {
     return (
-      <>
+      <div className="relative w-full h-full" style={{ aspectRatio: "1/1" }}>
         <img
           src={gifUrl}
           alt={name}
           className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px", aspectRatio: "1/1" }}
+          style={{ objectFit: "contain", padding: "2px" }}
           onLoad={() => setLoaded(true)}
-          onError={() => setGifUrl(null)}
+          onError={() => { setGifUrl(null); setError(true); }}
           loading="lazy"
           decoding="async"
         />
@@ -77,7 +84,7 @@ const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
         )}
-      </>
+      </div>
     );
   }
 
@@ -392,12 +399,19 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     toast.success("Série removida");
   };
 
+  // Track swap key to force remount of visual components
+  const [swapKey, setSwapKey] = useState(0);
+
   const swapExercise = (newName: string) => {
+    // Preload GIF for new exercise immediately
+    fetchExerciseGifByName(newName);
+    
     setExercises(prev => {
       const updated = [...prev];
       updated[currentExIndex] = { ...updated[currentExIndex], nome: newName };
       return updated;
     });
+    setSwapKey(k => k + 1); // Force remount of ExerciseAnimation and MuscleBodyMap
     setShowAlternatives(false);
     toast.success(`Exercício trocado para ${newName}`);
   };
@@ -766,7 +780,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
         <div className="relative z-10 flex flex-col items-center w-full">
           {libraryExercise ? (
-            <ExerciseAnimation exercise={libraryExercise} size="lg" className="mb-3" />
+            <ExerciseAnimation key={`anim-${currentExIndex}-${swapKey}`} exercise={libraryExercise} size="lg" className="mb-3" />
           ) : (
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
               <Dumbbell className="w-10 h-10 text-primary" />
@@ -801,7 +815,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
           </h3>
           <div className="flex flex-row items-center gap-4">
-            <MuscleBodyMap highlightedMuscles={libraryExercise.musculosDestacados} />
+            <MuscleBodyMap key={`muscles-${currentExIndex}-${swapKey}`} highlightedMuscles={libraryExercise.musculosDestacados} />
             <div className="flex-1 min-w-0 space-y-2">
               <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
                 <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
