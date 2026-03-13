@@ -893,7 +893,9 @@ const Dieta = () => {
     try {
       const { error } = await supabase.from("diet_plans").delete().eq("id", id);
       if (error) throw error;
-      setSavedPlans(savedPlans.filter((p) => p.id !== id));
+      const updated = savedPlans.filter((p) => p.id !== id);
+      setSavedPlans(updated);
+      writeCache(CACHE_KEYS.dietPlans(user!.id), updated);
       if (viewingSaved?.id === id) setViewingSaved(null);
       toast.success("Plano excluído");
     } catch {
