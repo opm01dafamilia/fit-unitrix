@@ -77,6 +77,7 @@ const Treino = () => {
   const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
   const [comebackStatus, setComebackStatus] = useState<ComebackStatus | null>(null);
   const [comebackWorkouts, setComebackWorkouts] = useState(0);
+  const [fatigueSummary, setFatigueSummary] = useState<WeeklyFatigueSummary | null>(null);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
