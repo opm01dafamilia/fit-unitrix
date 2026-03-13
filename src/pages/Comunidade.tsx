@@ -141,15 +141,7 @@ const Comunidade = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-7 animate-slide-up">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 rounded-2xl" />
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-      </div>
-    );
-  }
+  if (loading) return <ComunidadeSkeleton />;
 
   return (
     <div className="space-y-7 animate-slide-up">

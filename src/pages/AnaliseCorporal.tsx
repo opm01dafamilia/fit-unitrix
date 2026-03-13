@@ -139,18 +139,7 @@ const AnaliseCorporal = () => {
     far_behind: "from-destructive/15 to-destructive/5",
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-7 animate-slide-up">
-        <Skeleton className="h-8 w-64 mb-2" />
-        <Skeleton className="h-4 w-48" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
-        </div>
-        <Skeleton className="h-64 rounded-2xl" />
-      </div>
-    );
-  }
+  if (loading) return <AnaliseCorporalSkeleton />;
 
   return (
     <div className="space-y-7 animate-slide-up">
