@@ -906,7 +906,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-testa", "mergulho-paralelas"],
+    alternativas: ["triceps-testa", "mergulho-paralelas", "rosca-direta"],
     animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
