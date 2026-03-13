@@ -1290,37 +1290,36 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       )}
 
-      {/* ===== ALTERNATIVES PANEL ===== */}
-      {showAlternatives && (
-        <div className="glass-card p-4 glow-border animate-slide-up">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-display font-semibold text-sm">Exercícios Alternativos</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAlternatives(false)}><X className="w-4 h-4" /></Button>
-          </div>
-          <div className="space-y-3">
+      {/* ===== ALTERNATIVES SHEET MODAL ===== */}
+      <Sheet open={showAlternatives} onOpenChange={setShowAlternatives}>
+        <SheetContent side="bottom" className="max-h-[85vh] rounded-t-2xl px-4 pb-8 overflow-y-auto">
+          <SheetHeader className="pb-3">
+            <SheetTitle className="font-display text-base flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-primary" /> Trocar Exercício
+            </SheetTitle>
+            <p className="text-xs text-muted-foreground">Selecione uma alternativa para <span className="font-semibold text-foreground">{currentEx.nome}</span></p>
+          </SheetHeader>
+          <div className="space-y-2.5 mt-2">
             {alternatives.map((alt, i) => {
               const altLibrary = exerciseLibrary.find(e => 
                 alt.nome.toLowerCase().includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(alt.nome.toLowerCase())
               );
               return (
                 <button key={i} onClick={() => swapExercise(alt.nome)}
-                  className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all flex items-start gap-3 group">
-                  {/* Exercise preview image */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
+                  className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all active:scale-[0.98] flex items-start gap-3 group">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
                     {altLibrary ? (
                       <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
                     ) : (
                       <AltGifPreview name={alt.nome} isHome={!!alt.tag?.includes("Casa")} />
                     )}
                   </div>
-                  {/* Exercise details */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{alt.nome}</span>
                     </div>
-                    {alt.desc && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{alt.desc}</p>}
-                    {/* Tags row */}
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {alt.desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">{alt.desc}</p>}
+                    <div className="flex flex-wrap items-center gap-1 mt-1.5">
                       {alt.tag && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">{alt.tag}</span>
                       )}
@@ -1332,23 +1331,25 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                           <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 capitalize">
                             {altLibrary.dificuldade}
                           </span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 flex items-center gap-0.5">
-                            <Dumbbell className="w-2.5 h-2.5" /> {altLibrary.equipamento}
-                          </span>
                         </>
                       )}
                     </div>
                   </div>
-                  {/* Swap arrow */}
-                  <div className="shrink-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <RefreshCw className="w-4 h-4 text-primary" />
+                  <div className="shrink-0 mt-3">
+                    <RefreshCw className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </button>
               );
             })}
+            {alternatives.length === 0 && (
+              <div className="text-center py-8">
+                <Dumbbell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Nenhuma alternativa disponível</p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {/* ===== BOTTOM NAVIGATION ===== */}
       <div className="fixed bottom-0 left-0 right-0 p-3 sm:p-4 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50 safe-area-inset-bottom">
