@@ -319,7 +319,10 @@ const Treino = () => {
     setGenerating(true);
     setTimeout(() => {
       try {
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel);
+        const prefs: ExercisePreferences | undefined = (preferredExercises.length > 0 || preferenceText.trim())
+          ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
+          : undefined;
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);
