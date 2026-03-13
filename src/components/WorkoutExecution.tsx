@@ -802,6 +802,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               </span>
             )}
           </div>
+        </div>
         {/* Full-width progress bar */}
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
