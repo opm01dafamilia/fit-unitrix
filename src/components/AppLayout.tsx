@@ -5,6 +5,7 @@ import {
   Activity, Target, Menu, Flame, LogOut, User, X, 
   History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake
 } from "lucide-react";
+import { Medal } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
