@@ -89,7 +89,7 @@ const Convites = () => {
       fetchInvites();
     }
 
-    const link = `${window.location.origin}/invite/${inviteCode}`;
+    const link = `https://eco-platform-hub.lovable.app/invite/${inviteCode}`;
     if (navigator.share) {
       try {
         await navigator.share({
