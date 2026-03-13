@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dumbbell, UtensilsCrossed, Flame, Trophy, Target, MapPin, MessageCircle, ChevronDown, ChevronUp, Send, Trash2, Scale } from "lucide-react";
+import { Dumbbell, UtensilsCrossed, Flame, Trophy, Target, MapPin, MessageCircle, ChevronDown, ChevronUp, Send, Trash2, Scale, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
