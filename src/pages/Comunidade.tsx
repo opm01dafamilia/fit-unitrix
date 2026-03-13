@@ -124,9 +124,9 @@ const Comunidade = () => {
       }
 
       if (append) {
-        setActivities(prev => [...prev, ...mapped]);
+        setActivities(prev => [...prev, ...filtered]);
       } else {
-        setActivities(mapped);
+        setActivities(filtered);
       }
     } catch { /* silent */ }
   }, [user, friendIds, userCity]);
