@@ -38,7 +38,7 @@ const Dashboard = () => {
           supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
           supabase.from("workout_sessions").select("id,completed_at,exercises_completed,exercises_total,muscle_group").eq("user_id", user.id).order("completed_at", { ascending: false }),
-          supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
+          supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
         ]);
         setBodyRecords(bodyRes.data || []);
         setGoals(goalsRes.data || []);

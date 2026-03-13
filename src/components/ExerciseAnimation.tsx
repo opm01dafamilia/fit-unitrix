@@ -871,4 +871,8 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
   );
 };
 
+const ExerciseAnimation = memo(ExerciseAnimationInner, (prev, next) => 
+  prev.exercise.id === next.exercise.id && prev.size === next.size && prev.className === next.className
+);
+
 export default ExerciseAnimation;
