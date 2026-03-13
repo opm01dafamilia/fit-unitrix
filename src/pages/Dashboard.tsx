@@ -38,9 +38,20 @@ const Dashboard = () => {
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
 
+  // Register app_opened micro-victory on mount
+  useEffect(() => {
+    const v = registerMicroVictory("app_opened");
+    if (v) {
+      setMicroProgress(getDailyProgress());
+      setMicroStreak(getMicroStreak());
+      setMicroXP(getTodayXP());
+      setVictoryFlash(v.icon + " " + getVictoryMessage());
+      setTimeout(() => setVictoryFlash(null), 3000);
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
-    const fetchData = async () => {
       try {
         const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
