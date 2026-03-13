@@ -337,8 +337,10 @@ const Treino = () => {
       } as any);
       if (error) throw error;
       toast.success("Plano salvo!");
+      invalidateCache(CACHE_KEYS.workoutPlans(user.id));
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
+      writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
       setView("dashboard");
       setShowPlan(false);
     } catch { toast.error("Erro ao salvar plano."); }
