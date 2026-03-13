@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { generateDietPlan, getPreferenceWarning, type MealPlan, type DayPlan, type PlanPeriod, type MealStyle, type WeekBlock, type DietMeta } from "@/lib/dietGenerator";
 import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievementsEngine";
+import { DietaSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { Skeleton } from "@/components/ui/skeleton";
 import DietFocusMode from "@/components/DietFocusMode";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
