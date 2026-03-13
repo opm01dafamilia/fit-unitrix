@@ -371,6 +371,51 @@ export type Database = {
           },
         ]
       }
+      user_invites: {
+        Row: {
+          created_at: string
+          has_subscription: boolean
+          id: string
+          invite_code: string
+          invited_email: string | null
+          invited_user_id: string | null
+          inviter_id: string
+          status: string
+          updated_at: string
+          validated: boolean
+          validated_at: string | null
+          workouts_completed: number
+        }
+        Insert: {
+          created_at?: string
+          has_subscription?: boolean
+          id?: string
+          invite_code: string
+          invited_email?: string | null
+          invited_user_id?: string | null
+          inviter_id: string
+          status?: string
+          updated_at?: string
+          validated?: boolean
+          validated_at?: string | null
+          workouts_completed?: number
+        }
+        Update: {
+          created_at?: string
+          has_subscription?: boolean
+          id?: string
+          invite_code?: string
+          invited_email?: string | null
+          invited_user_id?: string | null
+          inviter_id?: string
+          status?: string
+          updated_at?: string
+          validated?: boolean
+          validated_at?: string | null
+          workouts_completed?: number
+        }
+        Relationships: []
+      }
       user_ranking_stats: {
         Row: {
           achievements_count: number
