@@ -94,6 +94,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [isReady, setIsReady] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
+
+  // Preload GIFs for all exercises in this day
+  useEffect(() => {
+    if (day?.exercicios) {
+      preloadWorkoutDayGifs(day.exercicios.map(ex => ({ nome: ex.nome })));
+    }
+  }, [day]);
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
   const [inputReps, setInputReps] = useState("");
