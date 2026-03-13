@@ -432,6 +432,19 @@ const Treino = () => {
       toast.warning(`⚠️ ${overtrainCheck.warning}`, { duration: 5000 });
       // Allow but warn — don't block
     }
+    // Fatigue check
+    const grupo = targetGroup.toLowerCase();
+    let muscleKey = "geral";
+    const muscleGroupIcons2: Record<string, string> = { peito: "peito", costas: "costas", pernas: "pernas", ombros: "ombros", biceps: "biceps", triceps: "triceps", abdomen: "abdomen" };
+    for (const [key] of Object.entries(muscleGroupIcons2)) {
+      if (grupo.includes(key)) { muscleKey = key; break; }
+    }
+    const fatigueCheck = shouldTrainGroup(muscleKey);
+    if (fatigueCheck.fatigue.level === "extreme") {
+      toast.warning(`${fatigueCheck.fatigue.emoji} Fadiga extrema em ${muscleKey}. ${fatigueCheck.alternativeMessage}`, { duration: 6000 });
+    } else if (fatigueCheck.fatigue.level === "high") {
+      toast.info(`${fatigueCheck.fatigue.emoji} Fadiga alta em ${muscleKey}. O treino será ajustado automaticamente.`, { duration: 4000 });
+    }
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
