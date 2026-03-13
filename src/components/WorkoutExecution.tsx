@@ -602,6 +602,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         const { error: histError } = await supabase.from("exercise_history").insert(historyRows as any);
         if (histError) console.error("Error saving exercise history:", histError);
       }
+      // Generate session summary for completion screen
+      const exerciseNames = exercises.filter((_, i) => (sets[i] || []).length > 0).map(e => e.nome);
+      const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
+      setSessionSummary(summary);
       setShowCompletion(true);
     } catch {
       toast.error("Erro ao salvar sessão");
