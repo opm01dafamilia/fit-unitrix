@@ -503,7 +503,38 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }, 200);
   }, [currentExIndex]);
 
-  const goToExercise = (idx: number) => {
+  // Save exercise performance with RPE
+  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE) => {
+    const ex = exercises[exIdx];
+    const exSets = sets[exIdx] || [];
+    if (exSets.length === 0) return;
+    const grupo = day.grupo.toLowerCase();
+    let muscleGroup = "geral";
+    for (const key of Object.keys(muscleGroupColors)) {
+      if (grupo.includes(key)) { muscleGroup = key; break; }
+    }
+    const avgReps = exSets.reduce((a, s) => a + s.reps, 0) / exSets.length;
+    const maxWeight = Math.max(...exSets.map(s => s.kg));
+    const targetRepNum = parseInt(ex.reps) || 10;
+
+    savePerformance({
+      exercise_name: ex.nome,
+      muscle_group: muscleGroup,
+      sets_completed: exSets.length,
+      sets_target: parseInt(ex.series) || 4,
+      avg_reps: Math.round(avgReps),
+      target_reps: targetRepNum,
+      max_weight: maxWeight,
+      rpe,
+      date: new Date().toISOString().slice(0, 10),
+    });
+
+    // Get progression decision after saving
+    const decision = getProgressionDecision(ex.nome);
+    setProgressionDecisions(prev => ({ ...prev, [exIdx]: decision }));
+  }, [exercises, sets, day]);
+
+
     // Save RPE performance if we had one selected for current exercise
     if (selectedRPE && currentSets.length > 0) {
       saveExercisePerformance(currentExIndex, selectedRPE);
