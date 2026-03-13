@@ -23,6 +23,8 @@ const Biblioteca = lazy(() => import("./pages/Biblioteca"));
 const AnaliseCorporal = lazy(() => import("./pages/AnaliseCorporal"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Comunidade = lazy(() => import("./pages/Comunidade"));
+const Convites = lazy(() => import("./pages/Convites"));
+const InviteLanding = lazy(() => import("./pages/InviteLanding"));
 const PerfilFitness = lazy(() => import("./pages/PerfilFitness"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -153,6 +155,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Auth /></Suspense></PublicRoute>} />
             <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
+            <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
             <Route path="/onboarding" element={<OnboardingRoute />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense></ErrorBoundary>} />
@@ -166,6 +169,7 @@ const App = () => (
               <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
               <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
               <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
+              <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
               <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
               <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
               <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
