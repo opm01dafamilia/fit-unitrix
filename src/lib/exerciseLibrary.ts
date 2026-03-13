@@ -930,7 +930,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-corda", "mergulho-paralelas"],
+    alternativas: ["triceps-corda", "mergulho-paralelas", "rosca-direta"],
     animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
