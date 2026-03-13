@@ -705,7 +705,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["desenvolvimento-militar", "desenvolvimento-maquina"],
+    alternativas: ["desenvolvimento-militar", "desenvolvimento-maquina", "elevacao-lateral", "elevacao-frontal"],
     animacao: { frames: ["🏋️ ↑🔄", "🏋️ ↓🔄"], cor: "hsl(280 65% 60%)" },
   },
   {
