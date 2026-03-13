@@ -3,9 +3,8 @@ import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Activity, Target, Menu, Flame, LogOut, User, X, 
-  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake
+  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake, Medal
 } from "lucide-react";
-import { Medal } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
