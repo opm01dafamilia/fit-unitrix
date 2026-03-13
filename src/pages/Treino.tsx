@@ -397,13 +397,23 @@ const Treino = () => {
       toast.info("✅ Treino de hoje concluído. Continue amanhã!", { duration: 4000 });
       return;
     }
-    // Set all execution state synchronously, then switch view
+    // Overtraining check
+    const planData = plan.plan_data as any[];
+    const targetGroup = planData[dayIndex]?.grupo || "";
+    const overtrainCheck = checkOvertrain(
+      targetGroup,
+      sessions.map(s => ({ muscle_group: s.muscle_group, completed_at: s.completed_at }))
+    );
+    if (!overtrainCheck.safe) {
+      toast.warning(`⚠️ ${overtrainCheck.warning}`, { duration: 5000 });
+      // Allow but warn — don't block
+    }
     setExecutingPlan(plan);
     setExecutingDayIndex(dayIndex);
     setCompletedExercises(new Set());
     setExecutionKey(k => k + 1);
     setView("execution");
-  }, [todayCompleted]);
+  }, [todayCompleted, sessions]);
 
   const toggleExercise = (index: number) => {
     setCompletedExercises(prev => {
