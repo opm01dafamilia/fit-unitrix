@@ -173,6 +173,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
   const [showEvolutionChart, setShowEvolutionChart] = useState(false);
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
+  const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
