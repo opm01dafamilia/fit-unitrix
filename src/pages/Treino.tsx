@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel } from "@/lib/workoutGenerator";
+import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel, ExercisePreferences } from "@/lib/workoutGenerator";
 import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,6 +45,9 @@ const Treino = () => {
   const [foco, setFoco] = useState<BodyFocus>("completo");
   const [cardioFreq, setCardioFreq] = useState<CardioFrequency>("0");
   const [intensityLevel, setIntensityLevel] = useState<IntensityLevel>("intenso");
+  const [preferredExercises, setPreferredExercises] = useState<string[]>([]);
+  const [preferenceText, setPreferenceText] = useState("");
+  const [showPreferences, setShowPreferences] = useState(false);
   const [showPlan, setShowPlan] = useState(false);
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
@@ -316,7 +319,10 @@ const Treino = () => {
     setGenerating(true);
     setTimeout(() => {
       try {
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel);
+        const prefs: ExercisePreferences | undefined = (preferredExercises.length > 0 || preferenceText.trim())
+          ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
+          : undefined;
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);
@@ -538,6 +544,73 @@ const Treino = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Exercise Preferences (optional) */}
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={() => setShowPreferences(!showPreferences)}
+              className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Heart className="w-3.5 h-3.5" />
+              <span>Preferências de exercícios (opcional)</span>
+              {showPreferences ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+            
+            {showPreferences && (
+              <div className="mt-3 space-y-3 animate-slide-up">
+                <p className="text-[11px] text-muted-foreground">
+                  Selecione máquinas ou exercícios que você prefere. Eles terão prioridade parcial na montagem do treino, sem comprometer a qualidade.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Supino com Barra", "Supino com Halteres", "Leg Press", "Cadeira Extensora",
+                    "Cadeira Flexora", "Puxada Alta", "Remada Baixa", "Elevação Lateral",
+                    "Desenvolvimento com Halteres", "Esteira", "Bicicleta", "Peso Corporal",
+                    "Cross Over", "Smith Machine", "Agachamento Livre", "Stiff",
+                    "Hip Thrust", "Rosca Direta", "Tríceps Corda", "Face Pull"
+                  ].map((exercise) => {
+                    const isSelected = preferredExercises.includes(exercise);
+                    return (
+                      <button
+                        key={exercise}
+                        type="button"
+                        onClick={() => {
+                          setPreferredExercises(prev =>
+                            isSelected ? prev.filter(e => e !== exercise) : [...prev, exercise]
+                          );
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                          isSelected
+                            ? "bg-primary/15 border-primary/30 text-primary font-medium"
+                            : "bg-secondary/40 border-border/50 text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                        }`}
+                      >
+                        {isSelected && <span className="mr-1">✓</span>}
+                        {exercise}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">Outras preferências (opcional)</label>
+                  <input
+                    type="text"
+                    value={preferenceText}
+                    onChange={(e) => setPreferenceText(e.target.value)}
+                    placeholder="Ex: prefiro cabos, evitar exercícios no chão..."
+                    maxLength={200}
+                    className="flex h-9 w-full rounded-md border border-input bg-secondary/50 px-3 py-1 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                </div>
+                {preferredExercises.length > 0 && (
+                  <p className="text-[10px] text-primary font-medium">
+                    {preferredExercises.length} preferência{preferredExercises.length > 1 ? "s" : ""} selecionada{preferredExercises.length > 1 ? "s" : ""}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
