@@ -175,6 +175,31 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const stretching = useMemo(() => getStretchingForDay(day?.grupo || ""), [day?.grupo]);
   const cardioRec = useMemo(() => getCardioRecommendation(objective), [objective]);
 
+  // Assign intensity techniques once when exercises are ready
+  useEffect(() => {
+    if (exercises.length > 0) {
+      const assignments = assignIntensityTechniques(
+        exercises,
+        experienceLevel,
+        (day as any)?.intensidade,
+        day?.grupo,
+      );
+      setTechniqueAssignments(assignments);
+    }
+  }, [exercises, experienceLevel, day]);
+
+  // Current exercise technique
+  const currentTechnique = useMemo(() => {
+    return techniqueAssignments.find(a => a.exerciseIndex === currentExIndex) || null;
+  }, [techniqueAssignments, currentExIndex]);
+
+  // Pyramid scheme for current exercise if applicable
+  const pyramidScheme = useMemo(() => {
+    if (!currentTechnique) return null;
+    if (currentTechnique.technique.type !== "piramide_crescente" && currentTechnique.technique.type !== "piramide_regressiva") return null;
+    return getPyramidScheme(currentTechnique.technique.type, targetReps, targetSeries);
+  }, [currentTechnique, targetReps, targetSeries]);
+
   // Initialize component - mark as ready after first render
   useEffect(() => {
     if (day && exercises.length > 0) {
