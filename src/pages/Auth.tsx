@@ -49,13 +49,29 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: { emailRedirectTo: window.location.origin },
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else toast.success("Conta criada! Verifique seu email para confirmar.");
+    else {
+      // Attribute invite if present
+      const inviteCode = localStorage.getItem("fitpulse_invite_code");
+      if (inviteCode && data?.user) {
+        await supabase
+          .from("user_invites")
+          .update({ 
+            invited_user_id: data.user.id, 
+            invited_email: email, 
+            status: "registered" 
+          })
+          .eq("invite_code", inviteCode)
+          .is("invited_user_id", null);
+        localStorage.removeItem("fitpulse_invite_code");
+      }
+      toast.success("Conta criada! Verifique seu email para confirmar.");
+    }
   };
 
   const handleForgotPassword = async () => {
