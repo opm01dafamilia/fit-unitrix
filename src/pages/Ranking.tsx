@@ -239,10 +239,20 @@ const Ranking = () => {
   const nextRankInfo = getNextRank(userXP);
 
   const getMedalIcon = (pos: number) => {
-    if (pos === 1) return <Crown className="w-5 h-5 text-chart-3" />;
-    if (pos === 2) return <Medal className="w-5 h-5 text-muted-foreground" />;
-    if (pos === 3) return <Medal className="w-5 h-5 text-chart-4" />;
+    if (pos === 1) return <span className="text-lg">👑</span>;
+    if (pos <= 3) return <Crown className="w-5 h-5 text-chart-3" />;
+    if (pos <= 10) return <span className="text-sm">🔥</span>;
+    if (pos <= 50) return <span className="text-sm">⭐</span>;
+    if (pos <= 100) return <span className="text-sm">⚡</span>;
     return <span className="text-xs font-bold text-muted-foreground w-5 text-center">{pos}</span>;
+  };
+
+  const getPositionBadge = (pos: number) => {
+    if (pos === 1) return { label: "Top 1", className: "text-chart-3 bg-chart-3/10 border-chart-3/20" };
+    if (pos <= 10) return { label: "Top 10", className: "text-orange-400 bg-orange-500/10 border-orange-500/20" };
+    if (pos <= 50) return { label: "Top 50", className: "text-chart-4 bg-chart-4/10 border-chart-4/20" };
+    if (pos <= 100) return { label: "Top 100", className: "text-primary bg-primary/10 border-primary/20" };
+    return null;
   };
 
   const handleJoinChallenge = async (challengeId: string) => {
