@@ -1,54 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Users, Heart, MessageCircle, Dumbbell, Flame,
-  UtensilsCrossed, Trophy, Send, Shield, Globe, Lock,
-  UserCheck, Loader2, Target, Zap
+  Users, Send, Shield, Globe, Lock,
+  UserCheck, Loader2, Zap
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import ActivityFeedCard, { type Activity } from "@/components/community/ActivityFeedCard";
+import UserPublicProfile from "@/components/community/UserPublicProfile";
+import CommunityMotivation from "@/components/community/CommunityMotivation";
+import { getRankForXP } from "@/lib/achievementsEngine";
 
-const reactionEmojis = ["💪", "🔥", "👏", "⚡", "🏆"];
-
-type Activity = {
-  id: string;
-  user_id: string;
-  user_name: string;
-  activity_type: string;
-  description: string;
-  metadata: any;
-  created_at: string;
-  reactions: { emoji: string; user_id: string }[];
-  reaction_count: number;
-};
-
-const activityIcons: Record<string, any> = {
-  workout: Dumbbell,
-  diet: UtensilsCrossed,
-  streak: Flame,
-  achievement: Trophy,
-  goal: Target,
-};
-
-const activityColors: Record<string, string> = {
-  workout: "text-primary",
-  diet: "text-chart-3",
-  streak: "text-orange-400",
-  achievement: "text-yellow-500",
-  goal: "text-chart-4",
-};
-
-const activityBgs: Record<string, string> = {
-  workout: "from-primary/15 to-primary/5",
-  diet: "from-chart-3/15 to-chart-3/5",
-  streak: "from-orange-400/15 to-orange-400/5",
-  achievement: "from-yellow-500/15 to-yellow-500/5",
-  goal: "from-chart-4/15 to-chart-4/5",
-};
+const privacyOptions = [
+  { value: "public", label: "Público", icon: Globe, desc: "Todos podem ver sua atividade" },
+  { value: "friends", label: "Apenas Ranking", icon: UserCheck, desc: "Aparece no ranking com dados mínimos" },
+  { value: "private", label: "Privado", icon: Lock, desc: "Ninguém pode ver sua atividade" },
+];
 
 const Comunidade = () => {
   const { user, profile } = useAuth();
@@ -57,6 +26,9 @@ const Comunidade = () => {
   const [privacyLevel, setPrivacyLevel] = useState<string>(profile?.privacy_level || "public");
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ userId: string; userName: string } | null>(null);
+  const [myRank, setMyRank] = useState<{ icon: string; label: string; color: string } | null>(null);
+  const [myXP, setMyXP] = useState(0);
 
   const fetchActivities = useCallback(async () => {
     try {
@@ -68,7 +40,6 @@ const Comunidade = () => {
 
       if (!feedData) { setActivities([]); return; }
 
-      // Fetch reactions for these activities
       const activityIds = feedData.map(a => a.id);
       const { data: reactionsData } = await supabase
         .from("activity_reactions")
@@ -96,26 +67,26 @@ const Comunidade = () => {
     const load = async () => {
       setLoading(true);
       await fetchActivities();
-      // Load privacy setting
-      const { data } = await supabase
-        .from("profiles")
-        .select("privacy_level")
-        .eq("user_id", user.id)
-        .single();
-      if (data?.privacy_level) setPrivacyLevel(data.privacy_level);
+
+      // Load privacy + rank
+      const [privRes, rankRes] = await Promise.all([
+        supabase.from("profiles").select("privacy_level").eq("user_id", user.id).single(),
+        supabase.from("user_ranking_stats").select("total_xp").eq("user_id", user.id).single(),
+      ]);
+      if (privRes.data?.privacy_level) setPrivacyLevel(privRes.data.privacy_level);
+      if (rankRes.data) {
+        const xp = rankRes.data.total_xp || 0;
+        setMyXP(xp);
+        setMyRank(getRankForXP(xp));
+      }
       setLoading(false);
     };
     load();
 
-    // Realtime subscription for new activities
     const channel = supabase
       .channel('community-feed')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_feed' },
-        () => fetchActivities()
-      )
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_reactions' },
-        () => fetchActivities()
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_feed' }, () => fetchActivities())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_reactions' }, () => fetchActivities())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
@@ -124,15 +95,10 @@ const Comunidade = () => {
   const handleReaction = async (activityId: string, emoji: string) => {
     if (!user) return;
     const existing = activities.find(a => a.id === activityId)?.reactions.find(r => r.user_id === user.id);
-
     if (existing) {
       await supabase.from("activity_reactions").delete().eq("activity_id", activityId).eq("user_id", user.id);
     } else {
-      await supabase.from("activity_reactions").insert({
-        activity_id: activityId,
-        user_id: user.id,
-        emoji,
-      });
+      await supabase.from("activity_reactions").insert({ activity_id: activityId, user_id: user.id, emoji });
     }
     fetchActivities();
   };
@@ -141,14 +107,12 @@ const Comunidade = () => {
     if (!user || !profile) return;
     setPosting(true);
     try {
-      // Auto-generate a motivational activity
       const messages = [
         { type: "workout", desc: `${profile.full_name || "Usuário"} está treinando duro hoje! 💪` },
         { type: "streak", desc: `${profile.full_name || "Usuário"} está mantendo a consistência! 🔥` },
         { type: "goal", desc: `${profile.full_name || "Usuário"} está focado nos objetivos! 🎯` },
       ];
       const msg = messages[Math.floor(Math.random() * messages.length)];
-
       await supabase.from("activity_feed").insert({
         user_id: user.id,
         user_name: profile.full_name || "Usuário",
@@ -156,7 +120,6 @@ const Comunidade = () => {
         description: msg.desc,
         metadata: {},
       });
-
       toast.success("Atividade compartilhada! 🎉");
       fetchActivities();
     } catch {
@@ -178,12 +141,6 @@ const Comunidade = () => {
     }
   };
 
-  const privacyOptions = [
-    { value: "public", label: "Público", icon: Globe, desc: "Todos podem ver sua atividade" },
-    { value: "friends", label: "Apenas Amigos", icon: UserCheck, desc: "Só amigos podem ver" },
-    { value: "private", label: "Privado", icon: Lock, desc: "Ninguém pode ver sua atividade" },
-  ];
-
   if (loading) {
     return (
       <div className="space-y-7 animate-slide-up">
@@ -201,19 +158,17 @@ const Comunidade = () => {
         <div>
           <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight flex items-center gap-2">
             <Users className="w-7 h-7 text-primary" />
-            Comunidade
+            Comunidade Fitness
           </h1>
           <p className="text-muted-foreground text-sm mt-1">Acompanhe a evolução da comunidade fitness</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowPrivacy(!showPrivacy)}
-            className="p-2.5 rounded-xl bg-secondary/50 border border-border/30 hover:bg-secondary/70 transition-colors"
-            title="Privacidade"
-          >
-            <Shield className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
+        <button
+          onClick={() => setShowPrivacy(!showPrivacy)}
+          className="p-2.5 rounded-xl bg-secondary/50 border border-border/30 hover:bg-secondary/70 transition-colors"
+          title="Privacidade"
+        >
+          <Shield className="w-4 h-4 text-muted-foreground" />
+        </button>
       </div>
 
       {/* Privacy Settings */}
@@ -243,6 +198,43 @@ const Comunidade = () => {
         </div>
       )}
 
+      {/* Motivational Banner */}
+      <CommunityMotivation activityCount={activities.length} />
+
+      {/* My Fitness Card */}
+      <div className="glass-card p-5 lg:p-6">
+        <h3 className="font-display font-semibold text-sm mb-4 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-primary" />
+          Seu Perfil na Comunidade
+        </h3>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center border border-primary/15">
+            <span className="text-2xl font-display font-bold text-primary">
+              {(profile?.full_name || "U").charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div className="flex-1">
+            <h4 className="font-display font-bold text-lg">{profile?.full_name || "Usuário"}</h4>
+            {myRank && (
+              <p className={`text-sm font-medium ${myRank.color}`}>
+                {myRank.icon} {myRank.label}
+              </p>
+            )}
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
+                {myXP} XP
+              </span>
+              <span className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md flex items-center gap-1">
+                {privacyLevel === "public" ? <Globe className="w-2.5 h-2.5" /> :
+                 privacyLevel === "friends" ? <UserCheck className="w-2.5 h-2.5" /> :
+                 <Lock className="w-2.5 h-2.5" />}
+                {privacyLevel === "public" ? "Público" : privacyLevel === "friends" ? "Apenas Ranking" : "Privado"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Share Activity */}
       <div className="glass-card p-5">
         <div className="flex items-center gap-3">
@@ -264,95 +256,20 @@ const Comunidade = () => {
         </div>
       </div>
 
-      {/* My Fitness Card */}
-      <div className="glass-card p-5 lg:p-6">
-        <h3 className="font-display font-semibold text-sm mb-4 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary" />
-          Seu Perfil Fitness
-        </h3>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center border border-primary/15">
-            <span className="text-2xl font-display font-bold text-primary">
-              {(profile?.full_name || "U").charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-display font-bold text-lg">{profile?.full_name || "Usuário"}</h4>
-            <p className="text-xs text-muted-foreground capitalize">
-              {profile?.objective === "massa" ? "Ganho de Massa" :
-               profile?.objective === "emagrecer" ? "Emagrecimento" :
-               profile?.objective === "condicionamento" ? "Condicionamento" : "Fitness"}
-            </p>
-            <div className="flex items-center gap-3 mt-1.5">
-              {profile?.weight && (
-                <span className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
-                  {profile.weight}kg
-                </span>
-              )}
-              <span className="text-[10px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md flex items-center gap-1">
-                {privacyLevel === "public" ? <Globe className="w-2.5 h-2.5" /> :
-                 privacyLevel === "friends" ? <UserCheck className="w-2.5 h-2.5" /> :
-                 <Lock className="w-2.5 h-2.5" />}
-                {privacyLevel === "public" ? "Público" : privacyLevel === "friends" ? "Amigos" : "Privado"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Activity Feed */}
       <div>
         <h3 className="font-display font-semibold text-base mb-4">Feed de Atividades</h3>
         {activities.length > 0 ? (
           <div className="space-y-3">
-            {activities.map((activity) => {
-              const Icon = activityIcons[activity.activity_type] || Dumbbell;
-              const color = activityColors[activity.activity_type] || "text-primary";
-              const bg = activityBgs[activity.activity_type] || "from-primary/15 to-primary/5";
-              const myReaction = activity.reactions.find(r => r.user_id === user?.id);
-              const timeAgo = formatDistanceToNow(new Date(activity.created_at), { addSuffix: true, locale: ptBR });
-
-              return (
-                <div key={activity.id} className="glass-card p-4 lg:p-5">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${bg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`w-5 h-5 ${color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">
-                        <span className="font-semibold">{activity.user_name}</span>
-                      </p>
-                      <p className="text-[13px] text-muted-foreground mt-0.5">{activity.description}</p>
-                      <p className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo}</p>
-                    </div>
-                  </div>
-
-                  {/* Reactions */}
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/20">
-                    <div className="flex gap-1">
-                      {reactionEmojis.map(emoji => (
-                        <button
-                          key={emoji}
-                          onClick={() => handleReaction(activity.id, emoji)}
-                          className={`w-8 h-8 rounded-lg text-sm flex items-center justify-center transition-all ${
-                            myReaction?.emoji === emoji
-                              ? "bg-primary/15 border border-primary/20 scale-110"
-                              : "bg-secondary/40 border border-border/20 hover:bg-secondary/60 hover:scale-105"
-                          }`}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                    {activity.reaction_count > 0 && (
-                      <span className="text-[10px] text-muted-foreground ml-1">
-                        {activity.reaction_count} reação{activity.reaction_count > 1 ? "ões" : ""}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {activities.map(activity => (
+              <ActivityFeedCard
+                key={activity.id}
+                activity={activity}
+                currentUserId={user?.id}
+                onReaction={handleReaction}
+                onUserClick={(userId, userName) => setSelectedUser({ userId, userName })}
+              />
+            ))}
           </div>
         ) : (
           <div className="glass-card p-8 text-center">
@@ -362,8 +279,16 @@ const Comunidade = () => {
           </div>
         )}
       </div>
+
+      {/* Public Profile Modal */}
+      {selectedUser && (
+        <UserPublicProfile
+          userId={selectedUser.userId}
+          userName={selectedUser.userName}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
     </div>
-    
   );
 };
 
