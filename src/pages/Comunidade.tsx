@@ -129,7 +129,7 @@ const Comunidade = () => {
         setActivities(filtered);
       }
     } catch { /* silent */ }
-  }, [user, friendIds, userCity]);
+  }, [user, friendIds, userCity, feedFilter]);
 
   // Initial load
   useEffect(() => {
