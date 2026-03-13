@@ -305,6 +305,8 @@ export type Database = {
           activity_level: string | null
           age: number | null
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string
           experience_level: string | null
           friend_code: string | null
@@ -315,6 +317,7 @@ export type Database = {
           objective: string | null
           onboarding_completed: boolean
           privacy_level: string
+          state: string | null
           training_location: string | null
           updated_at: string
           user_id: string
@@ -324,6 +327,8 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           experience_level?: string | null
           friend_code?: string | null
@@ -334,6 +339,7 @@ export type Database = {
           objective?: string | null
           onboarding_completed?: boolean
           privacy_level?: string
+          state?: string | null
           training_location?: string | null
           updated_at?: string
           user_id: string
@@ -343,6 +349,8 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           experience_level?: string | null
           friend_code?: string | null
@@ -353,6 +361,7 @@ export type Database = {
           objective?: string | null
           onboarding_completed?: boolean
           privacy_level?: string
+          state?: string | null
           training_location?: string | null
           updated_at?: string
           user_id?: string

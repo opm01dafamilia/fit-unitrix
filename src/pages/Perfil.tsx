@@ -17,6 +17,9 @@ const Perfil = () => {
   const [peso, setPeso] = useState("");
   const [objetivo, setObjetivo] = useState("");
   const [atividade, setAtividade] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
+  const [pais, setPais] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -28,6 +31,9 @@ const Perfil = () => {
       setPeso(profile.weight ? String(profile.weight) : "");
       setObjetivo(profile.objective || "");
       setAtividade(profile.activity_level || "");
+      setCidade((profile as any).city || "");
+      setEstado((profile as any).state || "");
+      setPais((profile as any).country || "");
     }
   }, [profile]);
 
@@ -52,7 +58,10 @@ const Perfil = () => {
       weight: Number(peso),
       objective: objetivo || null,
       activity_level: atividade || null,
-    }).eq("id", profile.id);
+      city: cidade.trim() || null,
+      state: estado.trim() || null,
+      country: pais.trim() || null,
+    } as any).eq("id", profile.id);
     setSaving(false);
     if (error) toast.error("Erro ao salvar");
     else {
@@ -157,6 +166,18 @@ const Perfil = () => {
                 <SelectItem value="intenso">Muito Ativo</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Cidade *</label>
+            <Input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Ex: São Paulo" className="bg-secondary/50 border-border/50" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Estado</label>
+            <Input value={estado} onChange={(e) => setEstado(e.target.value)} placeholder="Ex: SP" className="bg-secondary/50 border-border/50" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">País</label>
+            <Input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="Ex: Brasil" className="bg-secondary/50 border-border/50" />
           </div>
         </div>
         <Button onClick={handleSave} disabled={saving}>
