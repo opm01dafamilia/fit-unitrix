@@ -459,6 +459,7 @@ const Treino = () => {
         experienceLevel={profile?.experience_level || "intermediario"}
         trainingLocation={profile?.training_location || undefined}
         objective={profile?.objective || undefined}
+        cycleStatus={cycleStatus || undefined}
         onFinish={async () => {
           const { data } = await supabase.from("workout_sessions").select("*").eq("user_id", user!.id).order("completed_at", { ascending: false });
           const newSessions = (data as WorkoutSession[]) || [];
