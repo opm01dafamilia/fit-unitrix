@@ -126,7 +126,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-reto", "crucifixo", "cross-over"],
+    alternativas: ["supino-reto", "supino-maquina", "crucifixo", "cross-over", "flexao"],
     animacao: { frames: ["🏋️ ↗", "🏋️ ↙"], cor: "hsl(152 69% 46%)" },
   },
   {
