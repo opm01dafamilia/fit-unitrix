@@ -44,13 +44,16 @@ const UserPublicProfile = ({ userId, userName, onClose }: Props) => {
       // Get ranking stats (public data only)
       const { data: rankData } = await supabase
         .from("user_ranking_stats")
-        .select("user_name, total_xp, rank_tier, workout_streak, achievements_count")
+        .select("user_name, total_xp, rank_tier, workout_streak, achievements_count, total_workouts")
         .eq("user_id", userId)
+        .order("total_xp", { ascending: false })
+        .limit(1)
         .single();
 
       if (rankData) {
         setData({
           ...rankData,
+          total_workouts: (rankData as any).total_workouts || 0,
           avatar_url: profileData?.avatar_url,
         });
       }
