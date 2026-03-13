@@ -50,25 +50,32 @@ type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoaded(false);
+    setError(false);
+    setGifUrl(null);
     fetchExerciseGifByName(name).then(url => {
-      if (!cancelled) setGifUrl(url);
+      if (!cancelled) {
+        if (url) setGifUrl(url);
+        else setError(true);
+      }
     });
     return () => { cancelled = true; };
   }, [name]);
 
-  if (gifUrl) {
+  if (gifUrl && !error) {
     return (
-      <>
+      <div className="relative w-full h-full" style={{ aspectRatio: "1/1" }}>
         <img
           src={gifUrl}
           alt={name}
           className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px", aspectRatio: "1/1" }}
+          style={{ objectFit: "contain", padding: "2px" }}
           onLoad={() => setLoaded(true)}
-          onError={() => setGifUrl(null)}
+          onError={() => { setGifUrl(null); setError(true); }}
           loading="lazy"
           decoding="async"
         />
@@ -77,7 +84,7 @@ const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
         )}
-      </>
+      </div>
     );
   }
 
