@@ -275,9 +275,11 @@ const Ranking = () => {
             const isMe = entry.user_id === user?.id;
             const pos = idx + 1;
             const entryRank = getRankForXP(entry.total_xp || 0);
+            const posBadge = getPositionBadge(pos);
             return (
               <div key={`${entry.user_id}-${idx}`}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all ${
+                onClick={() => !isMe && setSelectedProfile({ userId: entry.user_id, userName: entry.user_name })}
+                className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer hover:border-primary/20 ${
                   isMe
                     ? "bg-primary/5 border-primary/15 shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
                     : pos <= 3
@@ -298,9 +300,14 @@ const Ranking = () => {
                     <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold ${entryRank.color} bg-secondary/60 border border-border/30`}>
                       {entryRank.icon} {entryRank.label}
                     </span>
+                    {posBadge && (
+                      <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-bold border ${posBadge.className}`}>
+                        {posBadge.label}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    {entry.achievements_count || 0} conquistas
+                    {entry.achievements_count || 0} conquistas • {entry.total_workouts || 0} treinos
                   </p>
                 </div>
                 <div className="text-right">
@@ -310,6 +317,14 @@ const Ranking = () => {
               </div>
             );
           })}
+
+          {/* Show user position if outside the list */}
+          {xpField === "total_xp" && userGlobalPosition && !data.some((r: any) => r.user_id === user?.id) && (
+            <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/15 text-center">
+              <p className="text-sm font-medium">📍 Sua posição atual: <span className="text-primary font-bold">#{userGlobalPosition}</span></p>
+              <p className="text-[11px] text-muted-foreground mt-1">Continue treinando para subir no ranking!</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-8">
