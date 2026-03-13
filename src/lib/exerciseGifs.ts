@@ -243,11 +243,58 @@ export async function fetchExerciseGifByName(exerciseName: string): Promise<stri
   if (cache[cacheKey]) return cache[cacheKey].gifUrl;
 
   const searchTerm = exerciseNameSearchMap[exerciseName];
-  if (!searchTerm) return null;
+  if (!searchTerm) {
+    // Fallback: try generic search with the exercise name itself
+    return fetchExerciseGifGeneric(exerciseName);
+  }
 
   if (pendingRequests.has(cacheKey)) {
     return pendingRequests.get(cacheKey)!;
   }
+
+  const promise = fetchFromAPI(searchTerm, cacheKey).then(async (url) => {
+    if (url) return url;
+    // Retry with generic name search as fallback
+    return fetchExerciseGifGeneric(exerciseName);
+  }).finally(() => {
+    pendingRequests.delete(cacheKey);
+  });
+  pendingRequests.set(cacheKey, promise);
+  return promise;
+}
+
+/**
+ * Generic fallback: search ExerciseDB with simplified exercise name
+ */
+async function fetchExerciseGifGeneric(exerciseName: string): Promise<string | null> {
+  const cacheKey = `generic_${exerciseName}`;
+  const cache = getCache();
+  if (cache[cacheKey]) return cache[cacheKey].gifUrl;
+
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey)!;
+  }
+
+  // Simplify Portuguese name to English keywords
+  const simplified = exerciseName
+    .toLowerCase()
+    .replace(/á|à|ã|â/g, 'a').replace(/é|ê/g, 'e').replace(/í/g, 'i')
+    .replace(/ó|ô|õ/g, 'o').replace(/ú/g, 'u').replace(/ç/g, 'c');
+  
+  const keywordMap: Record<string, string> = {
+    'supino': 'bench press', 'flexao': 'push up', 'agachamento': 'squat',
+    'rosca': 'curl', 'triceps': 'triceps', 'remada': 'row',
+    'elevacao': 'raise', 'prancha': 'plank', 'abdominal': 'crunch',
+    'desenvolvimento': 'shoulder press', 'crucifixo': 'fly',
+    'pulldown': 'pulldown', 'leg press': 'leg press', 'stiff': 'deadlift',
+    'panturrilha': 'calf raise', 'mergulho': 'dip', 'barra fixa': 'pull up',
+  };
+
+  let searchTerm = '';
+  for (const [pt, en] of Object.entries(keywordMap)) {
+    if (simplified.includes(pt)) { searchTerm = en; break; }
+  }
+  if (!searchTerm) return null;
 
   const promise = fetchFromAPI(searchTerm, cacheKey).finally(() => {
     pendingRequests.delete(cacheKey);

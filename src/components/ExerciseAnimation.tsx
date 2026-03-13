@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { ExerciseDetail } from "@/lib/exerciseLibrary";
-import { fetchExerciseGif } from "@/lib/exerciseGifs";
+import { fetchExerciseGif, fetchExerciseGifByName } from "@/lib/exerciseGifs";
 
 interface ExerciseAnimationProps {
   exercise: ExerciseDetail;
