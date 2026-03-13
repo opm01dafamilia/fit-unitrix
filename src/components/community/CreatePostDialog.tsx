@@ -69,11 +69,11 @@ const CreatePostDialog = ({ onClose, onSubmit }: Props) => {
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder="Compartilhe sua evolução, motivação ou conquista..."
-          maxLength={500}
-          rows={4}
+          maxLength={120}
+          rows={3}
           className="w-full p-3 rounded-xl bg-secondary/40 border border-border/20 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/30 resize-none"
         />
-        <p className="text-[10px] text-muted-foreground/50 text-right mt-1">{text.length}/500</p>
+        <p className="text-[10px] text-muted-foreground/50 text-right mt-1">{text.length}/120</p>
 
         {/* Submit */}
         <Button

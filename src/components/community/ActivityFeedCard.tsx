@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dumbbell, UtensilsCrossed, Flame, Trophy, Target, MapPin, MessageCircle, ChevronDown, ChevronUp, Send, Trash2, Scale } from "lucide-react";
+import { Dumbbell, UtensilsCrossed, Flame, Trophy, Target, MapPin, MessageCircle, ChevronDown, ChevronUp, Send, Trash2, Scale, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -167,6 +167,22 @@ const ActivityFeedCard = ({ activity, currentUserId, onReaction, onUserClick, on
         </div>
 
         <div className="flex-1" />
+
+        {/* Share */}
+        <button
+          onClick={() => {
+            const shareText = `${activity.user_name}: ${activity.description}`;
+            if (navigator.share) {
+              navigator.share({ title: "FitPulse", text: shareText }).catch(() => {});
+            } else {
+              navigator.clipboard.writeText(shareText);
+            }
+          }}
+          className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary/40 transition-all"
+          title="Compartilhar"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+        </button>
 
         {/* Comments toggle */}
         <button

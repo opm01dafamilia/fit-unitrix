@@ -35,6 +35,7 @@ const Comunidade = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [friendIds, setFriendIds] = useState<string[]>([]);
   const [userCity, setUserCity] = useState<string | null>(null);
+  const [feedFilter, setFeedFilter] = useState<"global" | "friends">("global");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Load friend IDs and user city
@@ -97,9 +98,15 @@ const Comunidade = () => {
         comments: commentsMap.get(a.id) || [],
       }));
 
+      // Filter by tab
+      let filtered = mapped;
+      if (feedFilter === "friends" && user) {
+        filtered = mapped.filter(a => friendIds.includes(a.user_id) || a.user_id === user.id);
+      }
+
       // Sort: friends first, then same city, then global
-      if (user) {
-        mapped.sort((a, b) => {
+      if (user && feedFilter === "global") {
+        filtered.sort((a, b) => {
           const aFriend = friendIds.includes(a.user_id) || a.user_id === user.id;
           const bFriend = friendIds.includes(b.user_id) || b.user_id === user.id;
           if (aFriend && !bFriend) return -1;
@@ -117,12 +124,12 @@ const Comunidade = () => {
       }
 
       if (append) {
-        setActivities(prev => [...prev, ...mapped]);
+        setActivities(prev => [...prev, ...filtered]);
       } else {
-        setActivities(mapped);
+        setActivities(filtered);
       }
     } catch { /* silent */ }
-  }, [user, friendIds, userCity]);
+  }, [user, friendIds, userCity, feedFilter]);
 
   // Initial load
   useEffect(() => {
@@ -313,9 +320,32 @@ const Comunidade = () => {
         </div>
       </div>
 
-      {/* Activity Feed */}
+      {/* Filter Tabs + Feed */}
       <div>
-        <h3 className="font-display font-semibold text-base mb-4">Feed de Atividades</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => { setFeedFilter("global"); setActivities([]); setHasMore(true); }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              feedFilter === "global"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-secondary/40 text-muted-foreground border border-border/20 hover:bg-secondary/60"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            Global
+          </button>
+          <button
+            onClick={() => { setFeedFilter("friends"); setActivities([]); setHasMore(true); }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              feedFilter === "friends"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-secondary/40 text-muted-foreground border border-border/20 hover:bg-secondary/60"
+            }`}
+          >
+            <UserCheck className="w-4 h-4" />
+            Amigos
+          </button>
+        </div>
         {activities.length > 0 ? (
           <div className="space-y-3">
             {activities.map(activity => (
