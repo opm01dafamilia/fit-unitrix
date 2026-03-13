@@ -17,6 +17,7 @@ import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerc
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
 import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
 import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
+import { savePerformance, getProgressionDecision, getExerciseEvolution, getSessionSummary, type RPE, type ProgressionDecision, type WeightEvolutionPoint, type SessionProgressionSummary } from "@/lib/smartProgressionEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
@@ -164,6 +165,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   // Intensity techniques
   const [techniqueAssignments, setTechniqueAssignments] = useState<ExerciseTechniqueAssignment[]>([]);
   const [showTechniqueInfo, setShowTechniqueInfo] = useState(false);
+
+  // RPE / Smart Progression
+  const [selectedRPE, setSelectedRPE] = useState<RPE | null>(null);
+  const [progressionDecisions, setProgressionDecisions] = useState<Record<number, ProgressionDecision>>({});
+  const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
+  const [showEvolutionChart, setShowEvolutionChart] = useState(false);
+  const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
@@ -495,12 +503,48 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }, 200);
   }, [currentExIndex]);
 
+  // Save exercise performance with RPE
+  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE) => {
+    const ex = exercises[exIdx];
+    const exSets = sets[exIdx] || [];
+    if (exSets.length === 0) return;
+    const grupo = day.grupo.toLowerCase();
+    let muscleGroup = "geral";
+    for (const key of Object.keys(muscleGroupColors)) {
+      if (grupo.includes(key)) { muscleGroup = key; break; }
+    }
+    const avgReps = exSets.reduce((a, s) => a + s.reps, 0) / exSets.length;
+    const maxWeight = Math.max(...exSets.map(s => s.kg));
+    const targetRepNum = parseInt(ex.reps) || 10;
+
+    savePerformance({
+      exercise_name: ex.nome,
+      muscle_group: muscleGroup,
+      sets_completed: exSets.length,
+      sets_target: parseInt(ex.series) || 4,
+      avg_reps: Math.round(avgReps),
+      target_reps: targetRepNum,
+      max_weight: maxWeight,
+      rpe,
+      date: new Date().toISOString().slice(0, 10),
+    });
+
+    // Get progression decision after saving
+    const decision = getProgressionDecision(ex.nome);
+    setProgressionDecisions(prev => ({ ...prev, [exIdx]: decision }));
+  }, [exercises, sets, day]);
+
   const goToExercise = (idx: number) => {
+    // Save RPE performance if we had one selected for current exercise
+    if (selectedRPE && currentSets.length > 0) {
+      saveExercisePerformance(currentExIndex, selectedRPE);
+    }
     setCurrentExIndex(idx);
     setPhase("input");
     setRestTime(0);
     setInputKg("");
     setInputReps("");
+    setSelectedRPE(null);
   };
 
   const goNext = () => {
@@ -558,6 +602,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         const { error: histError } = await supabase.from("exercise_history").insert(historyRows as any);
         if (histError) console.error("Error saving exercise history:", histError);
       }
+      // Generate session summary for completion screen
+      const exerciseNames = exercises.filter((_, i) => (sets[i] || []).length > 0).map(e => e.nome);
+      const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
+      setSessionSummary(summary);
       setShowCompletion(true);
     } catch {
       toast.error("Erro ao salvar sessão");
@@ -722,6 +770,45 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-[10px] text-muted-foreground">Volume (kg)</span>
             </div>
           </div>
+          {/* Progression Summary */}
+          {sessionSummary && (sessionSummary.totalEvolutions > 0 || sessionSummary.totalOverloads > 0) && (
+            <div className="glass-card p-4 w-full mb-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">📊 Análise de Progressão</h3>
+              <div className="space-y-2">
+                {sessionSummary.totalEvolutions > 0 && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-primary/5 border border-primary/15">
+                    <TrendingUp className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-primary">📈 Evolução detectada</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {sessionSummary.totalEvolutions} exercício(s) prontos para subir de nível
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {sessionSummary.totalOverloads > 0 && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/5 border border-destructive/15">
+                    <TrendingDown className="w-4 h-4 text-destructive shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-destructive">⚠️ Ajuste recomendado</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {sessionSummary.totalOverloads} exercício(s) precisam de ajuste de carga
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {sessionSummary.topEvolution && (
+                  <div className="p-2.5 rounded-xl bg-secondary/40">
+                    <p className="text-[10px] text-muted-foreground">Próximo passo para <span className="font-semibold text-foreground">{sessionSummary.topEvolution.exercise}</span>:</p>
+                    <p className="text-xs font-medium mt-0.5">{sessionSummary.topEvolution.decision.emoji} {sessionSummary.topEvolution.decision.detail}</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</p>
+              </div>
+            </div>
+          )}
           <div className="glass-card p-4 w-full mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold">{day.dia}</span>
@@ -1244,19 +1331,71 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <p className="text-xs text-muted-foreground mt-0.5">
               {currentSets.length} séries • {currentSets.reduce((a, s) => a + s.kg * s.reps, 0).toFixed(0)}kg volume
             </p>
+
+            {/* RPE Selector */}
+            <div className="w-full mt-4 p-3.5 rounded-xl bg-secondary/40 border border-border/30">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Como foi a dificuldade?</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { value: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
+                  { value: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
+                  { value: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                ]).map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setSelectedRPE(option.value);
+                      saveExercisePerformance(currentExIndex, option.value);
+                    }}
+                    className={`p-3 rounded-xl border-2 transition-all text-center ${
+                      selectedRPE === option.value
+                        ? `${option.color} scale-105 shadow-md`
+                        : "border-border/30 bg-secondary/30 hover:border-border/60"
+                    }`}
+                  >
+                    <span className="text-xl block mb-1">{option.emoji}</span>
+                    <span className="text-[11px] font-semibold block">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Progression Decision Feedback */}
+            {selectedRPE && progressionDecisions[currentExIndex] && (
+              <div className={`w-full mt-3 p-3.5 rounded-xl animate-fade-in border ${
+                progressionDecisions[currentExIndex].type === "evolution" ? "border-primary/20 bg-primary/5" :
+                progressionDecisions[currentExIndex].type === "overload" ? "border-destructive/20 bg-destructive/5" :
+                "border-border/30 bg-secondary/30"
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{progressionDecisions[currentExIndex].emoji}</span>
+                  <span className="text-sm font-semibold">
+                    {progressionDecisions[currentExIndex].type === "evolution" ? "Evolução detectada" :
+                     progressionDecisions[currentExIndex].type === "overload" ? "Treino muito pesado" :
+                     "Manter ritmo"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">{progressionDecisions[currentExIndex].label}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">{progressionDecisions[currentExIndex].detail}</p>
+              </div>
+            )}
+
             <div className="flex gap-3 mt-5 w-full">
               {currentExIndex < totalExercises - 1 ? (
-                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
                   Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
                   <Trophy className="w-5 h-5 mr-2" /> Finalizar Treino
                 </Button>
               )}
             </div>
+            {!selectedRPE && (
+              <p className="text-[10px] text-muted-foreground mt-2 italic">Selecione a dificuldade para continuar</p>
+            )}
             {currentSets.length < targetSeries && (
-              <button onClick={() => setPhase("input")} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              <button onClick={() => { setPhase("input"); setSelectedRPE(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
                 + Adicionar mais séries
               </button>
             )}
@@ -1407,8 +1546,77 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         <div className="glass-card p-4 glow-border animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-display font-semibold text-sm">Histórico do Exercício</h3>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}><X className="w-4 h-4" /></Button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  const data = getExerciseEvolution(currentEx.nome);
+                  setEvolutionData(data);
+                  setShowEvolutionChart(!showEvolutionChart);
+                }}
+                className={`text-[10px] px-2 py-1 rounded-md transition-colors ${showEvolutionChart ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                📊 Gráfico
+              </button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowHistory(false)}><X className="w-4 h-4" /></Button>
+            </div>
           </div>
+
+          {/* Mini Evolution Chart */}
+          {showEvolutionChart && evolutionData.length > 1 && (
+            <div className="mb-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2">Evolução de Carga</p>
+              <div className="flex items-end gap-1 h-20">
+                {(() => {
+                  const maxW = Math.max(...evolutionData.map(d => d.weight));
+                  const minW = Math.min(...evolutionData.map(d => d.weight));
+                  const range = maxW - minW || 1;
+                  return evolutionData.map((point, i) => {
+                    const height = 20 + ((point.weight - minW) / range) * 60;
+                    const isLast = i === evolutionData.length - 1;
+                    return (
+                      <TooltipProvider key={i}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex flex-col items-center flex-1 gap-1">
+                              <div
+                                className={`w-full rounded-t-md transition-all ${isLast ? "bg-primary" : "bg-primary/40"}`}
+                                style={{ height: `${height}%` }}
+                              />
+                              <span className="text-[8px] text-muted-foreground">{point.date.slice(5)}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-[10px]">
+                            {point.weight}kg • {point.reps} reps{point.rpe ? ` • ${point.rpe}` : ""}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  });
+                })()}
+              </div>
+              {evolutionData.length >= 2 && (
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+                  <span className="text-[10px] text-muted-foreground">
+                    {evolutionData[0].weight}kg → {evolutionData[evolutionData.length - 1].weight}kg
+                  </span>
+                  <span className={`text-[10px] font-semibold ${
+                    evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "text-primary" :
+                    evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "text-destructive" :
+                    "text-muted-foreground"
+                  }`}>
+                    {evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "📈" : evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "📉" : "➡️"}
+                    {" "}{(evolutionData[evolutionData.length - 1].weight - evolutionData[0].weight).toFixed(1)}kg
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          {showEvolutionChart && evolutionData.length <= 1 && (
+            <div className="mb-3 p-3 rounded-xl bg-secondary/30 border border-border/30 text-center">
+              <p className="text-xs text-muted-foreground">Gráfico disponível após 2+ treinos registrados.</p>
+            </div>
+          )}
+
           {recentSessions.length === 0 ? (
             <p className="text-xs text-muted-foreground">Nenhum histórico encontrado.</p>
           ) : (
