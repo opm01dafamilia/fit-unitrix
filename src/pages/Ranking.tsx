@@ -401,7 +401,7 @@ const Ranking = () => {
             </div>
             <div className="p-2.5 rounded-xl bg-secondary/40 border border-border/30 text-center">
               <TrendingUp className="w-3.5 h-3.5 text-primary mx-auto mb-1" />
-              <p className="text-sm font-display font-bold">#{userGlobalRank || '—'}</p>
+              <p className="text-sm font-display font-bold">#{userGlobalPosition || userGlobalRank || '—'}</p>
               <p className="text-[8px] text-muted-foreground">Posição</p>
             </div>
             <div className="p-2.5 rounded-xl bg-secondary/40 border border-border/30 text-center">
