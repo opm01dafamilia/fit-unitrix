@@ -880,6 +880,24 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             />
           )}
           <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
+          {/* Intensity technique badge */}
+          {currentTechnique && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setShowTechniqueInfo(!showTechniqueInfo)}
+                    className={`mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95 ${currentTechnique.technique.badgeClass}`}
+                  >
+                    {currentTechnique.technique.emoji} {currentTechnique.technique.shortLabel}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[250px] text-xs">
+                  {currentTechnique.technique.tooltip}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {libraryExercise && (
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
               <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
