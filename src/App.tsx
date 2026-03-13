@@ -177,6 +177,7 @@ const App = () => (
               <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
               <Route path="/temporadas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Temporadas /></Suspense></ErrorBoundary>} />
               <Route path="/minha-liga" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><MinhaLiga /></Suspense></ErrorBoundary>} />
+              <Route path="/evolucao" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoTreino /></Suspense></ErrorBoundary>} />
               <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
               <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
               <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
