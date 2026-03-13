@@ -996,6 +996,24 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                 {cycleStatus.phaseEmoji} {cycleStatus.phaseLabel}
               </span>
             )}
+            {fatigueStatus && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border cursor-help ${
+                      fatigueStatus.fatigue.level === "extreme"
+                        ? "bg-destructive/10 text-destructive border-destructive/15"
+                        : "bg-amber-500/10 text-amber-400 border-amber-500/15"
+                    }`}>
+                      {fatigueStatus.fatigue.emoji} Fadiga
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">{fatigueStatus.fatigue.message}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
         {/* Full-width progress bar */}
