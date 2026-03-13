@@ -680,7 +680,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["desenvolvimento-arnold", "desenvolvimento-maquina"],
+    alternativas: ["desenvolvimento-arnold", "desenvolvimento-maquina", "elevacao-lateral", "elevacao-frontal"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
