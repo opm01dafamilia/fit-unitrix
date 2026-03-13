@@ -980,7 +980,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["abdominal-crunch", "abdominal-bicicleta"],
+    alternativas: ["abdominal-crunch", "abdominal-bicicleta", "elevacao-pernas"],
     animacao: { frames: ["🧎 —", "🧎 —"], cor: "hsl(45 93% 47%)" },
   },
   {
