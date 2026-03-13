@@ -23,6 +23,7 @@ const Biblioteca = lazy(() => import("./pages/Biblioteca"));
 const AnaliseCorporal = lazy(() => import("./pages/AnaliseCorporal"));
 const Ranking = lazy(() => import("./pages/Ranking"));
 const Comunidade = lazy(() => import("./pages/Comunidade"));
+const Desafios = lazy(() => import("./pages/Desafios"));
 const Convites = lazy(() => import("./pages/Convites"));
 const Amigos = lazy(() => import("./pages/Amigos"));
 const InviteLanding = lazy(() => import("./pages/InviteLanding"));
@@ -170,6 +171,7 @@ const App = () => (
               <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
               <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
               <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
+              <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
               <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
               <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
               <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
