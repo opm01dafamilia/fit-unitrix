@@ -556,7 +556,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["agachamento-livre", "leg-press"],
+    alternativas: ["agachamento-livre", "leg-press", "agachamento-goblet", "agachamento-bulgaro"],
     animacao: { frames: ["🦵 ↗", "🦵 ↙"], cor: "hsl(45 93% 47%)" },
   },
   {
