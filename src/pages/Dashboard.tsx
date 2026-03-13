@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 
