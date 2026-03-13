@@ -366,7 +366,7 @@ const Ranking = () => {
               <p className="text-sm text-muted-foreground">{userXP} XP Total</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-display font-bold text-chart-3">#{userGlobalRank || '—'}</p>
+              <p className="text-2xl font-display font-bold text-chart-3">#{userGlobalPosition || userGlobalRank || '—'}</p>
               <p className="text-[10px] text-muted-foreground">Global</p>
             </div>
           </div>
