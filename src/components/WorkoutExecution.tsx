@@ -778,7 +778,52 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             ))}
           </div>
         </div>
-        {cardioRec && (
+        {/* Smart Cardio Card */}
+        {smartCardio && (
+          <div className="glass-card p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+              🔥 Cardio do Dia
+            </h3>
+            <div className="p-3.5 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/5 border border-orange-500/15">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+                  <span className="text-lg">{smartCardio.emoji}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">{smartCardio.titulo}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{smartCardio.desc}</p>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-orange-500/15 text-orange-400 border border-orange-500/20 flex items-center gap-1">
+                      ⏱️ {smartCardio.duracao}
+                    </span>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border ${
+                      smartCardio.intensidade === "Alta" ? "bg-red-500/10 text-red-400 border-red-500/20" :
+                      smartCardio.intensidade === "Moderada" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                      "bg-green-500/10 text-green-400 border-green-500/20"
+                    }`}>
+                      {smartCardio.intensidade}
+                    </span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-md bg-secondary/60 text-muted-foreground border border-border/30">
+                      {smartCardio.tipo}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
+                  💡 {smartCardio.objetivo} • {smartCardio.momento === "pos-treino" ? "Realizar após o treino" : smartCardio.momento === "dia-descanso" ? "Ideal em dia de descanso" : "Qualquer momento"}
+                </p>
+              </div>
+              {isLegDay && (
+                <div className="mt-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                  <p className="text-[10px] text-amber-400 font-medium">⚠️ Dia de perna — cardio reduzido automaticamente para não comprometer recuperação.</p>
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 italic">💡 Cardio acelera resultados quando feito com estratégia.</p>
+          </div>
+        )}
+        {!smartCardio && cardioRec && (
           <div className="glass-card p-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Cardio Sugerido</h3>
             <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
