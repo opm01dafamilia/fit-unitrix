@@ -700,7 +700,9 @@ const sizePixels = {
   lg: { w: 224, h: 224 },
 };
 
-const ExerciseAnimation = ({ exercise, className = "", size = "md" }: ExerciseAnimationProps) => {
+import { memo } from "react";
+
+const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: ExerciseAnimationProps) => {
   const [animTime, setAnimTime] = useState(0);
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifLoaded, setGifLoaded] = useState(false);
