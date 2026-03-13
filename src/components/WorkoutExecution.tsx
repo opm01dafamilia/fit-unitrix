@@ -558,6 +558,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     if (selectedRPE && currentSets.length > 0) {
       saveExercisePerformance(currentExIndex, selectedRPE);
     }
+    // Register exercise_completed micro-victory if sets were recorded
+    if (currentSets.length > 0) {
+      registerMicroVictory("exercise_completed");
+    }
     setCurrentExIndex(idx);
     setPhase("input");
     setRestTime(0);
