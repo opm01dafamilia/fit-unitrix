@@ -158,6 +158,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [exerciseHistories, setExerciseHistories] = useState<Record<string, ExerciseHistoryEntry[]>>({});
   const [progressions, setProgressions] = useState<Record<string, ProgressionResult>>({});
   const [finishedFeedback, setFinishedFeedback] = useState<Record<number, boolean>>({});
+  
+  // Intensity techniques
+  const [techniqueAssignments, setTechniqueAssignments] = useState<ExerciseTechniqueAssignment[]>([]);
+  const [showTechniqueInfo, setShowTechniqueInfo] = useState(false);
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
