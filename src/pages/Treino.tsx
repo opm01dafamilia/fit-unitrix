@@ -845,6 +845,82 @@ const Treino = () => {
             </div>
           )}
 
+          {/* Cycle Progression Status */}
+          {cycleStatus && (
+            <div className="glass-card p-4 lg:p-5 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                      <span className="text-lg">{cycleStatus.phaseEmoji}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold">{cycleStatus.phaseLabel}</p>
+                        <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">
+                          Semana {cycleStatus.currentWeek}/5
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{cycleStatus.phaseDescription}</p>
+                    </div>
+                  </div>
+                  {cycleStatus.totalCycles > 0 && (
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <RotateCcw className="w-3 h-3" />
+                      <span>{cycleStatus.totalCycles}º ciclo</span>
+                    </div>
+                  )}
+                </div>
+                {/* Cycle progress dots */}
+                <div className="flex items-center gap-2 mt-3">
+                  {(["adaptacao", "aumento", "moderado", "intenso", "deload"] as const).map((phase, i) => {
+                    const isActive = i + 1 === cycleStatus.currentWeek;
+                    const isPast = i + 1 < cycleStatus.currentWeek;
+                    const labels = ["🌱", "📈", "⚡", "🔥", "🧘"];
+                    return (
+                      <div key={phase} className="flex-1 flex flex-col items-center gap-1">
+                        <div className={`w-full h-2 rounded-full transition-all ${
+                          isActive ? "bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]" :
+                          isPast ? "bg-primary/40" : "bg-muted"
+                        }`} />
+                        <span className={`text-[9px] ${isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                          {labels[i]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Adjustments summary */}
+                {cycleStatus.phase !== "adaptacao" && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {cycleStatus.loadMultiplier !== 1.0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.loadMultiplier > 1 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        {cycleStatus.loadMultiplier > 1 ? "↑" : "↓"} Carga {Math.round((cycleStatus.loadMultiplier - 1) * 100)}%
+                      </span>
+                    )}
+                    {cycleStatus.volumeAdjust !== 0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.volumeAdjust > 0 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        {cycleStatus.volumeAdjust > 0 ? "+" : ""}{cycleStatus.volumeAdjust} série
+                      </span>
+                    )}
+                    {cycleStatus.restAdjust !== 0 && (
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                        cycleStatus.restAdjust < 0 ? "bg-orange-500/10 text-orange-400" : "bg-chart-2/10 text-chart-2"
+                      }`}>
+                        Descanso {cycleStatus.restAdjust > 0 ? "+" : ""}{cycleStatus.restAdjust}s
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Streak + Stats Row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="glass-card p-4 lg:p-5">
