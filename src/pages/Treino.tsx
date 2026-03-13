@@ -70,6 +70,8 @@ const Treino = () => {
   // Weekly evolution
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
   const [focusDay, setFocusDay] = useState<any | null>(null);
+  const [cycleStatus, setCycleStatus] = useState<CycleStatus | null>(null);
+  const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
