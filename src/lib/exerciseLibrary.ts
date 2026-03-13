@@ -101,7 +101,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-inclinado-halteres", "supino-maquina", "flexao"],
+    alternativas: ["supino-inclinado-halteres", "supino-maquina", "crucifixo", "cross-over", "flexao"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -126,7 +126,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-reto", "crucifixo", "cross-over"],
+    alternativas: ["supino-reto", "supino-maquina", "crucifixo", "cross-over", "flexao"],
     animacao: { frames: ["🏋️ ↗", "🏋️ ↙"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -151,7 +151,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-reto", "flexao"],
+    alternativas: ["supino-reto", "supino-inclinado-halteres", "crucifixo", "cross-over", "flexao"],
     animacao: { frames: ["🏋️ →", "🏋️ ←"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -176,7 +176,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["cross-over", "crucifixo-maquina"],
+    alternativas: ["cross-over", "crucifixo-maquina", "supino-inclinado-halteres", "flexao"],
     animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -201,7 +201,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["crucifixo", "cross-over"],
+    alternativas: ["crucifixo", "cross-over", "supino-reto", "flexao"],
     animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -226,7 +226,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["crucifixo", "crucifixo-maquina"],
+    alternativas: ["crucifixo", "crucifixo-maquina", "supino-inclinado-halteres", "flexao"],
     animacao: { frames: ["✖ ↔", "✖ →←"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -251,7 +251,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["supino-reto", "supino-maquina"],
+    alternativas: ["supino-reto", "supino-maquina", "crucifixo", "cross-over"],
     animacao: { frames: ["🧎 ↓", "🧎 ↑"], cor: "hsl(152 69% 46%)" },
   },
 
@@ -278,7 +278,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["pulldown", "pulldown-fechado"],
+    alternativas: ["pulldown", "pulldown-fechado", "remada-curvada", "remada-baixa"],
     animacao: { frames: ["🧗 ↑", "🧗 ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -303,7 +303,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["barra-fixa", "pulldown-fechado"],
+    alternativas: ["barra-fixa", "pulldown-fechado", "remada-baixa", "remada-curvada"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -328,7 +328,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["pulldown", "barra-fixa"],
+    alternativas: ["pulldown", "barra-fixa", "remada-baixa", "remada-curvada"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -353,7 +353,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["remada-maquina", "remada-unilateral"],
+    alternativas: ["remada-maquina", "remada-unilateral", "remada-baixa", "pulldown"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -378,7 +378,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["remada-curvada", "remada-unilateral"],
+    alternativas: ["remada-curvada", "remada-unilateral", "remada-baixa", "pulldown"],
     animacao: { frames: ["🏋️ ←", "🏋️ →"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -403,7 +403,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["remada-curvada", "remada-maquina"],
+    alternativas: ["remada-curvada", "remada-maquina", "remada-baixa", "pulldown"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(199 89% 48%)" },
   },
   {
@@ -428,7 +428,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["remada-curvada", "remada-maquina"],
+    alternativas: ["remada-curvada", "remada-maquina", "remada-unilateral", "pulldown"],
     animacao: { frames: ["🏋️ ←", "🏋️ →"], cor: "hsl(199 89% 48%)" },
   },
 
@@ -506,7 +506,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["agachamento-livre", "leg-press"],
+    alternativas: ["agachamento-livre", "leg-press", "agachamento-goblet", "cadeira-extensora"],
     animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -531,7 +531,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["agachamento-livre", "leg-press"],
+    alternativas: ["agachamento-livre", "leg-press", "agachamento-bulgaro", "cadeira-extensora"],
     animacao: { frames: ["🧎 ↓", "🧍 ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -556,7 +556,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["agachamento-livre", "leg-press"],
+    alternativas: ["agachamento-livre", "leg-press", "agachamento-goblet", "agachamento-bulgaro"],
     animacao: { frames: ["🦵 ↗", "🦵 ↙"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -581,7 +581,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["stiff"],
+    alternativas: ["stiff", "agachamento-bulgaro", "panturrilha-pe"],
     animacao: { frames: ["🦵 ↑", "🦵 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -606,7 +606,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["mesa-flexora"],
+    alternativas: ["mesa-flexora", "agachamento-livre", "agachamento-bulgaro"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -631,7 +631,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["panturrilha-sentado"],
+    alternativas: ["panturrilha-sentado", "agachamento-livre"],
     animacao: { frames: ["🦶 ↑", "🦶 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -654,7 +654,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["panturrilha-pe"],
+    alternativas: ["panturrilha-pe", "agachamento-goblet"],
     animacao: { frames: ["🦶 ↑", "🦶 ↓"], cor: "hsl(45 93% 47%)" },
   },
 
@@ -680,7 +680,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["desenvolvimento-arnold", "desenvolvimento-maquina"],
+    alternativas: ["desenvolvimento-arnold", "desenvolvimento-maquina", "elevacao-lateral", "elevacao-frontal"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
@@ -705,7 +705,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["desenvolvimento-militar", "desenvolvimento-maquina"],
+    alternativas: ["desenvolvimento-militar", "desenvolvimento-maquina", "elevacao-lateral", "elevacao-frontal"],
     animacao: { frames: ["🏋️ ↑🔄", "🏋️ ↓🔄"], cor: "hsl(280 65% 60%)" },
   },
   {
@@ -729,7 +729,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["desenvolvimento-militar", "desenvolvimento-arnold"],
+    alternativas: ["desenvolvimento-militar", "desenvolvimento-arnold", "elevacao-lateral", "face-pull"],
     animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
@@ -754,7 +754,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["elevacao-frontal", "face-pull"],
+    alternativas: ["elevacao-frontal", "face-pull", "desenvolvimento-maquina"],
     animacao: { frames: ["💪 ↗", "💪 ↙"], cor: "hsl(280 65% 60%)" },
   },
   {
@@ -778,7 +778,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["elevacao-lateral"],
+    alternativas: ["elevacao-lateral", "face-pull", "desenvolvimento-maquina"],
     animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
@@ -803,7 +803,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["elevacao-lateral"],
+    alternativas: ["elevacao-lateral", "elevacao-frontal", "desenvolvimento-maquina"],
     animacao: { frames: ["🤲 ←", "🤲 →"], cor: "hsl(280 65% 60%)" },
   },
 
@@ -830,7 +830,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["rosca-martelo", "rosca-scott"],
+    alternativas: ["rosca-martelo", "rosca-scott", "triceps-corda"],
     animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -854,7 +854,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["rosca-direta", "rosca-scott"],
+    alternativas: ["rosca-direta", "rosca-scott", "triceps-corda"],
     animacao: { frames: ["🔨 ↑", "🔨 ↓"], cor: "hsl(152 69% 46%)" },
   },
   {
@@ -879,7 +879,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["rosca-direta", "rosca-martelo"],
+    alternativas: ["rosca-direta", "rosca-martelo", "triceps-corda"],
     animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(152 69% 46%)" },
   },
 
@@ -906,7 +906,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-testa", "mergulho-paralelas"],
+    alternativas: ["triceps-testa", "mergulho-paralelas", "rosca-direta"],
     animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
@@ -930,7 +930,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-corda", "mergulho-paralelas"],
+    alternativas: ["triceps-corda", "mergulho-paralelas", "rosca-direta"],
     animacao: { frames: ["💪 ↓", "💪 ↑"], cor: "hsl(0 72% 51%)" },
   },
   {
@@ -954,7 +954,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "avançado",
     tipo: "composto",
     tipoExercicio: "musculação",
-    alternativas: ["triceps-testa", "triceps-corda"],
+    alternativas: ["triceps-testa", "triceps-corda", "rosca-direta"],
     animacao: { frames: ["🏋️ ↓", "🏋️ ↑"], cor: "hsl(0 72% 51%)" },
   },
 
@@ -980,7 +980,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["abdominal-crunch", "abdominal-bicicleta"],
+    alternativas: ["abdominal-crunch", "abdominal-bicicleta", "elevacao-pernas"],
     animacao: { frames: ["🧎 —", "🧎 —"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -1005,7 +1005,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["prancha-frontal", "abdominal-bicicleta"],
+    alternativas: ["prancha-frontal", "abdominal-bicicleta", "elevacao-pernas"],
     animacao: { frames: ["🧎 ↑", "🧎 ↓"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -1030,7 +1030,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["prancha-frontal", "abdominal-crunch"],
+    alternativas: ["prancha-frontal", "abdominal-crunch", "elevacao-pernas"],
     animacao: { frames: ["🚴 ←", "🚴 →"], cor: "hsl(45 93% 47%)" },
   },
   {
@@ -1055,7 +1055,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "intermediário",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["abdominal-crunch", "prancha-frontal"],
+    alternativas: ["abdominal-crunch", "prancha-frontal", "abdominal-bicicleta"],
     animacao: { frames: ["🦵 ↑", "🦵 ↓"], cor: "hsl(45 93% 47%)" },
   },
 

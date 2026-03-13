@@ -1304,10 +1304,15 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               const altLibrary = exerciseLibrary.find(e => 
                 alt.nome.toLowerCase().includes(e.nome.toLowerCase()) || e.nome.toLowerCase().includes(alt.nome.toLowerCase())
               );
+              const difficultyColor = altLibrary?.dificuldade === "iniciante" 
+                ? "text-green-400 bg-green-500/10 border-green-500/20" 
+                : altLibrary?.dificuldade === "avançado" 
+                ? "text-red-400 bg-red-500/10 border-red-500/20" 
+                : "text-amber-400 bg-amber-500/10 border-amber-500/20";
               return (
                 <button key={i} onClick={() => swapExercise(alt.nome)}
                   className="w-full text-left p-3.5 rounded-xl bg-secondary/40 hover:bg-secondary/60 border border-border/30 hover:border-primary/20 transition-all active:scale-[0.98] flex items-start gap-3 group">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-secondary/80 to-muted/50 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
                     {altLibrary ? (
                       <ExerciseAnimation exercise={altLibrary} size="sm" className="scale-90" />
                     ) : (
@@ -1318,8 +1323,14 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{alt.nome}</span>
                     </div>
-                    {alt.desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">{alt.desc}</p>}
-                    <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                    {altLibrary && (
+                      <p className="text-[10px] text-muted-foreground mb-1">
+                        <Dumbbell className="w-3 h-3 inline mr-0.5 -mt-0.5" />
+                        {altLibrary.equipamento} • {altLibrary.musculos.slice(0, 2).join(", ")}
+                      </p>
+                    )}
+                    {!altLibrary && alt.desc && <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed mb-1">{alt.desc}</p>}
+                    <div className="flex flex-wrap items-center gap-1">
                       {alt.tag && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">{alt.tag}</span>
                       )}
@@ -1328,15 +1339,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                           <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium border border-primary/15">
                             {altLibrary.grupoLabel}
                           </span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 capitalize">
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-medium border capitalize ${difficultyColor}`}>
                             {altLibrary.dificuldade}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/30 capitalize">
+                            {altLibrary.tipo}
                           </span>
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="shrink-0 mt-3">
-                    <RefreshCw className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="shrink-0 mt-4">
+                    <ChevronRight className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </button>
               );
