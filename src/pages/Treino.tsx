@@ -224,6 +224,13 @@ const Treino = () => {
     setComebackStatus(status);
   }, [sessions, activePlan, loadingSessions, comebackWorkouts]);
 
+  // Fatigue detection
+  useEffect(() => {
+    if (loadingSessions) return;
+    const summary = getWeeklyFatigueSummary();
+    setFatigueSummary(summary);
+  }, [sessions, loadingSessions]);
+
   // Cycle status + evolution timeline
   useEffect(() => {
     if (!activePlan || !user || loadingSessions) return;
