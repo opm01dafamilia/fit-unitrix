@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Activity, Target, Menu, Flame, LogOut, User, X, 
-  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake
+  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake, Medal
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -20,6 +20,7 @@ const navItems = [
   { to: "/comunidade", icon: Users, label: "Comunidade" },
   { to: "/desafios", icon: Target, label: "Desafios" },
   { to: "/temporadas", icon: Flame, label: "Temporadas" },
+  { to: "/minha-liga", icon: Medal, label: "Minha Liga" },
   { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/amigos", icon: HeartHandshake, label: "Amigos" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },

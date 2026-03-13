@@ -517,6 +517,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_leagues: {
+        Row: {
+          created_at: string
+          group_number: number
+          id: string
+          league: string
+          season_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_number?: number
+          id?: string
+          league?: string
+          season_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_number?: number
+          id?: string
+          league?: string
+          season_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_leagues_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_ranking_stats: {
         Row: {
           achievements_count: number

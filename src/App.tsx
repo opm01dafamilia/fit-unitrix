@@ -29,6 +29,7 @@ const Convites = lazy(() => import("./pages/Convites"));
 const Amigos = lazy(() => import("./pages/Amigos"));
 const InviteLanding = lazy(() => import("./pages/InviteLanding"));
 const PerfilFitness = lazy(() => import("./pages/PerfilFitness"));
+const MinhaLiga = lazy(() => import("./pages/MinhaLiga"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -174,6 +175,7 @@ const App = () => (
               <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
               <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
               <Route path="/temporadas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Temporadas /></Suspense></ErrorBoundary>} />
+              <Route path="/minha-liga" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><MinhaLiga /></Suspense></ErrorBoundary>} />
               <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
               <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
               <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
