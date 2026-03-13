@@ -770,6 +770,45 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               <span className="text-[10px] text-muted-foreground">Volume (kg)</span>
             </div>
           </div>
+          {/* Progression Summary */}
+          {sessionSummary && (sessionSummary.totalEvolutions > 0 || sessionSummary.totalOverloads > 0) && (
+            <div className="glass-card p-4 w-full mb-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">📊 Análise de Progressão</h3>
+              <div className="space-y-2">
+                {sessionSummary.totalEvolutions > 0 && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-primary/5 border border-primary/15">
+                    <TrendingUp className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-primary">📈 Evolução detectada</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {sessionSummary.totalEvolutions} exercício(s) prontos para subir de nível
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {sessionSummary.totalOverloads > 0 && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/5 border border-destructive/15">
+                    <TrendingDown className="w-4 h-4 text-destructive shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-destructive">⚠️ Ajuste recomendado</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {sessionSummary.totalOverloads} exercício(s) precisam de ajuste de carga
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {sessionSummary.topEvolution && (
+                  <div className="p-2.5 rounded-xl bg-secondary/40">
+                    <p className="text-[10px] text-muted-foreground">Próximo passo para <span className="font-semibold text-foreground">{sessionSummary.topEvolution.exercise}</span>:</p>
+                    <p className="text-xs font-medium mt-0.5">{sessionSummary.topEvolution.decision.emoji} {sessionSummary.topEvolution.decision.detail}</p>
+                  </div>
+                )}
+              </div>
+              <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</p>
+              </div>
+            </div>
+          )}
           <div className="glass-card p-4 w-full mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold">{day.dia}</span>
