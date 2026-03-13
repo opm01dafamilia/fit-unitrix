@@ -742,6 +742,9 @@ export function generateWorkoutPlan(
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
 
+  // Build preferred names set from preferences
+  const preferredNames = new Set(preferences?.preferred || []);
+
   // Track used exercise names to avoid repetition on adjacent days
   const prevDayExercises: Set<string> = new Set();
 
