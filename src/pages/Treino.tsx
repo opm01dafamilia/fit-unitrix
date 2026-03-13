@@ -833,6 +833,74 @@ const Treino = () => {
             </div>
           )}
 
+          {/* Comeback Mode Banner */}
+          {comebackStatus && comebackStatus.level === "comeback" && comebackStatus.isInComebackMode && (
+            <div className="glass-card p-5 relative overflow-hidden border border-primary/20 animate-fade-in">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5" />
+              <div className="relative z-10">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center shadow-lg shrink-0">
+                    <span className="text-2xl">🔥</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      Modo Retomada
+                      <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Ativo</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {comebackStatus.message}
+                    </p>
+                  </div>
+                </div>
+                {/* Comeback progress */}
+                {(() => {
+                  const progress = getComebackProgress(comebackWorkouts, comebackStatus.comebackDaysRemaining + comebackWorkouts);
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[11px] text-muted-foreground">Progresso de retomada</span>
+                        <span className="text-[11px] font-bold text-primary">{progress.workoutsCompleted}/{progress.workoutsNeeded} treinos</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700" style={{ width: `${progress.progressPct}%` }} />
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+                {/* Adjustments summary */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                    ↓ Volume -{Math.round(comebackStatus.volumeReduction * 100)}%
+                  </span>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                    ↓ Intensidade reduzida
+                  </span>
+                  {comebackStatus.cardioReduction && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                      🚶 Cardio leve apenas
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Alert Level (light warning, not comeback) */}
+          {comebackStatus && comebackStatus.level === "alert" && (
+            <div className="glass-card p-4 border border-amber-500/15">
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{comebackStatus.messageEmoji}</span>
+                <div>
+                  <p className="text-sm font-medium">{comebackStatus.message}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 italic">{comebackStatus.tooltip}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Next Workout Hero Card */}
           {nextWorkout && (
             <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
