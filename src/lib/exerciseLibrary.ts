@@ -754,7 +754,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["elevacao-frontal", "face-pull"],
+    alternativas: ["elevacao-frontal", "face-pull", "desenvolvimento-maquina"],
     animacao: { frames: ["💪 ↗", "💪 ↙"], cor: "hsl(280 65% 60%)" },
   },
   {
