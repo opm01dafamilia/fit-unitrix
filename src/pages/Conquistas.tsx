@@ -42,7 +42,7 @@ const Conquistas = () => {
         supabase.from("workout_sessions").select("id, completed_at, exercises_completed")
           .eq("user_id", user.id).order("completed_at", { ascending: false }),
         supabase.from("exercise_history").select("exercise_name, weight, created_at")
-          .eq("user_id", user.id).order("created_at", { ascending: false }),
+          .eq("user_id", user.id).order("created_at", { ascending: false }).limit(300),
       ]);
 
       const sessions = (sessionsRes.data as WorkoutSession[]) || [];

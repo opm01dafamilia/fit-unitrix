@@ -66,8 +66,9 @@ const Treino = () => {
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
   const [focusDay, setFocusDay] = useState<any | null>(null);
 
-  // Pre-fill from profile
+  // Pre-fill from profile & start lazy preload
   useEffect(() => {
+    startLazyPreload();
     if (profile?.objective) setObjetivo(profile.objective === "manter" ? "condicionamento" : profile.objective);
     if (profile?.experience_level) setNivel(profile.experience_level);
     if (profile?.experience_level) {
