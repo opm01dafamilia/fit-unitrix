@@ -9,6 +9,7 @@ import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } fro
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
+import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
