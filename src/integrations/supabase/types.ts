@@ -579,31 +579,37 @@ export type Database = {
           challenge_type: string
           created_at: string
           description: string
+          difficulty: string
           icon: string
           id: string
           target_value: number
           title: string
           week_start: string
+          xp_reward: number
         }
         Insert: {
           challenge_type: string
           created_at?: string
           description: string
+          difficulty?: string
           icon?: string
           id?: string
           target_value?: number
           title: string
           week_start?: string
+          xp_reward?: number
         }
         Update: {
           challenge_type?: string
           created_at?: string
           description?: string
+          difficulty?: string
           icon?: string
           id?: string
           target_value?: number
           title?: string
           week_start?: string
+          xp_reward?: number
         }
         Relationships: []
       }
