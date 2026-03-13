@@ -111,7 +111,7 @@ const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
   );
 };
 
-export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, onFinish, onBack }: Props) {
+export default function WorkoutExecution({ plan, dayIndex, userId, experienceLevel = "intermediario", trainingLocation, objective, cycleStatus, onFinish, onBack }: Props) {
   const planData = useMemo(() => plan.plan_data as WorkoutDay[], [plan]);
   const day = useMemo(() => planData[dayIndex], [planData, dayIndex]);
   const [isReady, setIsReady] = useState(false);
