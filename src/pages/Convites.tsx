@@ -71,7 +71,7 @@ const Convites = () => {
       });
     }
 
-    const link = `${window.location.origin}/invite/${inviteCode}`;
+    const link = `https://eco-platform-hub.lovable.app/invite/${inviteCode}`;
     await navigator.clipboard.writeText(link);
     toast.success("Link copiado! Compartilhe com seus amigos 🎉");
     setGenerating(false);
