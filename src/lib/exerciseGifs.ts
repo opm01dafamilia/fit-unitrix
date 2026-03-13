@@ -5,8 +5,8 @@
  */
 
 const EXERCISEDB_API = "https://exercisedb-api.vercel.app/api/v1";
-const CACHE_KEY = "fitpulse_exercise_gifs_v2";
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+const CACHE_KEY = "fitpulse_exercise_gifs_v3";
+const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days (extended from 7)
 
 // In-memory cache to avoid repeated localStorage reads
 let memoryCache: GifCache | null = null;
