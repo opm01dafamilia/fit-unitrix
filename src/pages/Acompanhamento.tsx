@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { registerMicroVictory } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
