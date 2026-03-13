@@ -3,18 +3,32 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
   TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame,
-  CheckCircle2, ChevronDown
+  CheckCircle2, ChevronDown, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, type CardioRecommendation } from "@/lib/workoutRecommendations";
-import { exerciseLibrary, type ExerciseDetail } from "@/lib/exerciseLibrary";
+import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import ExerciseAnimation from "@/components/ExerciseAnimation";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
+
+// Muscle group fallback map: when exercise not in library, use group to determine active muscles
+const muscleGroupFallback: Record<string, MuscleId[]> = {
+  peito: ["peitoral", "triceps", "deltoide-anterior"],
+  costas: ["dorsal", "biceps", "trapezio"],
+  pernas: ["quadriceps", "isquiotibiais", "gluteos"],
+  ombros: ["deltoide-anterior", "deltoide-lateral", "trapezio"],
+  biceps: ["biceps", "antebraco"],
+  triceps: ["triceps"],
+  abdomen: ["reto-abdominal", "obliquos", "core"],
+  hiit: ["quadriceps", "gluteos", "core"],
+  cardio: ["quadriceps", "isquiotibiais", "panturrilha"],
+};
 
 const muscleGroupColors: Record<string, string> = {
   peito: "from-red-500/20 to-red-600/10",
