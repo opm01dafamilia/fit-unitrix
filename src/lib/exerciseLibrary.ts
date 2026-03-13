@@ -201,7 +201,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["crucifixo", "cross-over"],
+    alternativas: ["crucifixo", "cross-over", "supino-reto", "flexao"],
     animacao: { frames: ["🤲 ↔", "🤲 →←"], cor: "hsl(152 69% 46%)" },
   },
   {
