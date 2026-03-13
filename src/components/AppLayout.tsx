@@ -19,6 +19,7 @@ const navItems = [
   { to: "/ranking", icon: Crown, label: "Ranking" },
   { to: "/comunidade", icon: Users, label: "Comunidade" },
   { to: "/desafios", icon: Target, label: "Desafios" },
+  { to: "/temporadas", icon: Flame, label: "Temporadas" },
   { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/amigos", icon: HeartHandshake, label: "Amigos" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
