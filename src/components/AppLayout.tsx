@@ -15,6 +15,7 @@ const navItems = [
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/analise", icon: BarChart3, label: "Análise" },
+  { to: "/evolucao", icon: Brain, label: "Evolução" },
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/ranking", icon: Crown, label: "Ranking" },
   { to: "/comunidade", icon: Users, label: "Comunidade" },
