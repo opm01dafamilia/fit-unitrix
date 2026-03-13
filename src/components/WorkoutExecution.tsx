@@ -534,7 +534,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     setProgressionDecisions(prev => ({ ...prev, [exIdx]: decision }));
   }, [exercises, sets, day]);
 
-
+  const goToExercise = (idx: number) => {
     // Save RPE performance if we had one selected for current exercise
     if (selectedRPE && currentSets.length > 0) {
       saveExercisePerformance(currentExIndex, selectedRPE);
