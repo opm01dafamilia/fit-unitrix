@@ -778,7 +778,7 @@ export const exerciseLibrary: ExerciseDetail[] = [
     dificuldade: "iniciante",
     tipo: "isolado",
     tipoExercicio: "musculação",
-    alternativas: ["elevacao-lateral"],
+    alternativas: ["elevacao-lateral", "face-pull", "desenvolvimento-maquina"],
     animacao: { frames: ["💪 ↑", "💪 ↓"], cor: "hsl(280 65% 60%)" },
   },
   {
