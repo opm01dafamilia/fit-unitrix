@@ -492,6 +492,22 @@ const Ranking = () => {
           )}
         </div>
       )}
+
+      {/* Incentive Message */}
+      <div className="glass-card p-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          💡 <span className="font-medium text-foreground">Suba no ranking mantendo consistência.</span> Treinos regulares, dieta em dia e conquistas desbloqueadas aumentam seu XP.
+        </p>
+      </div>
+
+      {/* Public Profile Modal */}
+      {selectedProfile && (
+        <UserPublicProfile
+          userId={selectedProfile.userId}
+          userName={selectedProfile.userName}
+          onClose={() => setSelectedProfile(null)}
+        />
+      )}
     </div>
   );
 };
