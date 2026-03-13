@@ -18,6 +18,7 @@ const navItems = [
   { to: "/conquistas", icon: Trophy, label: "Conquistas" },
   { to: "/ranking", icon: Crown, label: "Ranking" },
   { to: "/comunidade", icon: Users, label: "Comunidade" },
+  { to: "/desafios", icon: Target, label: "Desafios" },
   { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/amigos", icon: HeartHandshake, label: "Amigos" },
   { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
