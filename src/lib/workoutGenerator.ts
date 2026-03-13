@@ -505,26 +505,50 @@ function shuffleArray<T>(arr: T[], seed: number): T[] {
 
 // Select a varied subset from pool, ensuring rotation across days
 // dayIndex shifts which exercises are picked, so consecutive days with same group get different exercises
+// preferredNames: exercises the user prefers — they get priority but don't dominate
 function selectExercises(
   pool: Exercise[],
   dayIndex: number,
   maxCount: number,
-  usedNames: Set<string>
+  usedNames: Set<string>,
+  preferredNames?: Set<string>
 ): Exercise[] {
   if (pool.length === 0) return [];
   
   // Shuffle pool deterministically based on day index
   const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
   
-  const selected: Exercise[] = [];
-  // First pass: pick exercises not used on adjacent days
-  for (const ex of shuffled) {
-    if (selected.length >= maxCount) break;
-    if (!usedNames.has(ex.nome)) {
-      selected.push(ex);
+  // Separate preferred vs non-preferred
+  const isPreferred = (ex: Exercise) => {
+    if (!preferredNames || preferredNames.size === 0) return false;
+    const nameLower = ex.nome.toLowerCase();
+    for (const pref of preferredNames) {
+      if (nameLower.includes(pref.toLowerCase()) || pref.toLowerCase().includes(nameLower)) return true;
     }
+    return false;
+  };
+
+  const preferred = shuffled.filter(ex => isPreferred(ex) && !usedNames.has(ex.nome));
+  const nonPreferred = shuffled.filter(ex => !isPreferred(ex) && !usedNames.has(ex.nome));
+  
+  // Rule: preferred can fill at most ~50% of slots to avoid domination
+  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.5));
+  
+  const selected: Exercise[] = [];
+  
+  // First: add preferred exercises (capped)
+  for (const ex of preferred) {
+    if (selected.length >= maxPreferred) break;
+    selected.push(ex);
   }
-  // Fill remaining if needed (allows reuse if pool is small)
+  
+  // Then: fill with non-preferred
+  for (const ex of nonPreferred) {
+    if (selected.length >= maxCount) break;
+    selected.push(ex);
+  }
+  
+  // Fill remaining from any unused if needed
   for (const ex of shuffled) {
     if (selected.length >= maxCount) break;
     if (!selected.includes(ex)) {
