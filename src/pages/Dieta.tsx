@@ -17,6 +17,7 @@ import DietFocusMode from "@/components/DietFocusMode";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { format, subDays } from "date-fns";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from "recharts";
+import { writeCache, readCache, CACHE_KEYS, invalidateCache } from "@/lib/smartCache";
 
 const iconMap: Record<string, typeof Coffee> = { Coffee, Sun, Moon, Apple };
 
