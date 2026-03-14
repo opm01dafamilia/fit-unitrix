@@ -24,6 +24,27 @@ const Configuracoes = () => {
   const [honestyMode, setHonestyModeState] = useState(getHonestyMode());
   const validationStats = getValidationStats();
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
+  const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPreferences());
+
+  const NOTIF_TYPE_LABELS: Record<NotificationType, string> = {
+    treino: "🏋️ Treino",
+    dieta: "🥗 Dieta",
+    ranking: "🏆 Ranking",
+    recuperacao: "🧘 Recuperação",
+    meta: "🎯 Metas",
+    conquista: "🏅 Conquistas",
+    social: "👥 Social",
+  };
+
+  const updateNotifPref = (key: keyof typeof notifPrefs.types | "enabled" | "soundEnabled", value: boolean) => {
+    const updated = { ...notifPrefs };
+    if (key === "enabled") updated.enabled = value;
+    else if (key === "soundEnabled") updated.soundEnabled = value;
+    else updated.types = { ...updated.types, [key]: value };
+    setNotifPrefs(updated);
+    saveNotificationPreferences(updated);
+    toast.success("Preferência atualizada!");
+  };
 
   const togglePin = (route: string) => {
     const prefs = getMenuPreferences();
