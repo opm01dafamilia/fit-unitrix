@@ -1143,6 +1143,15 @@ const Treino = () => {
           {/* Periodization Cycle Card */}
           {activePlan && <PeriodizationCycleCard />}
 
+          {/* Muscle Volume Card */}
+          {activePlan && (
+            <MuscleVolumeCard
+              level={profile?.experience_level || "intermediario"}
+              objective={profile?.objective || "hipertrofia"}
+              bodyFocus={activePlan?.body_focus || "completo"}
+            />
+          )}
+
           {/* Next Workout Hero Card */}
           {nextWorkout && (
             <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
