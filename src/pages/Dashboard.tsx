@@ -359,6 +359,9 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Plateau Alert */}
+      <PlateauAlertCard plateau={plateauResult} />
+
       {/* ✨ Micro-Victories Daily Progress */}
       <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
         {victoryFlash && (
