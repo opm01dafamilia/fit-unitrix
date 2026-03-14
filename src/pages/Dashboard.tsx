@@ -4,6 +4,7 @@ import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
 import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { writeCache, readCache, CACHE_KEYS } from "@/lib/smartCache";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
