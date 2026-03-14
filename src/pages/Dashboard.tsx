@@ -396,6 +396,9 @@ const Dashboard = () => {
       {/* Plateau Alert */}
       <PlateauAlertCard plateau={plateauResult} />
 
+      {/* Smart Replanning */}
+      <ReplanningModal replan={replanResult} />
+
       {/* ✨ Micro-Victories Daily Progress */}
       <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
         {victoryFlash && (
