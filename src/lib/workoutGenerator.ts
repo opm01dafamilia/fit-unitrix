@@ -297,55 +297,65 @@ type SplitEntry7 = { groups: string[]; intensity: DayIntensity };
 
 // =====================================================
 // SPLIT TEMPLATES — CORPO COMPLETO (default)
+// REGRA: alternância estrita SUPERIOR → INFERIOR → SUPERIOR
+// Nunca repetir mesma região em dias consecutivos
 // =====================================================
 const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
   emagrecer: {
-    3: [["hiit", "abdomen"], ["pernas", "cardio"], ["peito", "costas", "hiit"]],
-    4: [["hiit", "abdomen"], ["pernas"], ["peito", "triceps", "hiit"], ["costas", "biceps", "cardio"]],
-    5: [["hiit", "abdomen"], ["pernas"], ["peito", "triceps"], ["costas", "biceps"], ["hiit", "ombros", "cardio"]],
-    6: [["peito", "hiit"], ["costas", "abdomen"], ["pernas"], ["ombros", "hiit"], ["biceps", "triceps"], ["hiit", "cardio"]],
+    // 3d: Superior → Inferior → Superior (com cardio/HIIT integrado)
+    3: [["peito", "costas", "hiit"], ["quadriceps", "panturrilha", "cardio"], ["ombros", "triceps", "biceps", "hiit"]],
+    // 4d: Superior → Inferior → Superior → Inferior
+    4: [["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "gluteos", "cardio"]],
+    // 5d: Superior → Inferior → Cardio/Core → Inferior(diff) → Superior(diff)
+    5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["hiit", "abdomen", "cardio"], ["posterior", "gluteos"], ["costas", "biceps", "ombros"]],
+    // 6d: Sup → Inf → Sup → Inf → Sup → Cardio
+    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"], ["hiit", "cardio"]],
   },
   massa: {
-    3: [["peito", "triceps"], ["costas", "biceps"], ["pernas", "ombros"]],
-    4: [["peito", "triceps"], ["costas", "biceps"], ["pernas"], ["ombros", "abdomen"]],
-    5: [["peito"], ["costas"], ["pernas"], ["ombros", "abdomen"], ["biceps", "triceps"]],
-    6: [["peito"], ["costas"], ["pernas"], ["ombros"], ["biceps", "triceps"], ["pernas", "abdomen"]],
+    // 3d: Superior → Inferior → Superior
+    3: [["peito", "triceps"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
+    // 4d: Sup → Inf → Sup → Inf
+    4: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos", "abdomen"]],
+    // 5d: Sup → Inf → Sup → Inf → Sup
+    5: [["peito", "ombros"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["triceps", "ombros", "abdomen"]],
+    // 6d: Sup → Inf → Sup → Inf → Sup → Inf(leve)
+    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"], ["pernas", "panturrilha"]],
   },
   condicionamento: {
-    3: [["hiit", "peito", "costas"], ["pernas", "cardio"], ["hiit", "ombros", "abdomen"]],
-    4: [["hiit", "peito"], ["pernas", "cardio"], ["hiit", "costas"], ["ombros", "abdomen", "cardio"]],
-    5: [["hiit", "peito"], ["pernas"], ["costas", "cardio"], ["hiit", "ombros"], ["abdomen", "cardio"]],
-    6: [["hiit", "peito"], ["pernas"], ["costas", "hiit"], ["ombros", "cardio"], ["hiit", "abdomen"], ["pernas", "cardio"]],
+    3: [["hiit", "peito", "costas"], ["quadriceps", "panturrilha", "cardio"], ["ombros", "triceps", "hiit"]],
+    4: [["hiit", "peito", "triceps"], ["quadriceps", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "gluteos", "cardio"]],
+    5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "cardio"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen", "cardio"]],
+    6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "gluteos", "cardio"], ["ombros", "abdomen"], ["hiit", "cardio"]],
   },
 };
 
 const splitTemplates7: Record<Objective, SplitEntry7[]> = {
   emagrecer: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },
-    { groups: ["cardio", "abdomen"], intensity: "moderado" },
-    { groups: ["costas", "biceps"], intensity: "pesado" },
-    { groups: ["hiit", "abdomen"], intensity: "moderado" },
-    { groups: ["pernas"], intensity: "pesado" },
-    { groups: ["ombros", "hiit"], intensity: "pesado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["peito", "triceps"], intensity: "pesado" },        // Seg: Superior
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" }, // Ter: Inferior
+    { groups: ["hiit", "abdomen"], intensity: "moderado" },        // Qua: Cardio/Core
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
+    { groups: ["costas", "biceps", "ombros"], intensity: "pesado" }, // Sex: Superior (diff)
+    { groups: ["hiit", "cardio"], intensity: "moderado" },          // Sab: Cardio
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Dom: Descanso
   ],
   massa: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },
-    { groups: ["costas", "biceps"], intensity: "pesado" },
-    { groups: ["abdomen", "cardio"], intensity: "moderado" },
-    { groups: ["pernas"], intensity: "pesado" },
-    { groups: ["ombros", "abdomen"], intensity: "moderado" },
-    { groups: ["biceps", "triceps", "peito"], intensity: "pesado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["peito", "triceps"], intensity: "pesado" },          // Seg: Superior
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" }, // Ter: Inferior
+    { groups: ["costas", "biceps"], intensity: "pesado" },          // Qua: Superior (diff)
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
+    { groups: ["ombros", "abdomen"], intensity: "moderado" },       // Sex: Superior (leve)
+    { groups: ["pernas", "panturrilha"], intensity: "moderado" },   // Sab: Inferior (leve)
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Dom: Descanso
   ],
   condicionamento: [
-    { groups: ["hiit", "peito"], intensity: "pesado" },
-    { groups: ["cardio", "abdomen"], intensity: "moderado" },
-    { groups: ["costas", "hiit"], intensity: "pesado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-    { groups: ["pernas", "cardio"], intensity: "pesado" },
-    { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
-    { groups: ["hiit", "pernas"], intensity: "pesado" },
+    { groups: ["hiit", "peito"], intensity: "pesado" },             // Seg: Superior
+    { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" }, // Ter: Inferior
+    { groups: ["costas", "hiit"], intensity: "pesado" },            // Qua: Superior (diff)
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
+    { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" }, // Sex: Superior
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Sab: Descanso
+    { groups: ["hiit", "cardio"], intensity: "moderado" },          // Dom: Cardio ativo
   ],
 };
 
