@@ -62,8 +62,28 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Stale-while-revalidate: show cached data instantly, then refresh
+  const hydratedFromCache = useRef(false);
   useEffect(() => {
     if (!user) return;
+
+    // 1. Hydrate from cache immediately (instant render)
+    if (!hydratedFromCache.current) {
+      hydratedFromCache.current = true;
+      const cached = readCache<any>(CACHE_KEYS.dashboardAll(user.id), { maxAge: 15 * 60 * 1000 });
+      if (cached) {
+        setBodyRecords(cached.bodyRecords || []);
+        setGoals(cached.goals || []);
+        setWorkoutPlans(cached.workoutPlans || []);
+        setDietPlans(cached.dietPlans || []);
+        setSessions(cached.sessions || []);
+        setExerciseHistory(cached.exerciseHistory || []);
+        setDietTracking(cached.dietTracking || []);
+        setLoading(false);
+      }
+    }
+
+    // 2. Fetch fresh data in background
     const fetchData = async () => {
       try {
         const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes, dietTrackRes] = await Promise.all([
@@ -75,15 +95,26 @@ const Dashboard = () => {
           supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
           supabase.from("diet_tracking").select("meals_done,meals_failed,meals_total,adherence_pct,tracked_date").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(14),
         ]);
-        setBodyRecords(bodyRes.data || []);
-        setGoals(goalsRes.data || []);
-        setWorkoutPlans(workoutRes.data || []);
-        setDietPlans(dietRes.data || []);
-        setSessions(sessionsRes.data || []);
-        setExerciseHistory(historyRes.data || []);
-        setDietTracking(dietTrackRes.data || []);
+        const fresh = {
+          bodyRecords: bodyRes.data || [],
+          goals: goalsRes.data || [],
+          workoutPlans: workoutRes.data || [],
+          dietPlans: dietRes.data || [],
+          sessions: sessionsRes.data || [],
+          exerciseHistory: historyRes.data || [],
+          dietTracking: dietTrackRes.data || [],
+        };
+        setBodyRecords(fresh.bodyRecords);
+        setGoals(fresh.goals);
+        setWorkoutPlans(fresh.workoutPlans);
+        setDietPlans(fresh.dietPlans);
+        setSessions(fresh.sessions);
+        setExerciseHistory(fresh.exerciseHistory);
+        setDietTracking(fresh.dietTracking);
+        // Cache for next visit
+        writeCache(CACHE_KEYS.dashboardAll(user.id), fresh);
       } catch {
-        // silently fail
+        // silently fail — cached data already shown
       } finally {
         setLoading(false);
       }
