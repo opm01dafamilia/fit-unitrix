@@ -766,10 +766,139 @@ function ensureNoConsecutiveHeavy(plan: WorkoutDay[]): WorkoutDay[] {
   return result;
 }
 
+export type UserGender = "masculino" | "feminino" | string | null | undefined;
+
 export type ExercisePreferences = {
   preferred: string[];
   freeText?: string;
 };
+
+// Gender-aware body focus override:
+// If user picks "completo" and we know their gender, auto-adjust the focus distribution
+function resolveGenderFocus(bodyFocus: BodyFocus, gender: UserGender): BodyFocus {
+  // Only auto-adjust when focus is "completo" — if user explicitly picks upper/inferior, respect it
+  if (bodyFocus !== "completo") return bodyFocus;
+  // Don't override if gender unknown
+  if (!gender) return bodyFocus;
+  // For completo, we handle gender inside split selection, not by changing focus
+  return bodyFocus;
+}
+
+// Gender-specific split overrides for "completo" focus
+// Female: more lower body days (posterior, gluteos, panturrilha)
+// Male: standard balanced with arm emphasis
+function applyGenderToSplit(split: SplitEntry[], gender: UserGender, objective: Objective): SplitEntry[] {
+  if (!gender) return split;
+
+  if (gender === "feminino") {
+    // Replace generic "pernas" entries with posterior/gluteos emphasis
+    // Add panturrilha where possible
+    return split.map((groups, i) => {
+      return groups.map(g => {
+        // Turn generic "pernas" into alternating posterior/quadriceps for women
+        if (g === "pernas") {
+          return i % 2 === 0 ? "posterior" : "quadriceps";
+        }
+        return g;
+      });
+    });
+  }
+
+  if (gender === "masculino") {
+    // Males get standard split with arm emphasis on upper days
+    // Add biceps/triceps to upper-body-only days that don't have them
+    return split.map((groups) => {
+      const hasUpper = groups.some(g => ["peito", "costas", "ombros"].includes(g));
+      const hasArms = groups.some(g => ["biceps", "triceps"].includes(g));
+      const hasLower = groups.some(g => ["pernas", "quadriceps", "posterior", "gluteos", "panturrilha"].includes(g));
+      // If it's a pure upper day without arms and has room, don't modify (existing splits already handle this)
+      return groups;
+    });
+  }
+
+  return split;
+}
+
+// Gender-specific 7-day split overrides
+function applyGenderTo7DaySplit(split: SplitEntry7[], gender: UserGender): SplitEntry7[] {
+  if (!gender) return split;
+
+  if (gender === "feminino") {
+    return split.map((entry, i) => ({
+      ...entry,
+      groups: entry.groups.map(g => {
+        if (g === "pernas") return i % 2 === 0 ? "posterior" : "quadriceps";
+        return g;
+      }),
+    }));
+  }
+
+  return split;
+}
+
+// Enforce proper upper/lower alternation: never allow consecutive days hitting same area heavy
+function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
+  const isUpperGroup = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    return g.includes("peito") || g.includes("costas") || g.includes("ombro") || g.includes("bíceps") || g.includes("tríceps");
+  };
+  const isLowerGroup = (grupo: string) => {
+    const g = grupo.toLowerCase();
+    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo") || g.includes("panturrilha");
+  };
+
+  const result = [...plan];
+  for (let i = 1; i < result.length; i++) {
+    const prev = result[i - 1];
+    const curr = result[i];
+
+    const prevIsUpperHeavy = isUpperGroup(prev.grupo) && prev.intensidade === "pesado";
+    const currIsUpperHeavy = isUpperGroup(curr.grupo) && curr.intensidade === "pesado";
+    const prevIsLowerHeavy = isLowerGroup(prev.grupo) && prev.intensidade === "pesado";
+    const currIsLowerHeavy = isLowerGroup(curr.grupo) && curr.intensidade === "pesado";
+
+    if ((prevIsUpperHeavy && currIsUpperHeavy) || (prevIsLowerHeavy && currIsLowerHeavy)) {
+      result[i] = {
+        ...curr,
+        intensidade: "moderado",
+        exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
+      };
+    }
+  }
+  return result;
+}
+
+// Add gluteo-specific exercises for female users on lower body days
+function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
+  if (gender !== "feminino") return plan;
+  
+  // Ensure lower body days include glute activation
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("perna") || g.includes("glúteo");
+    if (!isLowerDay) return day;
+
+    // Check if hip thrust or glute bridge is already present
+    const hasGlute = day.exercicios.some(ex => 
+      ex.nome.toLowerCase().includes("hip thrust") || 
+      ex.nome.toLowerCase().includes("elevação pélvica") ||
+      ex.nome.toLowerCase().includes("glúteo") ||
+      ex.nome.toLowerCase().includes("abdutora")
+    );
+    if (hasGlute) return day;
+
+    // Add one glute finisher from the gluteos pool
+    const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
+    if (glutePool.length > 0) {
+      const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
+      return {
+        ...day,
+        exercicios: [...day.exercicios, { ...gluteEx, series: "3", reps: "12" }],
+      };
+    }
+    return day;
+  });
+}
 
 export function generateWorkoutPlan(
   objective: Objective,
@@ -778,7 +907,8 @@ export function generateWorkoutPlan(
   bodyFocus: BodyFocus = "completo",
   cardioFreq: CardioFrequency = "0",
   intensityLevel: IntensityLevel = "intenso",
-  preferences?: ExercisePreferences
+  preferences?: ExercisePreferences,
+  gender?: UserGender
 ): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
