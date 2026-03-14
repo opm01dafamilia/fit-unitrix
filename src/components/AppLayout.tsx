@@ -86,9 +86,14 @@ const AppLayout = () => {
               <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest">Pro Fitness</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <div className="hidden lg:block">
+              <NotificationCenter />
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}
