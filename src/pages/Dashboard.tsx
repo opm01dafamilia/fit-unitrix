@@ -421,6 +421,12 @@ const Dashboard = () => {
         <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
 
+      {/* Fitness Level Progress Bar */}
+      <FitnessProgressBar totalXP={totalXP} />
+
+      {/* Level Up Modal */}
+      <LevelUpModal level={levelUpData} onClose={() => setLevelUpData(null)} />
+
       {/* Comeback Alert */}
       {comebackAlert && comebackAlert.dashboardAlert && (
         <div className="glass-card p-4 lg:p-5 border border-primary/20 relative overflow-hidden">
