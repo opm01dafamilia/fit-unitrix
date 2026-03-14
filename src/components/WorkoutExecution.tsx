@@ -1642,20 +1642,20 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
             <div className="flex gap-3 mt-5 w-full">
               {currentExIndex < totalExercises - 1 ? (
-                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
+                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedEffort}>
                   Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
+                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedEffort}>
                   <Trophy className="w-5 h-5 mr-2" /> Finalizar Treino
                 </Button>
               )}
             </div>
-            {!selectedRPE && (
+            {!selectedEffort && (
               <p className="text-[10px] text-muted-foreground mt-2 italic">Selecione a dificuldade para continuar</p>
             )}
             {currentSets.length < targetSeries && (
-              <button onClick={() => { setPhase("input"); setSelectedRPE(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              <button onClick={() => { setPhase("input"); setSelectedRPE(null); setSelectedEffort(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
                 + Adicionar mais séries
               </button>
             )}
