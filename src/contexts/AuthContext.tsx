@@ -17,6 +17,10 @@ type Profile = {
   onboarding_completed: boolean;
   privacy_level: string;
   avatar_url: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  friend_code: string | null;
 };
 
 type AuthContextType = {

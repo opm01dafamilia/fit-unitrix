@@ -15,6 +15,7 @@ import { generateSmartNotifications, checkInactivityNotification, type Behaviora
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
 import FitnessScoreCard from "@/components/FitnessScoreCard";
+import CommunityScoreCard from "@/components/CommunityScoreCard";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -374,6 +375,9 @@ const Dashboard = () => {
 
       {/* Fitness Score Card */}
       <FitnessScoreCard result={fitnessScoreResult} />
+
+      {/* Community Score Comparison */}
+      <CommunityScoreCard userScore={fitnessScoreResult.score} />
 
       <div className="glass-card p-4 lg:p-5">
         <div className="flex items-center justify-between mb-3">
