@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
+import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
+import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +29,7 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
   const [dietPlans, setDietPlans] = useState<any[]>([]);
+  const [dietTracking, setDietTracking] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,13 +57,14 @@ const Dashboard = () => {
     if (!user) return;
     const fetchData = async () => {
       try {
-        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
+        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes, dietTrackRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
           supabase.from("fitness_goals").select("id,title,current_value,target_value,unit,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
           supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
           supabase.from("workout_sessions").select("id,completed_at,exercises_completed,exercises_total,muscle_group").eq("user_id", user.id).order("completed_at", { ascending: false }),
           supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
+          supabase.from("diet_tracking").select("meals_done,meals_failed,meals_total,adherence_pct,tracked_date").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(14),
         ]);
         setBodyRecords(bodyRes.data || []);
         setGoals(goalsRes.data || []);
@@ -68,6 +72,7 @@ const Dashboard = () => {
         setDietPlans(dietRes.data || []);
         setSessions(sessionsRes.data || []);
         setExerciseHistory(historyRes.data || []);
+        setDietTracking(dietTrackRes.data || []);
       } catch {
         // silently fail
       } finally {
@@ -440,6 +445,57 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* 🧠 Weekly Smart Adjustments */}
+      {sessions.length >= 3 && (() => {
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - 7);
+        const weekSess = sessions.filter((s: any) => new Date(s.completed_at) >= weekStart);
+        const totalSeriesWeek = exerciseHistory.filter((h: any) => new Date(h.created_at) >= weekStart).length;
+        const completedSeries = weekSess.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0);
+        const failedSeries = Math.max(0, totalSeriesWeek - completedSeries);
+        const abandonedWorkouts = weekSess.filter((s: any) => s.exercises_completed < s.exercises_total * 0.5).length;
+
+        // Diet tracking this week
+        const weekDietTracking = dietTracking.filter((d: any) => new Date(d.tracked_date) >= weekStart);
+        const totalMealsDone = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_done || 0), 0);
+        const totalMealsFailed = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0);
+        const totalMealsAll = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_total || 0), 0);
+        const avgAdherence = weekDietTracking.length > 0
+          ? Math.round(weekDietTracking.reduce((a: number, d: any) => a + (d.adherence_pct || 0), 0) / weekDietTracking.length) : 0;
+
+        // Weight
+        const cw = bodyRecords.length > 0 ? bodyRecords[bodyRecords.length - 1].weight : profile?.weight || 0;
+        const pw = bodyRecords.length > 1 ? bodyRecords[bodyRecords.length - 2].weight : cw;
+        const activePlan = workoutPlans[0];
+
+        const adjustData: WeeklyPerformanceData = {
+          workoutsCompleted: weekSess.length,
+          workoutsTarget: activePlan?.days_per_week || 4,
+          totalSeries: totalSeriesWeek,
+          seriesCompleted: completedSeries,
+          seriesFailed: failedSeries,
+          avgRestTimeUsed: 70,
+          targetRestTime: 60,
+          abandonedWorkouts,
+          streak: currentStreak,
+          mealsDone: totalMealsDone,
+          mealsFailed: totalMealsFailed,
+          mealsTotal: totalMealsAll,
+          dietAdherencePct: avgAdherence,
+          currentWeight: Number(cw),
+          previousWeight: Number(pw),
+          goalWeight: null,
+          objective: profile?.objective || "manter",
+          sessions: weekSess.map((s: any) => ({
+            completed_at: s.completed_at,
+            muscle_group: s.muscle_group,
+            intensity: undefined,
+          })),
+        };
+
+        return <WeeklyAdjustmentCard data={adjustData} />;
+      })()}
 
       {/* 🏆 Achievements Summary */}
       {(unlockedAchievements.length > 0 || nextAchievement) && (
