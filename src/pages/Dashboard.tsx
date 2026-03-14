@@ -18,6 +18,8 @@ import FitnessScoreCard from "@/components/FitnessScoreCard";
 import CommunityScoreCard from "@/components/CommunityScoreCard";
 import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
 import PlateauAlertCard from "@/components/PlateauAlertCard";
+import { analyzeReplanning } from "@/lib/smartReplanningEngine";
+import ReplanningModal from "@/components/ReplanningModal";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
