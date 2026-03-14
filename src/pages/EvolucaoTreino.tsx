@@ -286,11 +286,16 @@ const EvolucaoTreino = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="history" className="w-full">
+      <Tabs defaultValue="force" className="w-full">
         <TabsList className="w-full">
-          <TabsTrigger value="history" className="flex-1 text-xs">Últimos Ajustes</TabsTrigger>
-          <TabsTrigger value="swaps" className="flex-1 text-xs">Trocas Sugeridas</TabsTrigger>
+          <TabsTrigger value="force" className="flex-1 text-xs">Evolução de Força</TabsTrigger>
+          <TabsTrigger value="history" className="flex-1 text-xs">Ajustes</TabsTrigger>
+          <TabsTrigger value="swaps" className="flex-1 text-xs">Trocas</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="force" className="space-y-3 mt-4">
+          <ForceEvolutionTab />
+        </TabsContent>
 
         <TabsContent value="history" className="space-y-3 mt-4">
           {snapshot.adjustments.length === 0 ? (
