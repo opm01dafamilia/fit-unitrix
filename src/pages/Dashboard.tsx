@@ -18,6 +18,8 @@ import FitnessScoreCard from "@/components/FitnessScoreCard";
 import CommunityScoreCard from "@/components/CommunityScoreCard";
 import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
 import PlateauAlertCard from "@/components/PlateauAlertCard";
+import { analyzeReplanning } from "@/lib/smartReplanningEngine";
+import ReplanningModal from "@/components/ReplanningModal";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -328,6 +330,38 @@ const Dashboard = () => {
     }).length,
   });
 
+  // === SMART REPLANNING ===
+  const lastWorkoutDate = sessions[0]?.completed_at;
+  const daysInactive = lastWorkoutDate
+    ? Math.floor((Date.now() - new Date(lastWorkoutDate).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const dietAdherancePct = dietTotalWeek > 0 ? Math.round((dietCompletedWeek / dietTotalWeek) * 100) : 100;
+
+  const replanResult = analyzeReplanning({
+    plateauDetected: plateauResult.detected,
+    plateauTypes: plateauResult.types,
+    plateauSeverity: plateauResult.severity,
+    currentScore: fitnessScoreResult.score,
+    scoreDropLast2Weeks: 0,
+    workoutsLast2Weeks: sessions.filter((s: any) => {
+      const d = new Date(s.completed_at);
+      return (now.getTime() - d.getTime()) < 14 * 24 * 60 * 60 * 1000;
+    }).length,
+    targetWorkoutsPerWeek: workoutPlans[0]?.days_per_week || 4,
+    currentStreak,
+    daysInactive,
+    exerciseFailRate: 0,
+    dietAdherencePct: dietAdherancePct,
+    mealsFailedLast2Weeks: dietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0),
+    weightStagnant: weeklyBodyWeight.length >= 3 && (Math.max(...weeklyBodyWeight.map(w => w.weight)) - Math.min(...weeklyBodyWeight.map(w => w.weight))) < 0.3,
+    bodyProgressDirection: bodyDirection,
+    fatigueLevel: "low",
+    currentCycle: "progressao",
+    objective: profile?.objective || "manter",
+    experienceLevel: profile?.experience_level || "intermediario",
+    daysPerWeek: workoutPlans[0]?.days_per_week || 4,
+  });
+
   if (loading) return <DashboardSkeleton />;
 
   return (
@@ -361,6 +395,9 @@ const Dashboard = () => {
 
       {/* Plateau Alert */}
       <PlateauAlertCard plateau={plateauResult} />
+
+      {/* Smart Replanning */}
+      <ReplanningModal replan={replanResult} />
 
       {/* ✨ Micro-Victories Daily Progress */}
       <div className="glass-card p-5 lg:p-6 relative overflow-hidden">
