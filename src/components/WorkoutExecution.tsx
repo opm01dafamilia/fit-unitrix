@@ -451,6 +451,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       }
       setPhase("exercise-done");
     } else {
+      // Track rest start for anti-fake
+      totalRestsPossibleRef.current += 1;
+      totalRestsStartedRef.current += 1;
       // Auto-start rest with wall-clock
       restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
       setRestTime(effectiveRestSeconds);
