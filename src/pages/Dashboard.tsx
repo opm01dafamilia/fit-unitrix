@@ -11,6 +11,7 @@ import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } fro
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
+import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
