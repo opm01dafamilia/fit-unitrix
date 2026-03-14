@@ -376,6 +376,9 @@ const Dashboard = () => {
       {/* Fitness Score Card */}
       <FitnessScoreCard result={fitnessScoreResult} />
 
+      {/* Community Score Comparison */}
+      <CommunityScoreCard userScore={fitnessScoreResult.score} />
+
       <div className="glass-card p-4 lg:p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
