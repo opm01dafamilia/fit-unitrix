@@ -137,4 +137,9 @@ export const CACHE_KEYS = {
   dietPlans: (userId: string) => `diet_plans_${userId}`,
   dietTracking: (userId: string) => `diet_tracking_${userId}`,
   bodyTracking: (userId: string) => `body_latest_${userId}`,
+  fitnessGoals: (userId: string) => `fitness_goals_${userId}`,
+  exerciseHistory: (userId: string) => `exercise_history_${userId}`,
+  dashboardAll: (userId: string) => `dashboard_all_${userId}`,
+  fitnessScore: (userId: string) => `fitness_score_${userId}`,
+  rankingStats: (userId: string) => `ranking_stats_${userId}`,
 } as const;

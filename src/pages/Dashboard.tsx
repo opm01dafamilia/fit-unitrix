@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
 import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
 import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { writeCache, readCache, CACHE_KEYS } from "@/lib/smartCache";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
+import { useDietPrefetch } from "@/hooks/useDietPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
@@ -48,6 +50,7 @@ const Dashboard = () => {
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
+  useDietPrefetch(user?.id);
 
   // Register app_opened micro-victory on mount
   useEffect(() => {
@@ -61,8 +64,28 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Stale-while-revalidate: show cached data instantly, then refresh
+  const hydratedFromCache = useRef(false);
   useEffect(() => {
     if (!user) return;
+
+    // 1. Hydrate from cache immediately (instant render)
+    if (!hydratedFromCache.current) {
+      hydratedFromCache.current = true;
+      const cached = readCache<any>(CACHE_KEYS.dashboardAll(user.id), { maxAge: 15 * 60 * 1000 });
+      if (cached) {
+        setBodyRecords(cached.bodyRecords || []);
+        setGoals(cached.goals || []);
+        setWorkoutPlans(cached.workoutPlans || []);
+        setDietPlans(cached.dietPlans || []);
+        setSessions(cached.sessions || []);
+        setExerciseHistory(cached.exerciseHistory || []);
+        setDietTracking(cached.dietTracking || []);
+        setLoading(false);
+      }
+    }
+
+    // 2. Fetch fresh data in background
     const fetchData = async () => {
       try {
         const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes, dietTrackRes] = await Promise.all([
@@ -74,15 +97,26 @@ const Dashboard = () => {
           supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
           supabase.from("diet_tracking").select("meals_done,meals_failed,meals_total,adherence_pct,tracked_date").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(14),
         ]);
-        setBodyRecords(bodyRes.data || []);
-        setGoals(goalsRes.data || []);
-        setWorkoutPlans(workoutRes.data || []);
-        setDietPlans(dietRes.data || []);
-        setSessions(sessionsRes.data || []);
-        setExerciseHistory(historyRes.data || []);
-        setDietTracking(dietTrackRes.data || []);
+        const fresh = {
+          bodyRecords: bodyRes.data || [],
+          goals: goalsRes.data || [],
+          workoutPlans: workoutRes.data || [],
+          dietPlans: dietRes.data || [],
+          sessions: sessionsRes.data || [],
+          exerciseHistory: historyRes.data || [],
+          dietTracking: dietTrackRes.data || [],
+        };
+        setBodyRecords(fresh.bodyRecords);
+        setGoals(fresh.goals);
+        setWorkoutPlans(fresh.workoutPlans);
+        setDietPlans(fresh.dietPlans);
+        setSessions(fresh.sessions);
+        setExerciseHistory(fresh.exerciseHistory);
+        setDietTracking(fresh.dietTracking);
+        // Cache for next visit
+        writeCache(CACHE_KEYS.dashboardAll(user.id), fresh);
       } catch {
-        // silently fail
+        // silently fail — cached data already shown
       } finally {
         setLoading(false);
       }
