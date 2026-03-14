@@ -924,7 +924,8 @@ export function generateWorkoutPlan(
   // 7-day uses special templates with intensity metadata
   if (days === 7) {
     const focusTemplates7 = focusSplitTemplates7[bodyFocus] || focusSplitTemplates7.completo;
-    const split7 = focusTemplates7[objective] || splitTemplates7[objective];
+    let split7 = focusTemplates7[objective] || splitTemplates7[objective];
+    split7 = applyGenderTo7DaySplit(split7, gender);
 
     plan = split7.map((entry, i) => {
       const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
