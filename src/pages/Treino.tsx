@@ -24,6 +24,8 @@ import { getComebackStatus, getComebackProgress, getComebackFeedback, type Comeb
 import { getWeeklyFatigueSummary, shouldTrainGroup, type WeeklyFatigueSummary } from "@/lib/muscleFatigueEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, logRecoveryEvent, getGroupRecoveryLevel, type RecoverySummary, type RecoveryLevel } from "@/lib/smartRecoveryEngine";
+import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
+import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
 
 type WorkoutSession = {
   id: string;
@@ -241,6 +243,27 @@ const Treino = () => {
     }));
     const recovery = getRecoverySummary(sessionData);
     setRecoverySummary(recovery);
+
+    // Periodization auto-transition check
+    const completionRate = activePlan?.days_per_week
+      ? sessions.filter(s => {
+          const d = new Date(s.completed_at);
+          const weekAgo = new Date(Date.now() - 7 * 86400000);
+          return d >= weekAgo;
+        }).length / activePlan.days_per_week
+      : 0;
+    const perfInput: PeriodPerfInput = {
+      workoutsCompleted: sessions.filter(s => new Date(s.completed_at) >= new Date(Date.now() - 7 * 86400000)).length,
+      workoutsTarget: activePlan?.days_per_week || 4,
+      seriesFailRate: 0.1,
+      streak: streak,
+      dietAdherencePct: 70,
+      weightChange: 0,
+      fatigueLevel: summary.overallLevel,
+      avgRestOveruse: 0,
+      abandonedWorkouts: 0,
+    };
+    checkAndTransition(perfInput);
   }, [sessions, loadingSessions]);
 
   // Cycle status + evolution timeline
@@ -1115,6 +1138,9 @@ const Treino = () => {
               </div>
             );
           })()}
+
+          {/* Periodization Cycle Card */}
+          {activePlan && <PeriodizationCycleCard />}
 
           {/* Next Workout Hero Card */}
           {nextWorkout && (
