@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
+import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
+import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
