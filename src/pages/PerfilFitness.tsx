@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles } from "lucide-react";
+import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles, Crown, Users, Medal, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,15 @@ const motivationalFeedback = (pct: number): { emoji: string; text: string } => {
   if (pct >= 30) return { emoji: "🌱", text: "Cada passo conta. Continue avançando!" };
   return { emoji: "🎯", text: "O começo é o mais difícil. Você já está aqui!" };
 };
+
+const socialHubItems = [
+  { to: "/conquistas", icon: Trophy, label: "Conquistas", desc: "Suas medalhas e marcos", color: "from-chart-3/20 to-chart-3/5", iconColor: "text-chart-3", borderColor: "border-chart-3/15" },
+  { to: "/ranking", icon: Crown, label: "Ranking", desc: "Posição no ranking global", color: "from-chart-4/20 to-chart-4/5", iconColor: "text-chart-4", borderColor: "border-chart-4/15" },
+  { to: "/comunidade", icon: Users, label: "Comunidade", desc: "Feed social e amigos", color: "from-chart-2/20 to-chart-2/5", iconColor: "text-chart-2", borderColor: "border-chart-2/15" },
+  { to: "/desafios", icon: Target, label: "Desafios", desc: "Desafios semanais ativos", color: "from-primary/20 to-primary/5", iconColor: "text-primary", borderColor: "border-primary/15" },
+  { to: "/temporadas", icon: Flame, label: "Temporadas", desc: "Temporadas competitivas", color: "from-orange-500/20 to-orange-500/5", iconColor: "text-orange-400", borderColor: "border-orange-500/15" },
+  { to: "/minha-liga", icon: Medal, label: "Minha Liga", desc: "Seu grupo e posição", color: "from-purple-500/20 to-purple-500/5", iconColor: "text-purple-400", borderColor: "border-purple-500/15" },
+];
 
 const PerfilFitness = () => {
   const { user, profile } = useAuth();
@@ -65,15 +74,12 @@ const PerfilFitness = () => {
       const dietDays = dietRes.data || [];
       const bodyEntries = bodyRes.data || [];
 
-      // Weekly goal from plan
       if (planRes.data?.[0]) setWeeklyGoal(planRes.data[0].days_per_week);
 
-      // Weight goal
       if (goalsRes.data?.[0]?.goal_type === "weight") {
         setGoalWeight(Number(goalsRes.data[0].target_value));
       }
 
-      // Weight chart data
       const wData = bodyEntries.map((b: any) => ({
         date: format(new Date(b.created_at), "dd/MM"),
         weight: Number(b.weight),
@@ -83,24 +89,20 @@ const PerfilFitness = () => {
       }
       setWeightData(wData);
 
-      // Weekly workouts
       const weekSessions = sessions.filter((s: any) => {
         const d = format(new Date(s.completed_at), "yyyy-MM-dd");
         return d >= weekStart && d <= weekEnd;
       });
       setWeeklyWorkouts(weekSessions.length);
 
-      // Weekly diet
       const weekDiet = (dietDays as any[]).filter(d => d.tracked_date >= weekStart && d.tracked_date <= weekEnd);
       setWeeklyMealsDone(weekDiet.reduce((a: number, d: any) => a + (d.meals_done || 0), 0));
       setWeeklyMealsTotal(weekDiet.reduce((a: number, d: any) => a + (d.meals_total || 0), 0));
 
-      // Ranking position
       const rankings = rankRes.data || [];
       const pos = rankings.findIndex((r: any) => r.user_id === user.id);
       setRankingPosition(pos >= 0 ? pos + 1 : null);
 
-      // Streaks
       const uniqueDays = [...new Set(sessions.map((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
       let currentStreak = 0;
       const today = format(new Date(), "yyyy-MM-dd");
@@ -133,7 +135,6 @@ const PerfilFitness = () => {
 
       const totalExercisesCompleted = sessions.reduce((a: number, s: any) => a + s.exercises_completed, 0);
 
-      // Diet streaks
       const dietDates = (dietDays as any[]).filter(d => d.all_completed).map(d => d.tracked_date).sort().reverse();
       let dietCurrentStreak = 0;
       if (dietDates.length > 0 && (dietDates[0] === today || dietDates[0] === yesterday)) {
@@ -168,7 +169,6 @@ const PerfilFitness = () => {
       };
       setStats(computedStats);
 
-      // Last achievement
       const achs = calculateAchievements(computedStats).filter(a => a.unlocked);
       if (achs.length > 0) {
         const last = achs[achs.length - 1];
@@ -194,7 +194,6 @@ const PerfilFitness = () => {
   const overallPct = Math.round((weeklyPct + dietAdherence) / 2);
   const feedback = motivationalFeedback(overallPct);
 
-  // Weight progress
   const initialWeight = weightData.length > 0 ? weightData[0].weight : (profile?.weight || 0);
   const currentWeight = weightData.length > 0 ? weightData[weightData.length - 1].weight : (profile?.weight || 0);
   const weightProgress = goalWeight && initialWeight !== goalWeight
@@ -213,50 +212,120 @@ const PerfilFitness = () => {
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Perfil Fitness</h1>
       </div>
 
-      {/* Hero Card */}
-      <div className="glass-card p-5 lg:p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.05))' }}>
+      {/* Premium Hero Card */}
+      <div className="glass-card p-6 lg:p-8 relative overflow-hidden">
+        {/* Decorative background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          {/* Large Avatar */}
+          <div className="w-24 h-24 rounded-3xl flex items-center justify-center shrink-0 border-2 border-primary/20 shadow-[0_0_30px_-8px_hsl(152_69%_46%_/_0.25)]"
+            style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+              <img src={profile.avatar_url} alt="" className="w-24 h-24 rounded-3xl object-cover" />
             ) : (
-              <User className="w-7 h-7 text-primary" />
+              <User className="w-10 h-10 text-primary" />
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-display font-bold truncate">{profile?.full_name || "Usuário"}</h2>
-            <div className="flex items-center gap-2 flex-wrap mt-1">
-              <span className={`text-xs font-bold ${rank.color}`}>{rank.icon} {rank.label}</span>
+
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <h2 className="text-xl font-display font-bold truncate">{profile?.full_name || "Usuário"}</h2>
+            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap mt-1.5">
+              <span className={`text-sm font-bold ${rank.color}`}>{rank.icon} {rank.label}</span>
               <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-xs font-display font-bold">{totalXP} XP</span>
+              <span className="text-sm font-display font-bold">{totalXP} XP</span>
               {rankingPosition && (
                 <>
                   <span className="text-xs text-muted-foreground">•</span>
-                  <span className="text-xs text-muted-foreground">#{rankingPosition} no ranking</span>
+                  <span className="text-xs font-medium text-muted-foreground">#{rankingPosition} Ranking</span>
                 </>
               )}
             </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className={`text-[10px] ${phaseInfo.color}`}>{phaseInfo.icon} Fase {phase}: {phaseInfo.label}</span>
+            <div className="flex items-center justify-center sm:justify-start gap-2 mt-1.5">
+              <span className={`text-[11px] px-2 py-0.5 rounded-md ${phaseInfo.color} bg-secondary/60 font-semibold`}>
+                {phaseInfo.icon} Fase {phase}: {phaseInfo.label}
+              </span>
+              {lastAchievement && (
+                <span className="text-[11px] px-2 py-0.5 rounded-md bg-chart-3/10 text-chart-3 font-medium">
+                  {lastAchievement.icon} {lastAchievement.title}
+                </span>
+              )}
             </div>
+
+            {/* Rank progress bar */}
+            {nextRankInfo && (
+              <div className="mt-4 max-w-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-muted-foreground">
+                    {nextRankInfo.nextRank.icon} {nextRankInfo.nextRank.label} em {nextRankInfo.xpNeeded} XP
+                  </span>
+                  <span className="text-[10px] font-bold text-primary">
+                    {Math.min(100, Math.round(((totalXP - rank.minXP) / (nextRankInfo.nextRank.minXP - rank.minXP)) * 100))}%
+                  </span>
+                </div>
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700"
+                    style={{ width: `${Math.min(100, ((totalXP - rank.minXP) / (nextRankInfo.nextRank.minXP - rank.minXP)) * 100)}%` }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Rank progress */}
-        {nextRankInfo && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-muted-foreground">
-                {nextRankInfo.nextRank.icon} {nextRankInfo.nextRank.label} em {nextRankInfo.xpNeeded} XP
-              </span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700"
-                style={{ width: `${Math.min(100, ((totalXP - rank.minXP) / (nextRankInfo.nextRank.minXP - rank.minXP)) * 100)}%` }} />
-            </div>
-          </div>
-        )}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-4 gap-3">
+        <div className="glass-card p-3 flex flex-col items-center">
+          <Star className="w-4 h-4 text-chart-3 mb-1" />
+          <p className="font-display font-bold text-base">{totalXP}</p>
+          <p className="text-[9px] text-muted-foreground">XP Total</p>
+        </div>
+        <div className="glass-card p-3 flex flex-col items-center">
+          <Flame className="w-4 h-4 text-orange-400 mb-1" />
+          <p className="font-display font-bold text-base">{stats?.currentStreak || 0}</p>
+          <p className="text-[9px] text-muted-foreground">Sequência</p>
+        </div>
+        <div className="glass-card p-3 flex flex-col items-center">
+          <Dumbbell className="w-4 h-4 text-primary mb-1" />
+          <p className="font-display font-bold text-base">{stats?.totalWorkouts || 0}</p>
+          <p className="text-[9px] text-muted-foreground">Treinos</p>
+        </div>
+        <div className="glass-card p-3 flex flex-col items-center">
+          <TrendingUp className="w-4 h-4 text-chart-2 mb-1" />
+          <p className="font-display font-bold text-base">{stats?.totalProgressions || 0}</p>
+          <p className="text-[9px] text-muted-foreground">Progressões</p>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════ */}
+      {/* MINHA JORNADA FITNESS — Social Hub */}
+      {/* ═══════════════════════════════════════════════ */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <h3 className="text-base font-display font-bold">Minha Jornada Fitness</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {socialHubItems.map((item) => (
+            <button
+              key={item.to}
+              onClick={() => navigate(item.to)}
+              className={`glass-card p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] border ${item.borderColor} group`}
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 border ${item.borderColor}`}>
+                <item.icon className={`w-5 h-5 ${item.iconColor}`} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{item.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{item.desc}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0 ml-2" />
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Motivational feedback */}
@@ -373,9 +442,14 @@ const PerfilFitness = () => {
 
       {/* Achievements summary */}
       <div className="glass-card p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-4 h-4 text-chart-3" />
-          <h3 className="text-sm font-bold">Conquistas</h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-chart-3" />
+            <h3 className="text-sm font-bold">Conquistas</h3>
+          </div>
+          <button onClick={() => navigate("/conquistas")} className="text-[11px] text-primary font-medium hover:underline">
+            Ver todas →
+          </button>
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div className="p-3 rounded-lg bg-secondary/40 text-center">
@@ -399,30 +473,6 @@ const PerfilFitness = () => {
               </>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Quick stats */}
-      <div className="grid grid-cols-4 gap-3">
-        <div className="glass-card p-3 flex flex-col items-center">
-          <Star className="w-4 h-4 text-chart-3 mb-1" />
-          <p className="font-display font-bold text-base">{totalXP}</p>
-          <p className="text-[9px] text-muted-foreground">XP Total</p>
-        </div>
-        <div className="glass-card p-3 flex flex-col items-center">
-          <Flame className="w-4 h-4 text-orange-400 mb-1" />
-          <p className="font-display font-bold text-base">{stats?.currentStreak || 0}</p>
-          <p className="text-[9px] text-muted-foreground">Sequência</p>
-        </div>
-        <div className="glass-card p-3 flex flex-col items-center">
-          <Dumbbell className="w-4 h-4 text-primary mb-1" />
-          <p className="font-display font-bold text-base">{stats?.totalWorkouts || 0}</p>
-          <p className="text-[9px] text-muted-foreground">Treinos</p>
-        </div>
-        <div className="glass-card p-3 flex flex-col items-center">
-          <TrendingUp className="w-4 h-4 text-chart-2 mb-1" />
-          <p className="font-display font-bold text-base">{stats?.totalProgressions || 0}</p>
-          <p className="text-[9px] text-muted-foreground">Progressões</p>
         </div>
       </div>
     </div>

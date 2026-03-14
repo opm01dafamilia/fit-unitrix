@@ -1,32 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
-  Activity, Target, Menu, Flame, LogOut, User, X, 
-  History, Settings, Trophy, BookOpen, BarChart3, Users, Crown, UserCheck, Gift, HeartHandshake, Medal, Brain, Salad
+  Menu, Flame, LogOut, User, X, 
+  History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
 
-const navItems = [
+const iconMap: Record<string, any> = {
+  Trophy, Crown, Users, Target, Flame, Medal,
+};
+
+const coreNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/treino", icon: Dumbbell, label: "Plano Ativo" },
-  { to: "/acompanhamento", icon: Activity, label: "Corpo" },
-  { to: "/metas", icon: Target, label: "Metas" },
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
   { to: "/historico", icon: History, label: "Histórico" },
-  { to: "/analise", icon: BarChart3, label: "Análise" },
-  { to: "/evolucao", icon: Brain, label: "Evolução Treino" },
-  { to: "/evolucao-alimentar", icon: Salad, label: "Evolução Dieta" },
-  { to: "/conquistas", icon: Trophy, label: "Conquistas" },
-  { to: "/ranking", icon: Crown, label: "Ranking" },
-  { to: "/comunidade", icon: Users, label: "Comunidade" },
-  { to: "/desafios", icon: Target, label: "Desafios" },
-  { to: "/temporadas", icon: Flame, label: "Temporadas" },
-  { to: "/minha-liga", icon: Medal, label: "Minha Liga" },
-  { to: "/convites", icon: Gift, label: "Convites" },
-  { to: "/amigos", icon: HeartHandshake, label: "Amigos" },
-  { to: "/biblioteca", icon: BookOpen, label: "Biblioteca" },
   { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
+];
+
+const secondaryNavItems = [
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
 ];
@@ -34,6 +28,28 @@ const navItems = [
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut } = useAuth();
+  const [pinnedItems, setPinnedItems] = useState<string[]>([]);
+
+  useEffect(() => {
+    const prefs = getMenuPreferences();
+    setPinnedItems(prefs.pinnedSocialItems);
+  }, []);
+
+  // Listen for storage changes (from settings page)
+  useEffect(() => {
+    const handler = () => {
+      const prefs = getMenuPreferences();
+      setPinnedItems(prefs.pinnedSocialItems);
+    };
+    window.addEventListener("menuPrefsChanged", handler);
+    return () => window.removeEventListener("menuPrefsChanged", handler);
+  }, []);
+
+  const pinnedNavItems = SOCIAL_ROUTES
+    .filter(r => pinnedItems.includes(r.to))
+    .map(r => ({ to: r.to, icon: iconMap[r.icon] || Target, label: r.label }));
+
+  const allNavItems = [...coreNavItems, ...pinnedNavItems, ...secondaryNavItems];
 
   const objectiveLabel = profile?.objective === "emagrecer" ? "Emagrecimento" : 
     profile?.objective === "massa" ? "Ganho de Massa" : 
@@ -75,13 +91,57 @@ const AppLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-5 space-y-1">
+        <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu</p>
-          {navItems.map((item) => (
+          {coreNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === "/"}
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
+                ${isActive 
+                  ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
+                }`
+              }
+            >
+              <item.icon className="w-[18px] h-[18px]" />
+              {item.label}
+            </NavLink>
+          ))}
+
+          {/* Pinned Social Items */}
+          {pinnedNavItems.length > 0 && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Social</p>
+              {pinnedNavItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
+                    ${isActive 
+                      ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
+                    }`
+                  }
+                >
+                  <item.icon className="w-[18px] h-[18px]" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </>
+          )}
+
+          {/* Secondary */}
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Conta</p>
+          {secondaryNavItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
@@ -149,8 +209,8 @@ const AppLayout = () => {
             { to: "/", icon: LayoutDashboard, label: "Home" },
             { to: "/treino", icon: Dumbbell, label: "Treino" },
             { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
-            { to: "/ranking", icon: Crown, label: "Ranking" },
-            { to: "/perfil", icon: User, label: "Perfil" },
+            { to: "/historico", icon: History, label: "Histórico" },
+            { to: "/perfil-fitness", icon: UserCheck, label: "Perfil" },
           ].map((item) => (
             <NavLink
               key={item.to}
