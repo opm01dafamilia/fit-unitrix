@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield } from "lucide-react";
+import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield, LayoutGrid, Pin, PinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
+import { getMenuPreferences, saveMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
