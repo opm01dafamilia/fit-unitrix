@@ -446,6 +446,57 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* 🧠 Weekly Smart Adjustments */}
+      {sessions.length >= 3 && (() => {
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - 7);
+        const weekSess = sessions.filter((s: any) => new Date(s.completed_at) >= weekStart);
+        const totalSeriesWeek = exerciseHistory.filter((h: any) => new Date(h.created_at) >= weekStart).length;
+        const completedSeries = weekSess.reduce((a: number, s: any) => a + (s.exercises_completed || 0), 0);
+        const failedSeries = Math.max(0, totalSeriesWeek - completedSeries);
+        const abandonedWorkouts = weekSess.filter((s: any) => s.exercises_completed < s.exercises_total * 0.5).length;
+
+        // Diet tracking this week
+        const weekDietTracking = dietTracking.filter((d: any) => new Date(d.tracked_date) >= weekStart);
+        const totalMealsDone = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_done || 0), 0);
+        const totalMealsFailed = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0);
+        const totalMealsAll = weekDietTracking.reduce((a: number, d: any) => a + (d.meals_total || 0), 0);
+        const avgAdherence = weekDietTracking.length > 0
+          ? Math.round(weekDietTracking.reduce((a: number, d: any) => a + (d.adherence_pct || 0), 0) / weekDietTracking.length) : 0;
+
+        // Weight
+        const cw = bodyRecords.length > 0 ? bodyRecords[bodyRecords.length - 1].weight : profile?.weight || 0;
+        const pw = bodyRecords.length > 1 ? bodyRecords[bodyRecords.length - 2].weight : cw;
+        const activePlan = workoutPlans[0];
+
+        const adjustData: WeeklyPerformanceData = {
+          workoutsCompleted: weekSess.length,
+          workoutsTarget: activePlan?.days_per_week || 4,
+          totalSeries: totalSeriesWeek,
+          seriesCompleted: completedSeries,
+          seriesFailed: failedSeries,
+          avgRestTimeUsed: 70,
+          targetRestTime: 60,
+          abandonedWorkouts,
+          streak: currentStreak,
+          mealsDone: totalMealsDone,
+          mealsFailed: totalMealsFailed,
+          mealsTotal: totalMealsAll,
+          dietAdherencePct: avgAdherence,
+          currentWeight: Number(cw),
+          previousWeight: Number(pw),
+          goalWeight: null,
+          objective: profile?.objective || "manter",
+          sessions: weekSess.map((s: any) => ({
+            completed_at: s.completed_at,
+            muscle_group: s.muscle_group,
+            intensity: undefined,
+          })),
+        };
+
+        return <WeeklyAdjustmentCard data={adjustData} />;
+      })()}
+
       {/* 🏆 Achievements Summary */}
       {(unlockedAchievements.length > 0 || nextAchievement) && (
         <div className="glass-card p-5 lg:p-6">
