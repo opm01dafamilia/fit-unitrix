@@ -19,37 +19,33 @@ export function useDietPrefetch(userId: string | undefined) {
         const cachedPlans = readCache<any[]>(CACHE_KEYS.dietPlans(userId), { maxAge: 15 * 60 * 1000 });
         const cachedTracking = readCache<any[]>(CACHE_KEYS.dietTracking(userId), { maxAge: 10 * 60 * 1000 });
 
-        const promises: Promise<void>[] = [];
+        const tasks: (() => Promise<void>)[] = [];
 
         if (!cachedPlans) {
-          promises.push(
-            supabase
+          tasks.push(async () => {
+            const { data } = await supabase
               .from("diet_plans")
               .select("*")
               .eq("user_id", userId)
               .order("created_at", { ascending: false })
-              .limit(1)
-              .then(({ data }) => {
-                if (data) writeCache(CACHE_KEYS.dietPlans(userId), data);
-              })
-          );
+              .limit(1);
+            if (data) writeCache(CACHE_KEYS.dietPlans(userId), data);
+          });
         }
 
         if (!cachedTracking) {
-          promises.push(
-            supabase
+          tasks.push(async () => {
+            const { data } = await supabase
               .from("diet_tracking")
               .select("*")
               .eq("user_id", userId)
               .order("tracked_date", { ascending: false })
-              .limit(14)
-              .then(({ data }) => {
-                if (data) writeCache(CACHE_KEYS.dietTracking(userId), data);
-              })
-          );
+              .limit(14);
+            if (data) writeCache(CACHE_KEYS.dietTracking(userId), data);
+          });
         }
 
-        await Promise.all(promises);
+        await Promise.all(tasks.map(t => t()));
       } catch {
         // Silent fail - background optimization
       }
