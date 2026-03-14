@@ -308,6 +308,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fitness_scores: {
+        Row: {
+          city: string | null
+          experience_level: string | null
+          id: string
+          score: number
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          experience_level?: string | null
+          id?: string
+          score?: number
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          experience_level?: string | null
+          id?: string
+          score?: number
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string
