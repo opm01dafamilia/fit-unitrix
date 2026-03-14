@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
-import { getMenuPreferences, saveMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
+import { getMenuPreferences, saveMenuPreferences, resetMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import { getNotificationPreferences, saveNotificationPreferences, type NotificationType } from "@/lib/smartNotificationsEngine";
 
 const Configuracoes = () => {
