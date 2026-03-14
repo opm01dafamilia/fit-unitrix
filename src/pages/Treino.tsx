@@ -79,6 +79,8 @@ const Treino = () => {
   const [comebackStatus, setComebackStatus] = useState<ComebackStatus | null>(null);
   const [comebackWorkouts, setComebackWorkouts] = useState(0);
   const [fatigueSummary, setFatigueSummary] = useState<WeeklyFatigueSummary | null>(null);
+  const [recoverySummary, setRecoverySummary] = useState<RecoverySummary | null>(null);
+  const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
