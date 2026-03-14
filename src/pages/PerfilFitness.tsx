@@ -194,6 +194,14 @@ const PerfilFitness = () => {
   const legendaryCount = useMemo(() => stats ? getLegendaryAchievements(stats).length : 0, [stats]);
   const phase = useMemo(() => stats ? getCurrentPhase(stats) : 1, [stats]);
   const phaseInfo = phaseLabels[phase as 1 | 2 | 3 | 4];
+  const fitnessLevel = getFitnessLevel(totalXP);
+  const statusTitle = useMemo(() => getStatusTitle({
+    streak: stats?.currentStreak || 0,
+    totalWorkouts: stats?.totalWorkouts || 0,
+    goalsCompleted: 0,
+    totalXP,
+    dietStreak: stats?.dietStreak || 0,
+  }), [stats, totalXP]);
 
   const dietAdherence = weeklyMealsTotal > 0 ? Math.round((weeklyMealsDone / weeklyMealsTotal) * 100) : 0;
   const weeklyPct = Math.round((weeklyWorkouts / weeklyGoal) * 100);
