@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
+import { useDietPrefetch } from "@/hooks/useDietPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
