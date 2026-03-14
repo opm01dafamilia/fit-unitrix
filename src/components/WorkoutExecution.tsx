@@ -19,6 +19,7 @@ import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionC
 import { assignIntensityTechniques, TECHNIQUES, getPyramidScheme, type ExerciseTechniqueAssignment, type IntensityTechnique } from "@/lib/intensityTechniques";
 import { type ComebackStatus, applyComebackAdjustments } from "@/lib/comebackEngine";
 import { savePerformance, getProgressionDecision, getExerciseEvolution, getSessionSummary, type RPE, type ProgressionDecision, type WeightEvolutionPoint, type SessionProgressionSummary } from "@/lib/smartProgressionEngine";
+import { calculateLoadSuggestion, saveLoadEntry, type LoadSuggestion, type EffortLevel } from "@/lib/smartLoadEngine";
 import { shouldTrainGroup, type FatigueAdjustment, type MuscleFatigueStatus } from "@/lib/muscleFatigueEngine";
 import { registerMicroVictory, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -171,9 +172,11 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   // RPE / Smart Progression
   const [selectedRPE, setSelectedRPE] = useState<RPE | null>(null);
+  const [selectedEffort, setSelectedEffort] = useState<EffortLevel | null>(null);
   const [progressionDecisions, setProgressionDecisions] = useState<Record<number, ProgressionDecision>>({});
   const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
   const [showEvolutionChart, setShowEvolutionChart] = useState(false);
+  const [loadSuggestions, setLoadSuggestions] = useState<Record<string, LoadSuggestion>>({});
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
   const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
 
@@ -279,6 +282,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         progs[ex.nome] = calculateProgression(hist, parseInt(ex.series) || 4, ex.reps, experienceLevel, ex.nome);
       });
       setProgressions(progs);
+
+      // Compute smart load suggestions
+      const suggestions: Record<string, LoadSuggestion> = {};
+      exercises.forEach(ex => {
+        const hist = grouped[ex.nome] || [];
+        const lastW = hist.length > 0 ? Math.max(...hist.slice(0, 5).map(h => h.weight)) : 0;
+        const lastR = hist.length > 0 ? hist[0].reps : parseInt(ex.reps) || 10;
+        suggestions[ex.nome] = calculateLoadSuggestion(
+          ex.nome, lastW, lastR, parseInt(ex.reps) || 10, parseInt(ex.series) || 4, experienceLevel
+        );
+      });
+      setLoadSuggestions(suggestions);
     };
     loadHistory();
   }, [userId, exercises, experienceLevel]);
@@ -530,8 +545,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }, 200);
   }, [currentExIndex]);
 
-  // Save exercise performance with RPE
-  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE) => {
+  // Save exercise performance with RPE + Load History
+  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE, effort?: EffortLevel) => {
     const ex = exercises[exIdx];
     const exSets = sets[exIdx] || [];
     if (exSets.length === 0) return;
@@ -556,6 +571,17 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       date: new Date().toISOString().slice(0, 10),
     });
 
+    // Save to smart load engine
+    const effortLevel = effort || (rpe === "leve" ? "leve" : rpe === "moderado" ? "moderado" : "pesado") as EffortLevel;
+    saveLoadEntry(ex.nome, {
+      weight: maxWeight,
+      reps: Math.round(avgReps),
+      sets_completed: exSets.length,
+      sets_target: parseInt(ex.series) || 4,
+      effort: effortLevel,
+      date: new Date().toISOString().slice(0, 10),
+    });
+
     // Get progression decision after saving
     const decision = getProgressionDecision(ex.nome);
     setProgressionDecisions(prev => ({ ...prev, [exIdx]: decision }));
@@ -576,6 +602,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     setInputKg("");
     setInputReps("");
     setSelectedRPE(null);
+    setSelectedEffort(null);
   };
 
   const goNext = () => {
@@ -1258,6 +1285,71 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
+      {/* ===== SMART LOAD SUGGESTION CARD ===== */}
+      {(() => {
+        const suggestion = loadSuggestions[currentEx.nome];
+        if (!suggestion || suggestion.confidence === "low") return null;
+        return (
+          <div className={`glass-card p-4 animate-slide-up border ${
+            suggestion.direction === "up" ? "border-primary/25 bg-gradient-to-r from-primary/5 to-transparent" :
+            suggestion.direction === "down" ? "border-destructive/25 bg-gradient-to-r from-destructive/5 to-transparent" :
+            "border-border/50"
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Dumbbell className="w-3.5 h-3.5 text-primary" /> Sugestão de Carga
+              </h3>
+              {suggestion.recoveryWarning && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                  🛡️ Recuperação
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center ${
+                suggestion.direction === "up" ? "bg-primary/10" :
+                suggestion.direction === "down" ? "bg-destructive/10" :
+                "bg-secondary/60"
+              }`}>
+                {suggestion.direction === "up" && <TrendingUp className="w-5 h-5 text-primary mb-0.5" />}
+                {suggestion.direction === "down" && <TrendingDown className="w-5 h-5 text-destructive mb-0.5" />}
+                {suggestion.direction === "maintain" && <Minus className="w-5 h-5 text-muted-foreground mb-0.5" />}
+                <span className={`text-sm font-display font-bold ${
+                  suggestion.direction === "up" ? "text-primary" :
+                  suggestion.direction === "down" ? "text-destructive" :
+                  "text-foreground"
+                }`}>
+                  {suggestion.deltaKg > 0 ? "+" : ""}{suggestion.deltaKg}kg
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">
+                  {suggestion.emoji} {suggestion.suggestedWeight > 0 ? `${suggestion.suggestedWeight}kg` : "Defina seu peso"}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{suggestion.reason}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">Baseado no seu último treino</p>
+              </div>
+            </div>
+            {suggestion.confidence === "high" && (
+              <div className="mt-2 flex items-center gap-1">
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <span className="text-[9px] text-muted-foreground ml-1">Confiança alta</span>
+              </div>
+            )}
+            {suggestion.confidence === "medium" && (
+              <div className="mt-2 flex items-center gap-1">
+                <div className="h-1 flex-1 rounded-full bg-amber-500/30" />
+                <div className="h-1 flex-1 rounded-full bg-amber-500/30" />
+                <div className="h-1 flex-1 rounded-full bg-muted" />
+                <span className="text-[9px] text-muted-foreground ml-1">Confiança média</span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ===== PROGRESSION FEEDBACK ===== */}
       {currentProgression && currentProgression.feedback !== "first_time" && (
         <div className={`glass-card p-3.5 flex items-center gap-3 ${
@@ -1480,33 +1572,53 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               {currentSets.length} séries • {currentSets.reduce((a, s) => a + s.kg * s.reps, 0).toFixed(0)}kg volume
             </p>
 
-            {/* RPE Selector */}
+            {/* RPE / Effort Selector */}
             <div className="w-full mt-4 p-3.5 rounded-xl bg-secondary/40 border border-border/30">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Como foi a dificuldade?</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {([
-                  { value: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
-                  { value: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
-                  { value: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                  { value: "leve" as EffortLevel, rpe: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
+                  { value: "moderado" as EffortLevel, rpe: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
+                  { value: "pesado" as EffortLevel, rpe: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                  { value: "extremo" as EffortLevel, rpe: "pesado" as RPE, emoji: "💀", label: "Extremo", color: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
                 ]).map(option => (
                   <button
                     key={option.value}
                     onClick={() => {
-                      setSelectedRPE(option.value);
-                      saveExercisePerformance(currentExIndex, option.value);
+                      setSelectedRPE(option.rpe);
+                      setSelectedEffort(option.value);
+                      saveExercisePerformance(currentExIndex, option.rpe, option.value);
                     }}
-                    className={`p-3 rounded-xl border-2 transition-all text-center ${
-                      selectedRPE === option.value
+                    className={`p-2.5 rounded-xl border-2 transition-all text-center ${
+                      selectedEffort === option.value
                         ? `${option.color} scale-105 shadow-md`
                         : "border-border/30 bg-secondary/30 hover:border-border/60"
                     }`}
                   >
-                    <span className="text-xl block mb-1">{option.emoji}</span>
-                    <span className="text-[11px] font-semibold block">{option.label}</span>
+                    <span className="text-lg block mb-0.5">{option.emoji}</span>
+                    <span className="text-[10px] font-semibold block">{option.label}</span>
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Confirm Load Used */}
+            {selectedEffort && currentSets.length > 0 && (
+              <div className="w-full mt-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">✅ Carga confirmada</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-display font-bold text-foreground">
+                    {Math.max(...currentSets.map(s => s.kg))}kg
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {currentSets.length} séries • {selectedEffort}
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">
+                  Dados salvos para ajustar a sugestão no próximo treino
+                </p>
+              </div>
+            )}
 
             {/* Progression Decision Feedback */}
             {selectedRPE && progressionDecisions[currentExIndex] && (
@@ -1530,20 +1642,20 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
             <div className="flex gap-3 mt-5 w-full">
               {currentExIndex < totalExercises - 1 ? (
-                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
+                <Button onClick={goNext} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedEffort}>
                   Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedRPE}>
+                <Button onClick={handleFinish} className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" disabled={!selectedEffort}>
                   <Trophy className="w-5 h-5 mr-2" /> Finalizar Treino
                 </Button>
               )}
             </div>
-            {!selectedRPE && (
+            {!selectedEffort && (
               <p className="text-[10px] text-muted-foreground mt-2 italic">Selecione a dificuldade para continuar</p>
             )}
             {currentSets.length < targetSeries && (
-              <button onClick={() => { setPhase("input"); setSelectedRPE(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
+              <button onClick={() => { setPhase("input"); setSelectedRPE(null); setSelectedEffort(null); }} className="text-xs text-muted-foreground mt-3 hover:text-foreground transition-colors">
                 + Adicionar mais séries
               </button>
             )}
