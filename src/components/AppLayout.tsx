@@ -3,20 +3,27 @@ import { NavLink, Outlet } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
-  History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal
+  History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
+import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
 
 const iconMap: Record<string, any> = {
-  Trophy, Crown, Users, Target, Flame, Medal,
+  Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
 };
 
 const coreNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/treino", icon: Dumbbell, label: "Plano Ativo" },
+  { to: "/analise", icon: BarChart3, label: "Análise" },
+  { to: "/metas", icon: Crosshair, label: "Metas" },
   { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
+  { to: "/acompanhamento", icon: TrendingUp, label: "Corpo" },
+  { to: "/evolucao", icon: TrendingUp, label: "Evolução Treino" },
+  { to: "/evolucao-alimentar", icon: Apple, label: "Evolução Dieta" },
+  { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
 ];
@@ -36,7 +43,6 @@ const AppLayout = () => {
     setPinnedItems(prefs.pinnedSocialItems);
   }, []);
 
-  // Listen for storage changes (from settings page)
   useEffect(() => {
     const handler = () => {
       const prefs = getMenuPreferences();
@@ -46,20 +52,36 @@ const AppLayout = () => {
     return () => window.removeEventListener("menuPrefsChanged", handler);
   }, []);
 
-  const pinnedNavItems = SOCIAL_ROUTES
+  const pinnedNavItems = MODULAR_ROUTES
     .filter(r => pinnedItems.includes(r.to))
     .map(r => ({ to: r.to, icon: iconMap[r.icon] || Target, label: r.label }));
-
-  const allNavItems = [...coreNavItems, ...pinnedNavItems, ...secondaryNavItems];
 
   const objectiveLabel = profile?.objective === "emagrecer" ? "Emagrecimento" : 
     profile?.objective === "massa" ? "Ganho de Massa" : 
     profile?.objective === "condicionamento" ? "Condicionamento" : 
     profile?.objective === "manter" ? "Manutenção" : "—";
 
+  const renderNavLink = (item: { to: string; icon: any; label: string }) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.to === "/"}
+      onClick={() => setSidebarOpen(false)}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
+        ${isActive 
+          ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
+          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
+        }`
+      }
+    >
+      <item.icon className="w-[18px] h-[18px]" />
+      {item.label}
+    </NavLink>
+  );
+
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
@@ -67,7 +89,6 @@ const AppLayout = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-[272px]
         bg-sidebar border-r border-sidebar-border
@@ -98,69 +119,20 @@ const AppLayout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu</p>
-          {coreNavItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
-                ${isActive 
-                  ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
-                }`
-              }
-            >
-              <item.icon className="w-[18px] h-[18px]" />
-              {item.label}
-            </NavLink>
-          ))}
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
+          {coreNavItems.map(renderNavLink)}
 
-          {/* Pinned Social Items */}
+          {/* Pinned Modular Items */}
           {pinnedNavItems.length > 0 && (
             <>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Social</p>
-              {pinnedNavItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
-                    ${isActive 
-                      ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
-                    }`
-                  }
-                >
-                  <item.icon className="w-[18px] h-[18px]" />
-                  {item.label}
-                </NavLink>
-              ))}
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Módulos</p>
+              {pinnedNavItems.map(renderNavLink)}
             </>
           )}
 
           {/* Secondary */}
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Conta</p>
-          {secondaryNavItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
-                ${isActive 
-                  ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
-                }`
-              }
-            >
-              <item.icon className="w-[18px] h-[18px]" />
-              {item.label}
-            </NavLink>
-          ))}
+          {secondaryNavItems.map(renderNavLink)}
         </nav>
 
         {/* User Card */}
