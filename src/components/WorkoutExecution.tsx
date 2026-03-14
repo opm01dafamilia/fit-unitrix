@@ -1572,33 +1572,53 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               {currentSets.length} séries • {currentSets.reduce((a, s) => a + s.kg * s.reps, 0).toFixed(0)}kg volume
             </p>
 
-            {/* RPE Selector */}
+            {/* RPE / Effort Selector */}
             <div className="w-full mt-4 p-3.5 rounded-xl bg-secondary/40 border border-border/30">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Como foi a dificuldade?</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {([
-                  { value: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
-                  { value: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
-                  { value: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                  { value: "leve" as EffortLevel, rpe: "leve" as RPE, emoji: "😊", label: "Leve", color: "border-green-500/40 bg-green-500/10 text-green-400" },
+                  { value: "moderado" as EffortLevel, rpe: "moderado" as RPE, emoji: "😤", label: "Moderado", color: "border-amber-500/40 bg-amber-500/10 text-amber-400" },
+                  { value: "pesado" as EffortLevel, rpe: "pesado" as RPE, emoji: "🥵", label: "Pesado", color: "border-red-500/40 bg-red-500/10 text-red-400" },
+                  { value: "extremo" as EffortLevel, rpe: "pesado" as RPE, emoji: "💀", label: "Extremo", color: "border-purple-500/40 bg-purple-500/10 text-purple-400" },
                 ]).map(option => (
                   <button
                     key={option.value}
                     onClick={() => {
-                      setSelectedRPE(option.value);
-                      saveExercisePerformance(currentExIndex, option.value);
+                      setSelectedRPE(option.rpe);
+                      setSelectedEffort(option.value);
+                      saveExercisePerformance(currentExIndex, option.rpe, option.value);
                     }}
-                    className={`p-3 rounded-xl border-2 transition-all text-center ${
-                      selectedRPE === option.value
+                    className={`p-2.5 rounded-xl border-2 transition-all text-center ${
+                      selectedEffort === option.value
                         ? `${option.color} scale-105 shadow-md`
                         : "border-border/30 bg-secondary/30 hover:border-border/60"
                     }`}
                   >
-                    <span className="text-xl block mb-1">{option.emoji}</span>
-                    <span className="text-[11px] font-semibold block">{option.label}</span>
+                    <span className="text-lg block mb-0.5">{option.emoji}</span>
+                    <span className="text-[10px] font-semibold block">{option.label}</span>
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Confirm Load Used */}
+            {selectedEffort && currentSets.length > 0 && (
+              <div className="w-full mt-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">✅ Carga confirmada</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-display font-bold text-foreground">
+                    {Math.max(...currentSets.map(s => s.kg))}kg
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {currentSets.length} séries • {selectedEffort}
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">
+                  Dados salvos para ajustar a sugestão no próximo treino
+                </p>
+              </div>
+            )}
 
             {/* Progression Decision Feedback */}
             {selectedRPE && progressionDecisions[currentExIndex] && (
