@@ -1285,6 +1285,71 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
+      {/* ===== SMART LOAD SUGGESTION CARD ===== */}
+      {(() => {
+        const suggestion = loadSuggestions[currentEx.nome];
+        if (!suggestion || suggestion.confidence === "low") return null;
+        return (
+          <div className={`glass-card p-4 animate-slide-up border ${
+            suggestion.direction === "up" ? "border-primary/25 bg-gradient-to-r from-primary/5 to-transparent" :
+            suggestion.direction === "down" ? "border-destructive/25 bg-gradient-to-r from-destructive/5 to-transparent" :
+            "border-border/50"
+          }`}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Dumbbell className="w-3.5 h-3.5 text-primary" /> Sugestão de Carga
+              </h3>
+              {suggestion.recoveryWarning && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                  🛡️ Recuperação
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center ${
+                suggestion.direction === "up" ? "bg-primary/10" :
+                suggestion.direction === "down" ? "bg-destructive/10" :
+                "bg-secondary/60"
+              }`}>
+                {suggestion.direction === "up" && <TrendingUp className="w-5 h-5 text-primary mb-0.5" />}
+                {suggestion.direction === "down" && <TrendingDown className="w-5 h-5 text-destructive mb-0.5" />}
+                {suggestion.direction === "maintain" && <Minus className="w-5 h-5 text-muted-foreground mb-0.5" />}
+                <span className={`text-sm font-display font-bold ${
+                  suggestion.direction === "up" ? "text-primary" :
+                  suggestion.direction === "down" ? "text-destructive" :
+                  "text-foreground"
+                }`}>
+                  {suggestion.deltaKg > 0 ? "+" : ""}{suggestion.deltaKg}kg
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold">
+                  {suggestion.emoji} {suggestion.suggestedWeight > 0 ? `${suggestion.suggestedWeight}kg` : "Defina seu peso"}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">{suggestion.reason}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">Baseado no seu último treino</p>
+              </div>
+            </div>
+            {suggestion.confidence === "high" && (
+              <div className="mt-2 flex items-center gap-1">
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <div className="h-1 flex-1 rounded-full bg-primary/30" />
+                <span className="text-[9px] text-muted-foreground ml-1">Confiança alta</span>
+              </div>
+            )}
+            {suggestion.confidence === "medium" && (
+              <div className="mt-2 flex items-center gap-1">
+                <div className="h-1 flex-1 rounded-full bg-amber-500/30" />
+                <div className="h-1 flex-1 rounded-full bg-amber-500/30" />
+                <div className="h-1 flex-1 rounded-full bg-muted" />
+                <span className="text-[9px] text-muted-foreground ml-1">Confiança média</span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ===== PROGRESSION FEEDBACK ===== */}
       {currentProgression && currentProgression.feedback !== "first_time" && (
         <div className={`glass-card p-3.5 flex items-center gap-3 ${
