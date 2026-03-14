@@ -57,13 +57,14 @@ const Dashboard = () => {
     if (!user) return;
     const fetchData = async () => {
       try {
-        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes] = await Promise.all([
+        const [bodyRes, goalsRes, workoutRes, dietRes, sessionsRes, historyRes, dietTrackRes] = await Promise.all([
           supabase.from("body_tracking").select("weight,body_fat,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
           supabase.from("fitness_goals").select("id,title,current_value,target_value,unit,status,created_at").eq("user_id", user.id).order("created_at", { ascending: false }),
           supabase.from("workout_plans").select("id,objective,experience_level,days_per_week,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("diet_plans").select("id,objective,plan_data,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
           supabase.from("workout_sessions").select("id,completed_at,exercises_completed,exercises_total,muscle_group").eq("user_id", user.id).order("completed_at", { ascending: false }),
           supabase.from("exercise_history").select("exercise_name,weight,reps,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
+          supabase.from("diet_tracking").select("meals_done,meals_failed,meals_total,adherence_pct,tracked_date").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(14),
         ]);
         setBodyRecords(bodyRes.data || []);
         setGoals(goalsRes.data || []);
@@ -71,6 +72,7 @@ const Dashboard = () => {
         setDietPlans(dietRes.data || []);
         setSessions(sessionsRes.data || []);
         setExerciseHistory(historyRes.data || []);
+        setDietTracking(dietTrackRes.data || []);
       } catch {
         // silently fail
       } finally {
