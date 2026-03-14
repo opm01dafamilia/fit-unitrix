@@ -11,6 +11,7 @@ import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } fro
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
 import { getComebackStatus } from "@/lib/comebackEngine";
+import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
@@ -218,6 +219,34 @@ const Dashboard = () => {
     );
     return status.dashboardAlert ? status : null;
   })();
+
+  // Smart Notifications — trigger behavioral analysis after data loads
+  useEffect(() => {
+    if (loading || !user) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const trainedToday = sessions.some((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === today);
+    const todayDiet = dietTracking.find((d: any) => d.tracked_date === today);
+    const weekFailedMeals = dietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0);
+    const daysPerWeek = workoutPlans[0]?.days_per_week || 4;
+
+    const ctx: BehavioralContext = {
+      totalWorkoutsThisWeek: weekWorkouts,
+      daysPerWeek,
+      trainedToday,
+      workoutStreak: currentStreak,
+      lastWorkoutDate: sessions[0]?.completed_at,
+      mealsCompletedToday: todayDiet?.meals_done || 0,
+      mealsTotalToday: todayDiet?.meals_total || 0,
+      mealsFailedThisWeek: weekFailedMeals,
+      dietStreak: 0,
+      activeGoals: activeGoals.map((g: any) => ({ title: g.title, progress: g.current_value, target: g.target_value })),
+      nearAchievementName: nextAchievement?.title,
+    };
+
+    generateSmartNotifications(ctx);
+    checkInactivityNotification(sessions[0]?.completed_at);
+    window.dispatchEvent(new Event("fitpulse_notif_update"));
+  }, [loading]);
 
   if (loading) return <DashboardSkeleton />;
 

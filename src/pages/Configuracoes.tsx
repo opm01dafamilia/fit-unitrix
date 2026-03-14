@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
 import { getMenuPreferences, saveMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
+import { getNotificationPreferences, saveNotificationPreferences, type NotificationType } from "@/lib/smartNotificationsEngine";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
@@ -23,6 +24,27 @@ const Configuracoes = () => {
   const [honestyMode, setHonestyModeState] = useState(getHonestyMode());
   const validationStats = getValidationStats();
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
+  const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPreferences());
+
+  const NOTIF_TYPE_LABELS: Record<NotificationType, string> = {
+    treino: "🏋️ Treino",
+    dieta: "🥗 Dieta",
+    ranking: "🏆 Ranking",
+    recuperacao: "🧘 Recuperação",
+    meta: "🎯 Metas",
+    conquista: "🏅 Conquistas",
+    social: "👥 Social",
+  };
+
+  const updateNotifPref = (key: keyof typeof notifPrefs.types | "enabled" | "soundEnabled", value: boolean) => {
+    const updated = { ...notifPrefs };
+    if (key === "enabled") updated.enabled = value;
+    else if (key === "soundEnabled") updated.soundEnabled = value;
+    else updated.types = { ...updated.types, [key]: value };
+    setNotifPrefs(updated);
+    saveNotificationPreferences(updated);
+    toast.success("Preferência atualizada!");
+  };
 
   const togglePin = (route: string) => {
     const prefs = getMenuPreferences();
@@ -210,25 +232,50 @@ const Configuracoes = () => {
         </div>
       </div>
 
-      {/* Notification Preferences */}
+      {/* Smart Notification Preferences */}
       <div className="glass-card p-5 lg:p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-chart-3/15 to-chart-3/5 flex items-center justify-center">
             <Bell className="w-4 h-4 text-chart-3" />
           </div>
-          <h3 className="font-display font-semibold text-base">Notificações</h3>
+          <h3 className="font-display font-semibold text-base">Notificações Inteligentes</h3>
         </div>
-        <div className="space-y-4">
-          {[
-            { label: "Lembrete para registrar peso", value: notifPeso, onChange: setNotifPeso },
-            { label: "Lembrete de treino", value: notifTreino, onChange: setNotifTreino },
-            { label: "Lembrete para atualizar medidas", value: notifMedidas, onChange: setNotifMedidas },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30">
-              <span className="text-sm font-medium">{item.label}</span>
-              <Switch checked={item.value} onCheckedChange={item.onChange} />
-            </div>
-          ))}
+        <p className="text-sm text-muted-foreground mb-4">
+          O FitPulse acompanha seu comportamento e envia alertas estratégicos como um coach pessoal.
+        </p>
+
+        {/* Master toggle */}
+        <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30 mb-3">
+          <span className="text-sm font-medium">Notificações ativas</span>
+          <Switch checked={notifPrefs.enabled} onCheckedChange={(v) => updateNotifPref("enabled", v)} />
+        </div>
+
+        {notifPrefs.enabled && (
+          <div className="space-y-2 mt-3">
+            {(Object.keys(notifPrefs.types) as NotificationType[]).map((type) => (
+              <div key={type} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/20 border border-border/20">
+                <span className="text-xs font-medium">{NOTIF_TYPE_LABELS[type]}</span>
+                <Switch checked={notifPrefs.types[type]} onCheckedChange={(v) => updateNotifPref(type, v)} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Legacy reminders */}
+        <div className="mt-4 pt-4 border-t border-border/30">
+          <p className="text-[10px] text-muted-foreground mb-3 uppercase tracking-wider font-semibold">Lembretes básicos</p>
+          <div className="space-y-2">
+            {[
+              { label: "Lembrete para registrar peso", value: notifPeso, onChange: setNotifPeso },
+              { label: "Lembrete de treino", value: notifTreino, onChange: setNotifTreino },
+              { label: "Lembrete para atualizar medidas", value: notifMedidas, onChange: setNotifMedidas },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/20 border border-border/20">
+                <span className="text-xs font-medium">{item.label}</span>
+                <Switch checked={item.value} onCheckedChange={item.onChange} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
