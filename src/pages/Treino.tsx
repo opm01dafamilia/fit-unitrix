@@ -1383,7 +1383,16 @@ const Treino = () => {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-foreground/70 font-medium mt-0.5">{day.grupo}</p>
+                              <p className="text-xs text-foreground/70 font-medium mt-0.5 flex items-center gap-1.5">
+                                {day.grupo}
+                                {(() => {
+                                  const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
+                                  const rl = getGroupRecoveryLevel(day.grupo, sessionData);
+                                  if (rl === "recovered") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/15">🟢</span>;
+                                  if (rl === "attention") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/15">🟡</span>;
+                                  return <span className="text-[8px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/15">🔴</span>;
+                                })()}
+                              </p>
                             </div>
                           </div>
                         </div>
