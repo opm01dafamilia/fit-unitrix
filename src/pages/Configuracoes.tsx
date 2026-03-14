@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield } from "lucide-react";
+import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield, LayoutGrid, Pin, PinOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
+import { getMenuPreferences, saveMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
@@ -21,6 +22,22 @@ const Configuracoes = () => {
   const [unidade, setUnidade] = useState<"kg" | "lb">("kg");
   const [honestyMode, setHonestyModeState] = useState(getHonestyMode());
   const validationStats = getValidationStats();
+  const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
+
+  const togglePin = (route: string) => {
+    const prefs = getMenuPreferences();
+    const idx = prefs.pinnedSocialItems.indexOf(route);
+    if (idx >= 0) {
+      prefs.pinnedSocialItems.splice(idx, 1);
+    } else {
+      prefs.pinnedSocialItems.push(route);
+    }
+    saveMenuPreferences(prefs);
+    setPinnedItems([...prefs.pinnedSocialItems]);
+    // Notify AppLayout
+    window.dispatchEvent(new Event("menuPrefsChanged"));
+    toast.success("Menu atualizado!");
+  };
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -115,7 +132,43 @@ const Configuracoes = () => {
         </div>
       </div>
 
-      {/* Change Password */}
+      {/* Menu Customization */}
+      <div className="glass-card p-5 lg:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+            <LayoutGrid className="w-4 h-4 text-primary" />
+          </div>
+          <h3 className="font-display font-semibold text-base">Personalizar Menu</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Fixe abas sociais no menu principal para acesso rápido.
+        </p>
+        <div className="space-y-2">
+          {SOCIAL_ROUTES.map((route) => {
+            const isPinned = pinnedItems.includes(route.to);
+            return (
+              <div key={route.to} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-sm">{route.label}</span>
+                </div>
+                <button
+                  onClick={() => togglePin(route.to)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                    isPinned
+                      ? "bg-primary/10 text-primary border border-primary/20"
+                      : "bg-secondary/50 text-muted-foreground hover:text-foreground border border-transparent"
+                  }`}
+                >
+                  {isPinned ? <Pin className="w-3 h-3" /> : <PinOff className="w-3 h-3" />}
+                  {isPinned ? "Fixado" : "Fixar"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+
       <div className="glass-card p-5 lg:p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-chart-4/15 to-chart-4/5 flex items-center justify-center">
