@@ -250,6 +250,35 @@ const Dashboard = () => {
     window.dispatchEvent(new Event("fitpulse_notif_update"));
   }, [loading]);
 
+  // === FITNESS SCORE ===
+  const dietCompletedWeek = dietTracking.reduce((a: number, d: any) => a + (d.meals_done || 0), 0);
+  const dietTotalWeek = dietTracking.reduce((a: number, d: any) => a + (d.meals_total || 0), 0);
+  const dietFailures = dietTracking.filter((d: any) => d.meals_failed > 0).length;
+  const hasRecentBody = bodyRecords.length > 0 && differenceInCalendarDays(new Date(), new Date(bodyRecords[bodyRecords.length - 1].created_at)) <= 7;
+  const bodyDirection: "improving" | "stable" | "declining" | "unknown" = bodyRecords.length >= 2
+    ? (weightChange < 0 && profile?.objective === "emagrecer") || (weightChange > 0 && profile?.objective === "massa")
+      ? "improving"
+      : weightChange === 0 ? "stable" : "declining"
+    : "unknown";
+
+  const fitnessScoreResult = calculateFitnessScore({
+    workoutsThisWeek: weekWorkouts,
+    targetWorkoutsPerWeek: workoutPlans[0]?.days_per_week || 4,
+    workoutStreak: currentStreak,
+    totalWorkouts: sessions.length,
+    mealsCompletedThisWeek: dietCompletedWeek,
+    mealsTotalThisWeek: dietTotalWeek,
+    consecutiveDietFailures: dietFailures,
+    hasRecentBodyRecord: hasRecentBody,
+    bodyProgressDirection: bodyDirection,
+    activeGoalsCount: activeGoals.length,
+    goalsOnTrack: activeGoals.filter((g: any) => g.target_value > 0 && (g.current_value / g.target_value) >= 0.5).length,
+    challengesCompletedThisWeek: 0,
+    invitesSent: 0,
+    daysActiveThisWeek: weekWorkouts,
+    weeksConsecutivelyActive: Math.floor(currentStreak / 7),
+  });
+
   if (loading) return <DashboardSkeleton />;
 
   return (
