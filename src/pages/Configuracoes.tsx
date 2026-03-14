@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Settings, Lock, LogOut, Loader2, Bell, Ruler } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
+import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
@@ -18,6 +19,8 @@ const Configuracoes = () => {
   const [notifTreino, setNotifTreino] = useState(true);
   const [notifMedidas, setNotifMedidas] = useState(true);
   const [unidade, setUnidade] = useState<"kg" | "lb">("kg");
+  const [honestyMode, setHonestyModeState] = useState(getHonestyMode());
+  const validationStats = getValidationStats();
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -44,6 +47,16 @@ const Configuracoes = () => {
     navigate("/auth");
   };
 
+  const handleHonestyToggle = (enabled: boolean) => {
+    setHonestyModeState(enabled);
+    setHonestyMode(enabled);
+    if (!enabled) {
+      toast.warning("Modo Honesto desativado — seu ranking não será contabilizado.", { duration: 5000 });
+    } else {
+      toast.success("Modo Honesto ativado — ranking ativo!", { duration: 3000 });
+    }
+  };
+
   return (
     <div className="space-y-7 animate-slide-up">
       <div>
@@ -61,6 +74,45 @@ const Configuracoes = () => {
         </div>
         <p className="text-sm text-muted-foreground mb-4">Edite suas informações pessoais como nome, peso, altura e objetivo.</p>
         <Button variant="outline" size="sm" onClick={() => navigate("/perfil")}>Editar Perfil</Button>
+      </div>
+
+      {/* Honesty Mode */}
+      <div className="glass-card p-5 lg:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
+            <Shield className="w-4 h-4 text-chart-2" />
+          </div>
+          <h3 className="font-display font-semibold text-base">Modo Honesto</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Quando ativado, seus treinos são validados para ranking e conquistas. Desativar remove sua pontuação do ranking.
+        </p>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Modo Honesto</span>
+            {honestyMode ? (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-chart-2/15 text-chart-2 font-bold">ATIVO</span>
+            ) : (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/15 text-destructive font-bold">INATIVO</span>
+            )}
+          </div>
+          <Switch checked={honestyMode} onCheckedChange={handleHonestyToggle} />
+        </div>
+        {/* Validation Stats */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="p-2.5 rounded-lg bg-secondary/30 text-center">
+            <p className="text-base font-display font-bold text-chart-2">{validationStats.totalValidated}</p>
+            <p className="text-[9px] text-muted-foreground">Validados</p>
+          </div>
+          <div className="p-2.5 rounded-lg bg-secondary/30 text-center">
+            <p className="text-base font-display font-bold text-destructive">{validationStats.totalNotValidated}</p>
+            <p className="text-[9px] text-muted-foreground">Não validados</p>
+          </div>
+          <div className="p-2.5 rounded-lg bg-secondary/30 text-center">
+            <p className="text-base font-display font-bold text-chart-4">{validationStats.totalExtra}</p>
+            <p className="text-[9px] text-muted-foreground">Extras</p>
+          </div>
+        </div>
       </div>
 
       {/* Change Password */}

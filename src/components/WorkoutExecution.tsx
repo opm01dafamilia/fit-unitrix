@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
+import { validateWorkout, markWorkoutValidatedToday, logValidation, getHonestyMode, checkXPThrottle, recordAchievementUnlock } from "@/lib/antiFakeEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, getSmartCardio, type CardioRecommendation, type SmartCardioSession } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
@@ -175,6 +176,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [showEvolutionChart, setShowEvolutionChart] = useState(false);
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
   const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
+
+  // Anti-fake tracking
+  const totalRestsStartedRef = useRef(0);
+  const totalRestsPossibleRef = useRef(0);
 
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
@@ -447,6 +452,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       }
       setPhase("exercise-done");
     } else {
+      // Track rest start for anti-fake
+      totalRestsPossibleRef.current += 1;
+      totalRestsStartedRef.current += 1;
       // Auto-start rest with wall-clock
       restEndTimeRef.current = Date.now() + effectiveRestSeconds * 1000;
       setRestTime(effectiveRestSeconds);
@@ -578,20 +586,41 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     if (currentExIndex > 0) goToExercise(currentExIndex - 1);
   };
 
-  const MIN_WORKOUT_SECONDS = 180; // 3 minutes minimum
   const MIN_SETS_REQUIRED = 3; // At least 3 sets total
 
+  // Anti-fake validation result state
+  const [validationResult, setValidationResult] = useState<ReturnType<typeof validateWorkout> | null>(null);
+
   const handleFinish = async () => {
-    // Fraud prevention: minimum time
-    if (workoutSeconds < MIN_WORKOUT_SECONDS) {
-      toast.error(`⏱ Treino muito curto! Mínimo de ${Math.ceil(MIN_WORKOUT_SECONDS / 60)} minutos para validar.`, { duration: 4000 });
-      return;
-    }
-    // Fraud prevention: minimum sets
+    // Basic minimum sets check
     const totalSets = Object.values(sets).reduce((a, exSets) => a + exSets.length, 0);
     if (totalSets < MIN_SETS_REQUIRED) {
       toast.error(`💪 Registre pelo menos ${MIN_SETS_REQUIRED} séries para concluir o treino.`, { duration: 4000 });
       return;
+    }
+
+    // Calculate total series target
+    const totalSeriesTarget = exercises.reduce((a, ex) => a + (parseInt(ex.series) || 4), 0);
+
+    // Run anti-fake validation
+    const validation = validateWorkout({
+      totalSeconds: workoutSeconds,
+      totalRestsStarted: totalRestsStartedRef.current,
+      totalRestsPossible: totalRestsPossibleRef.current,
+      seriesCompleted: totalSets,
+      totalSeriesTarget,
+    });
+
+    setValidationResult(validation);
+
+    // Log validation result
+    if (validation.isExtra) {
+      logValidation({ type: "treino_extra", details: `Treino extra do dia — salvo no histórico sem XP` });
+    } else if (validation.isValid) {
+      logValidation({ type: "treino_validado", details: `Tempo: ${Math.floor(workoutSeconds / 60)}min, Séries: ${Math.round(validation.seriesCompletedPct)}%, Descansos: ${Math.round(validation.restStartsPct)}%` });
+      markWorkoutValidatedToday();
+    } else {
+      logValidation({ type: "treino_nao_validado", details: validation.reasons.join("; ") });
     }
 
     try {
@@ -630,9 +659,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
       setSessionSummary(summary);
       setShowCompletion(true);
-      // Register workout_completed micro-victory
-      registerMicroVictory("workout_completed");
-      registerMicroVictory("exercise_completed"); // last exercise
+
+      // Only register micro-victories if validated
+      if (validation.isValid) {
+        registerMicroVictory("workout_completed");
+        registerMicroVictory("exercise_completed");
+      }
     } catch {
       toast.error("Erro ao salvar sessão");
     }
@@ -773,7 +805,41 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             <Trophy className="w-12 h-12 text-yellow-500" />
           </div>
           <h1 className="font-display font-bold text-2xl text-center mb-1">Treino Concluído! 🎉</h1>
-          <p className="text-muted-foreground text-sm text-center mb-6">Ótimo trabalho! Cada treino te deixa mais forte.</p>
+          <p className="text-muted-foreground text-sm text-center mb-3">Ótimo trabalho! Cada treino te deixa mais forte.</p>
+
+          {/* Validation Status Banner */}
+          {validationResult && !validationResult.isValid && (
+            <div className={`w-full rounded-xl p-3 mb-4 ${
+              validationResult.isExtra
+                ? "bg-chart-4/10 border border-chart-4/20"
+                : "bg-destructive/10 border border-destructive/20"
+            }`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className={`w-4 h-4 ${validationResult.isExtra ? "text-chart-4" : "text-destructive"}`} />
+                <span className={`text-xs font-semibold ${validationResult.isExtra ? "text-chart-4" : "text-destructive"}`}>
+                  {validationResult.isExtra ? "Treino Extra" : "Treino não validado para ranking"}
+                </span>
+              </div>
+              {validationResult.isExtra ? (
+                <p className="text-[10px] text-muted-foreground">Você já validou um treino hoje. Este foi salvo no histórico, mas não gera XP.</p>
+              ) : (
+                <div className="space-y-0.5">
+                  {validationResult.reasons.map((r, i) => (
+                    <p key={i} className="text-[10px] text-muted-foreground">• {r}</p>
+                  ))}
+                  <p className="text-[10px] text-muted-foreground mt-1 italic">Salvo no histórico, mas sem XP ou conquistas.</p>
+                </div>
+              )}
+            </div>
+          )}
+          {validationResult?.isValid && (
+            <div className="w-full rounded-xl p-3 mb-4 bg-primary/10 border border-primary/20">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <span className="text-xs font-semibold text-primary">✅ Treino validado para ranking e XP</span>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3 w-full mb-6">
             <div className="glass-card p-4 flex flex-col items-center">
               <Dumbbell className="w-5 h-5 text-primary mb-2" />
