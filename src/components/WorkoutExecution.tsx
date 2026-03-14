@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
+import { validateWorkout, markWorkoutValidatedToday, logValidation, getHonestyMode, checkXPThrottle, recordAchievementUnlock } from "@/lib/antiFakeEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, getSmartCardio, type CardioRecommendation, type SmartCardioSession } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
