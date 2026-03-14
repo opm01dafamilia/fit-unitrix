@@ -25,6 +25,7 @@ import { getWeeklyFatigueSummary, shouldTrainGroup, type WeeklyFatigueSummary } 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, logRecoveryEvent, getGroupRecoveryLevel, type RecoverySummary, type RecoveryLevel } from "@/lib/smartRecoveryEngine";
 import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
+import MuscleVolumeCard from "@/components/MuscleVolumeCard";
 import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
 
 type WorkoutSession = {
@@ -1141,6 +1142,15 @@ const Treino = () => {
 
           {/* Periodization Cycle Card */}
           {activePlan && <PeriodizationCycleCard />}
+
+          {/* Muscle Volume Card */}
+          {activePlan && (
+            <MuscleVolumeCard
+              level={profile?.experience_level || "intermediario"}
+              objective={profile?.objective || "hipertrofia"}
+              bodyFocus={activePlan?.body_focus || "completo"}
+            />
+          )}
 
           {/* Next Workout Hero Card */}
           {nextWorkout && (
