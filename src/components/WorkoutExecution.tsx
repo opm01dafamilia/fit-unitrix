@@ -172,9 +172,11 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   // RPE / Smart Progression
   const [selectedRPE, setSelectedRPE] = useState<RPE | null>(null);
+  const [selectedEffort, setSelectedEffort] = useState<EffortLevel | null>(null);
   const [progressionDecisions, setProgressionDecisions] = useState<Record<number, ProgressionDecision>>({});
   const [sessionSummary, setSessionSummary] = useState<SessionProgressionSummary | null>(null);
   const [showEvolutionChart, setShowEvolutionChart] = useState(false);
+  const [loadSuggestions, setLoadSuggestions] = useState<Record<string, LoadSuggestion>>({});
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
   const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
 
