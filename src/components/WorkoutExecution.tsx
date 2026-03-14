@@ -602,6 +602,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     setInputKg("");
     setInputReps("");
     setSelectedRPE(null);
+    setSelectedEffort(null);
   };
 
   const goNext = () => {
