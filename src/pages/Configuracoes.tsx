@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
 import { getMenuPreferences, saveMenuPreferences, resetMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import { getNotificationPreferences, saveNotificationPreferences, type NotificationType } from "@/lib/smartNotificationsEngine";
+import { isCoachModeActive, setCoachMode } from "@/lib/fitnessCoachEngine";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
