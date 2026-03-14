@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFakeEngine";
 import { getMenuPreferences, saveMenuPreferences, resetMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import { getNotificationPreferences, saveNotificationPreferences, type NotificationType } from "@/lib/smartNotificationsEngine";
+import { isCoachModeActive, setCoachMode } from "@/lib/fitnessCoachEngine";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();
@@ -25,6 +26,7 @@ const Configuracoes = () => {
   const validationStats = getValidationStats();
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
   const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPreferences());
+  const [coachMode, setCoachModeState] = useState(() => isCoachModeActive());
 
   const NOTIF_TYPE_LABELS: Record<NotificationType, string> = {
     treino: "🏋️ Treino",
@@ -243,6 +245,37 @@ const Configuracoes = () => {
               {u.toUpperCase()}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Coach Mode */}
+      <div className="glass-card p-5 lg:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-chart-2/5 flex items-center justify-center">
+            <span className="text-base">🧠</span>
+          </div>
+          <div>
+            <h3 className="font-display font-semibold text-base">Modo Coach Ativo</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Feedback comportamental inteligente</p>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Quando ativado, o FitPulse aumenta a frequência de mensagens motivacionais, sugestões diárias e alertas estratégicos.
+        </p>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Modo Coach</span>
+            {coachMode ? (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-bold">ATIVO</span>
+            ) : (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground font-bold">INATIVO</span>
+            )}
+          </div>
+          <Switch checked={coachMode} onCheckedChange={(v) => {
+            setCoachModeState(v);
+            setCoachMode(v);
+            toast.success(v ? "Modo Coach ativado! 🧠" : "Modo Coach desativado.");
+          }} />
         </div>
       </div>
 
