@@ -1139,6 +1139,9 @@ const Treino = () => {
             );
           })()}
 
+          {/* Periodization Cycle Card */}
+          {activePlan && <PeriodizationCycleCard />}
+
           {/* Next Workout Hero Card */}
           {nextWorkout && (
             <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
