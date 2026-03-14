@@ -176,6 +176,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [evolutionData, setEvolutionData] = useState<WeightEvolutionPoint[]>([]);
   const [fatigueStatus, setFatigueStatus] = useState<{ fatigue: MuscleFatigueStatus; adjustment: FatigueAdjustment | null } | null>(null);
 
+  // Anti-fake tracking
+  const totalRestsStartedRef = useRef(0);
+  const totalRestsPossibleRef = useRef(0);
+
   const currentEx = exercises[currentExIndex];
   const totalExercises = exercises.length;
   const currentSets = sets[currentExIndex] || [];
