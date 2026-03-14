@@ -282,6 +282,18 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         progs[ex.nome] = calculateProgression(hist, parseInt(ex.series) || 4, ex.reps, experienceLevel, ex.nome);
       });
       setProgressions(progs);
+
+      // Compute smart load suggestions
+      const suggestions: Record<string, LoadSuggestion> = {};
+      exercises.forEach(ex => {
+        const hist = grouped[ex.nome] || [];
+        const lastW = hist.length > 0 ? Math.max(...hist.slice(0, 5).map(h => h.weight)) : 0;
+        const lastR = hist.length > 0 ? hist[0].reps : parseInt(ex.reps) || 10;
+        suggestions[ex.nome] = calculateLoadSuggestion(
+          ex.nome, lastW, lastR, parseInt(ex.reps) || 10, parseInt(ex.series) || 4, experienceLevel
+        );
+      });
+      setLoadSuggestions(suggestions);
     };
     loadHistory();
   }, [userId, exercises, experienceLevel]);
