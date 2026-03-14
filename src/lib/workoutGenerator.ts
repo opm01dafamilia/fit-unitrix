@@ -365,57 +365,49 @@ const splitTemplates7: Record<Objective, SplitEntry7[]> = {
 // Mantém estímulo leve/moderado de inferiores para equilíbrio
 // Alterna empurrar/puxar
 // =====================================================
+// =====================================================
+// SPLIT TEMPLATES — FOCO SUPERIOR
+// Mais dias de superior, mas NUNCA consecutivos sem buffer inferior/cardio
+// =====================================================
 const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, SplitEntry[]>>> = {
   superior: {
     emagrecer: {
-      // 3d: Empurrar + HIIT | Puxar + HIIT | Braços + Pernas leve
-      3: [["peito", "ombros", "hiit"], ["costas", "biceps", "hiit"], ["triceps", "ombros", "pernas"]],
-      // 4d: Empurrar | Puxar | Braços + HIIT | Ombros + Pernas leve
-      4: [["peito", "triceps", "hiit"], ["costas", "biceps"], ["ombros", "hiit", "abdomen"], ["pernas", "triceps", "cardio"]],
-      // 5d: Peito | Costas | Ombros + HIIT | Braços | Pernas leve + Cardio
-      5: [["peito", "triceps"], ["costas", "biceps", "hiit"], ["ombros", "abdomen"], ["biceps", "triceps", "hiit"], ["pernas", "cardio"]],
-      // 6d: Peito | Costas | Ombros | Braços | Pernas leve | HIIT
-      6: [["peito", "hiit"], ["costas", "abdomen"], ["ombros", "triceps"], ["biceps", "peito", "hiit"], ["pernas", "cardio"], ["costas", "ombros"]],
+      3: [["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "ombros"]],
+      4: [["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["ombros", "abdomen", "cardio"]],
+      5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "gluteos"], ["ombros", "abdomen", "cardio"]],
+      6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen"], ["cardio", "hiit"]],
     },
     massa: {
-      3: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "pernas"]],
-      4: [["peito", "triceps"], ["costas", "biceps"], ["ombros", "abdomen"], ["peito", "costas", "pernas"]],
-      5: [["peito"], ["costas", "biceps"], ["ombros", "triceps"], ["peito", "costas"], ["pernas", "abdomen"]],
-      6: [["peito", "triceps"], ["costas", "biceps"], ["ombros"], ["peito", "ombros"], ["biceps", "triceps"], ["pernas", "abdomen"]],
+      3: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "ombros"]],
+      4: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["ombros", "abdomen"]],
+      5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"]],
+      6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros"], ["peito", "costas", "abdomen"]],
     },
     condicionamento: {
-      3: [["hiit", "peito", "costas"], ["ombros", "biceps", "cardio"], ["triceps", "pernas", "hiit"]],
-      4: [["hiit", "peito", "triceps"], ["costas", "biceps", "cardio"], ["ombros", "hiit"], ["pernas", "abdomen", "cardio"]],
-      5: [["hiit", "peito"], ["costas", "biceps"], ["ombros", "cardio"], ["triceps", "hiit", "abdomen"], ["pernas", "cardio"]],
-      6: [["hiit", "peito"], ["costas", "biceps"], ["ombros", "hiit"], ["peito", "triceps", "cardio"], ["costas", "abdomen"], ["pernas", "cardio"]],
+      3: [["hiit", "peito", "costas"], ["quadriceps", "panturrilha", "cardio"], ["ombros", "triceps", "biceps"]],
+      4: [["hiit", "peito", "triceps"], ["quadriceps", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "ombros", "cardio"]],
+      5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen", "cardio"]],
+      6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "gluteos", "cardio"], ["ombros", "triceps"], ["hiit", "cardio"]],
     },
   },
-  // =====================================================
-  // FOCO INFERIOR
-  // Prioriza quadríceps, posterior, glúteos, panturrilha
-  // Alterna: quadríceps-dominante / posterior-glúteo / perna completa
-  // Mantém estímulo leve de superior para equilíbrio
-  // =====================================================
   inferior: {
     emagrecer: {
-      // 3d: Quad-dominante + HIIT | Posterior-Glúteo + Cardio | Perna completa + Superior leve
-      3: [["quadriceps", "panturrilha", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "ombros", "abdomen"]],
-      4: [["quadriceps", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "abdomen"], ["quadriceps", "panturrilha", "peito"]],
-      5: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["pernas", "cardio", "abdomen"], ["quadriceps", "panturrilha", "hiit"], ["peito", "costas", "cardio"]],
-      6: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["peito", "costas", "cardio"], ["pernas", "abdomen"], ["quadriceps", "panturrilha", "hiit"], ["gluteos", "posterior", "cardio"]],
+      3: [["quadriceps", "panturrilha", "hiit"], ["peito", "costas", "cardio"], ["posterior", "gluteos", "abdomen"]],
+      4: [["quadriceps", "panturrilha", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "abdomen"]],
+      5: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps", "cardio"], ["pernas", "abdomen"]],
+      6: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen", "cardio"], ["ombros", "hiit"]],
     },
     massa: {
-      // 3d: Quad-dominante | Posterior-Glúteo | Perna completa + Superior leve
-      3: [["quadriceps", "panturrilha"], ["posterior", "gluteos"], ["pernas", "ombros"]],
-      4: [["quadriceps", "panturrilha"], ["posterior", "gluteos"], ["pernas", "abdomen"], ["quadriceps", "peito", "costas"]],
-      5: [["quadriceps"], ["posterior", "gluteos"], ["pernas", "panturrilha"], ["quadriceps", "abdomen"], ["peito", "costas", "ombros"]],
-      6: [["quadriceps"], ["posterior", "gluteos"], ["panturrilha", "abdomen"], ["pernas"], ["quadriceps", "gluteos"], ["peito", "costas", "ombros"]],
+      3: [["quadriceps", "panturrilha"], ["peito", "costas", "ombros"], ["posterior", "gluteos"]],
+      4: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"]],
+      5: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen"]],
+      6: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen"], ["ombros", "panturrilha"]],
     },
     condicionamento: {
-      3: [["quadriceps", "hiit", "panturrilha"], ["posterior", "gluteos", "cardio"], ["pernas", "peito", "hiit"]],
-      4: [["quadriceps", "hiit"], ["posterior", "gluteos", "cardio"], ["pernas", "hiit", "abdomen"], ["panturrilha", "peito", "costas", "cardio"]],
-      5: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["pernas", "cardio"], ["quadriceps", "hiit", "panturrilha"], ["peito", "costas", "abdomen", "cardio"]],
-      6: [["quadriceps", "hiit"], ["posterior", "gluteos"], ["peito", "costas", "cardio"], ["pernas", "hiit"], ["quadriceps", "panturrilha", "abdomen"], ["gluteos", "cardio"]],
+      3: [["quadriceps", "hiit", "panturrilha"], ["peito", "costas", "cardio"], ["posterior", "gluteos", "hiit"]],
+      4: [["quadriceps", "hiit"], ["peito", "triceps", "cardio"], ["posterior", "gluteos", "hiit"], ["costas", "ombros", "cardio"]],
+      5: [["quadriceps", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "hiit"], ["pernas", "abdomen", "cardio"]],
+      6: [["quadriceps", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "hiit"], ["pernas", "abdomen"], ["ombros", "cardio"]],
     },
   },
   completo: {
@@ -426,65 +418,65 @@ const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, Sp
 };
 
 // =====================================================
-// 7-DAY FOCUS OVERRIDES
+// 7-DAY FOCUS OVERRIDES — strict alternation
 // =====================================================
 const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> = {
   superior: {
     emagrecer: [
       { groups: ["peito", "triceps"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
       { groups: ["costas", "biceps"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "moderado" },
       { groups: ["ombros", "hiit"], intensity: "pesado" },
-      { groups: ["pernas", "cardio"], intensity: "moderado" },
-      { groups: ["peito", "costas"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     massa: [
       { groups: ["peito", "triceps"], intensity: "pesado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "moderado" },
       { groups: ["costas", "biceps"], intensity: "pesado" },
-      { groups: ["pernas", "abdomen"], intensity: "moderado" },
+      { groups: ["posterior", "gluteos"], intensity: "moderado" },
       { groups: ["ombros"], intensity: "pesado" },
-      { groups: ["biceps", "triceps"], intensity: "pesado" },
       { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     condicionamento: [
       { groups: ["hiit", "peito"], intensity: "pesado" },
-      { groups: ["costas", "cardio"], intensity: "moderado" },
-      { groups: ["ombros", "hiit"], intensity: "pesado" },
+      { groups: ["quadriceps", "cardio"], intensity: "moderado" },
+      { groups: ["costas", "hiit"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "moderado" },
+      { groups: ["ombros", "triceps", "hiit"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-      { groups: ["biceps", "triceps", "hiit"], intensity: "pesado" },
-      { groups: ["pernas", "abdomen", "cardio"], intensity: "moderado" },
-      { groups: ["peito", "costas"], intensity: "pesado" },
     ],
   },
   inferior: {
     emagrecer: [
       { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["peito", "triceps", "hiit"], intensity: "moderado" },
       { groups: ["posterior", "gluteos"], intensity: "pesado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["costas", "biceps"], intensity: "moderado" },
       { groups: ["pernas", "hiit"], intensity: "pesado" },
-      { groups: ["peito", "costas", "cardio"], intensity: "moderado" },
-      { groups: ["quadriceps", "gluteos", "hiit"], intensity: "pesado" },
+      { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     massa: [
       { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+      { groups: ["peito", "costas"], intensity: "moderado" },
       { groups: ["posterior", "gluteos"], intensity: "pesado" },
-      { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
       { groups: ["pernas"], intensity: "pesado" },
-      { groups: ["quadriceps", "gluteos"], intensity: "pesado" },
-      { groups: ["ombros", "abdomen", "panturrilha"], intensity: "moderado" },
+      { groups: ["panturrilha", "gluteos"], intensity: "moderado" },
       { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     condicionamento: [
       { groups: ["quadriceps", "hiit"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["posterior", "gluteos"], intensity: "pesado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-      { groups: ["pernas", "hiit"], intensity: "pesado" },
       { groups: ["peito", "costas", "cardio"], intensity: "moderado" },
-      { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" },
+      { groups: ["posterior", "gluteos"], intensity: "pesado" },
+      { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
+      { groups: ["pernas", "hiit"], intensity: "pesado" },
+      { groups: ["cardio", "abdomen"], intensity: "moderado" },
+      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
   },
   completo: splitTemplates7,
