@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import {
   TrendingUp, TrendingDown, Zap, Brain, ArrowUp, ArrowDown,
   Minus, RefreshCw, Dumbbell, Clock, Target, Activity,
-  Loader2, ChevronRight, Flame, Shield, AlertTriangle
+  ChevronRight, Flame, Shield, Weight, Gauge, Heart,
+  Plus, BarChart3
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, subDays } from "date-fns";
 import {
   getEvolutionSnapshot,
-  loadTrainerState,
   getIntensityInfo,
   getLevelLabel,
   getLevelProgress,
@@ -21,7 +21,7 @@ import {
 } from "@/lib/aiPersonalTrainerEngine";
 
 const EvolucaoTreino = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [snapshot, setSnapshot] = useState<EvolutionSnapshot | null>(null);
 
@@ -144,7 +144,6 @@ const EvolucaoTreino = () => {
 
       {/* Level + Intensity Cards */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Level Card */}
         <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Nível</span>
@@ -155,7 +154,6 @@ const EvolucaoTreino = () => {
           <p className="text-[10px] text-muted-foreground">{levelProgress.pct}% para o próximo nível</p>
         </div>
 
-        {/* Intensity Card */}
         <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Intensidade</span>
@@ -178,6 +176,42 @@ const EvolucaoTreino = () => {
             ))}
           </div>
           <p className="text-[10px] text-muted-foreground">Ajuste automático semanal</p>
+        </div>
+      </div>
+
+      {/* Load, Volume & Cardio Cards */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <div className="rounded-xl border border-border/50 bg-card/50 p-3 text-center">
+          <Weight className="w-4 h-4 mx-auto mb-1 text-primary" />
+          <p className={`text-lg font-bold ${snapshot.suggestedLoadPct > 0 ? "text-primary" : snapshot.suggestedLoadPct < 0 ? "text-orange-400" : "text-muted-foreground"}`}>
+            {snapshot.suggestedLoadPct > 0 ? "+" : ""}{snapshot.suggestedLoadPct}%
+          </p>
+          <p className="text-[10px] text-muted-foreground">Carga Sugerida</p>
+        </div>
+
+        <div className="rounded-xl border border-border/50 bg-card/50 p-3 text-center">
+          <BarChart3 className="w-4 h-4 mx-auto mb-1 text-primary" />
+          <p className="text-lg font-bold text-foreground">
+            {snapshot.weeklyVolume > 0 ? `${(snapshot.weeklyVolume / 1000).toFixed(1)}k` : "0"}
+          </p>
+          <p className="text-[10px] text-muted-foreground">Volume Semanal</p>
+        </div>
+
+        <div className="rounded-xl border border-border/50 bg-card/50 p-3 text-center">
+          <Heart className={`w-4 h-4 mx-auto mb-1 ${
+            snapshot.cardioStatus === "adding" ? "text-primary" :
+            snapshot.cardioStatus === "reducing" ? "text-orange-400" :
+            "text-muted-foreground"
+          }`} />
+          <p className={`text-sm font-bold ${
+            snapshot.cardioStatus === "adding" ? "text-primary" :
+            snapshot.cardioStatus === "reducing" ? "text-orange-400" :
+            "text-foreground"
+          }`}>
+            {snapshot.cardioStatus === "adding" ? "Adicionar" :
+             snapshot.cardioStatus === "reducing" ? "Reduzir" : "OK"}
+          </p>
+          <p className="text-[10px] text-muted-foreground">Cardio</p>
         </div>
       </div>
 
@@ -219,11 +253,33 @@ const EvolucaoTreino = () => {
         </div>
       )}
 
+      {/* Adaptations summary */}
+      {snapshot.weeklyAnalysis && (snapshot.weeklyAnalysis.skippedExercises > 0 || snapshot.weeklyAnalysis.swappedExercises > 0) && (
+        <div className="rounded-xl border border-border/40 bg-card/30 p-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Gauge className="w-3.5 h-3.5" />
+            Adaptações Detectadas
+          </p>
+          <div className="flex gap-3">
+            {snapshot.weeklyAnalysis.skippedExercises > 0 && (
+              <span className="text-xs bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-1 rounded-md">
+                ⏭️ {snapshot.weeklyAnalysis.skippedExercises} exercícios pulados
+              </span>
+            )}
+            {snapshot.weeklyAnalysis.swappedExercises > 0 && (
+              <span className="text-xs bg-primary/10 text-primary border border-primary/20 px-2 py-1 rounded-md">
+                🔄 {snapshot.weeklyAnalysis.swappedExercises} exercícios trocados
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Protection Badge */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/40 rounded-xl px-4 py-2.5 border border-border/30">
         <Shield className="w-4 h-4 text-primary flex-shrink-0" />
         <span>
-          Proteção ativa: carga nunca aumenta 2 semanas seguidas. Intensidade só reduz com motivo real.
+          Proteção ativa: carga só aumenta após {3} treinos. Nunca 2 semanas seguidas. Intensidade respeita divisão muscular.
         </span>
       </div>
 
@@ -253,7 +309,7 @@ const EvolucaoTreino = () => {
             <div className="text-center py-12 text-muted-foreground">
               <RefreshCw className="w-10 h-10 mx-auto mb-3 opacity-40" />
               <p className="text-sm font-medium">Sem trocas sugeridas</p>
-              <p className="text-xs mt-1">Exercícios com falhas repetidas aparecerão aqui</p>
+              <p className="text-xs mt-1">Exercícios com falhas, pulos ou trocas repetidas aparecerão aqui</p>
             </div>
           ) : (
             snapshot.swapSuggestions.map((swap, idx) => (
@@ -276,6 +332,13 @@ const EvolucaoTreino = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Total workouts analyzed */}
+      {snapshot.totalWorkoutsAnalyzed > 0 && (
+        <p className="text-center text-xs text-muted-foreground">
+          {snapshot.totalWorkoutsAnalyzed} treinos analisados pela IA Personal
+        </p>
+      )}
     </div>
   );
 };
@@ -288,7 +351,6 @@ const AdjustmentCard = ({ entry }: { entry: AdjustmentEntry }) => {
 
   return (
     <div className="rounded-xl border border-border/60 bg-card p-4 space-y-3">
-      {/* Date + Reason */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
           {format(new Date(entry.date), "dd/MM/yyyy")}
@@ -303,10 +365,8 @@ const AdjustmentCard = ({ entry }: { entry: AdjustmentEntry }) => {
         )}
       </div>
 
-      {/* Coach message */}
       <p className="text-sm leading-relaxed">{entry.coachMessage}</p>
 
-      {/* Actions */}
       <div className="flex flex-wrap gap-1.5">
         {entry.actions.map((action, i) => {
           const info = getActionLabel(action);
@@ -327,7 +387,6 @@ const AdjustmentCard = ({ entry }: { entry: AdjustmentEntry }) => {
         })}
       </div>
 
-      {/* Intensity change */}
       {intensityChanged && (
         <p className="text-xs text-muted-foreground">
           Intensidade: {entry.intensityBefore} → <span className="font-semibold text-foreground">{entry.intensityAfter}</span>
