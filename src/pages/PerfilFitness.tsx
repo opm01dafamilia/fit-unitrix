@@ -21,14 +21,17 @@ const motivationalFeedback = (pct: number): { emoji: string; text: string } => {
   return { emoji: "🎯", text: "O começo é o mais difícil. Você já está aqui!" };
 };
 
-const socialHubItems = [
-  { to: "/conquistas", icon: Trophy, label: "Conquistas", desc: "Suas medalhas e marcos", color: "from-chart-3/20 to-chart-3/5", iconColor: "text-chart-3", borderColor: "border-chart-3/15" },
-  { to: "/ranking", icon: Crown, label: "Ranking", desc: "Posição no ranking global", color: "from-chart-4/20 to-chart-4/5", iconColor: "text-chart-4", borderColor: "border-chart-4/15" },
-  { to: "/comunidade", icon: Users, label: "Comunidade", desc: "Feed social e amigos", color: "from-chart-2/20 to-chart-2/5", iconColor: "text-chart-2", borderColor: "border-chart-2/15" },
-  { to: "/desafios", icon: Target, label: "Desafios", desc: "Desafios semanais ativos", color: "from-primary/20 to-primary/5", iconColor: "text-primary", borderColor: "border-primary/15" },
-  { to: "/temporadas", icon: Flame, label: "Temporadas", desc: "Temporadas competitivas", color: "from-orange-500/20 to-orange-500/5", iconColor: "text-orange-400", borderColor: "border-orange-500/15" },
-  { to: "/minha-liga", icon: Medal, label: "Minha Liga", desc: "Seu grupo e posição", color: "from-purple-500/20 to-purple-500/5", iconColor: "text-purple-400", borderColor: "border-purple-500/15" },
-];
+const iconMapHub: Record<string, any> = {
+  Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
+};
+
+// Import modular routes from centralized config
+import { MODULAR_ROUTES } from "@/lib/menuPreferences";
+
+const socialHubItems = MODULAR_ROUTES.map(r => ({
+  ...r,
+  icon: iconMapHub[r.icon] || Target,
+}));
 
 const PerfilFitness = () => {
   const { user, profile } = useAuth();

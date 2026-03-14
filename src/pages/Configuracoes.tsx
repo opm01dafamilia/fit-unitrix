@@ -156,22 +156,33 @@ const Configuracoes = () => {
 
       {/* Menu Customization */}
       <div className="glass-card p-5 lg:p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-            <LayoutGrid className="w-4 h-4 text-primary" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+              <LayoutGrid className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-base">Personalizar Menu</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Fixe módulos no menu principal</p>
+            </div>
           </div>
-          <h3 className="font-display font-semibold text-base">Personalizar Menu</h3>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => {
+            resetMenuPreferences();
+            setPinnedItems([]);
+            window.dispatchEvent(new Event("menuPrefsChanged"));
+            toast.success("Menu restaurado ao padrão!");
+          }}>
+            Resetar
+          </Button>
         </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          Fixe abas sociais no menu principal para acesso rápido.
-        </p>
         <div className="space-y-2">
-          {SOCIAL_ROUTES.map((route) => {
+          {MODULAR_ROUTES.map((route) => {
             const isPinned = pinnedItems.includes(route.to);
             return (
               <div key={route.to} className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-sm">{route.label}</span>
+                  <span className="text-sm font-medium">{route.label}</span>
+                  <span className="text-[10px] text-muted-foreground hidden sm:inline">{route.desc}</span>
                 </div>
                 <button
                   onClick={() => togglePin(route.to)}
@@ -188,6 +199,9 @@ const Configuracoes = () => {
             );
           })}
         </div>
+        <p className="text-[10px] text-muted-foreground mt-3">
+          💡 Módulos não fixados ficam acessíveis pelo <span className="font-semibold">Perfil Fitness</span>.
+        </p>
       </div>
 
 
