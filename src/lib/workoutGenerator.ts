@@ -807,35 +807,87 @@ function applyGenderTo7DaySplit(split: SplitEntry7[], gender: UserGender): Split
   return split;
 }
 
-// Enforce proper upper/lower alternation: never allow consecutive days hitting same area heavy
-function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
-  const isUpperGroup = (grupo: string) => {
-    const g = grupo.toLowerCase();
-    return g.includes("peito") || g.includes("costas") || g.includes("ombro") || g.includes("bíceps") || g.includes("tríceps");
-  };
-  const isLowerGroup = (grupo: string) => {
-    const g = grupo.toLowerCase();
-    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo") || g.includes("panturrilha");
-  };
+// =====================================================
+// STRICT UPPER/LOWER ALTERNATION ENFORCEMENT
+// Classifies each day as UPPER, LOWER, or NEUTRAL (cardio/mobility/abs)
+// If two consecutive days are the same region AND heavy, downgrade intensity
+// Also prevents exact same primary muscle group on consecutive days
+// =====================================================
+type DayRegion = "upper" | "lower" | "neutral";
 
+const UPPER_KEYWORDS = ["peito", "costas", "ombro", "bíceps", "tríceps", "biceps", "triceps"];
+const LOWER_KEYWORDS = ["perna", "quadríceps", "quadriceps", "posterior", "glúteo", "gluteos", "gluteo", "panturrilha"];
+const NEUTRAL_KEYWORDS = ["hiit", "cardio", "mobilidade", "recuperacao", "recuperação", "abdomen", "abdômen"];
+
+function classifyDayRegion(grupo: string): DayRegion {
+  const g = grupo.toLowerCase();
+  
+  // Check neutrals first (cardio-only, mobility, recovery)
+  const neutralTokens = g.split(/[\s+,/]+/);
+  const allNeutral = neutralTokens.every(t => 
+    NEUTRAL_KEYWORDS.some(k => t.includes(k)) || t.trim() === ""
+  );
+  if (allNeutral && neutralTokens.length > 0) return "neutral";
+
+  const hasUpper = UPPER_KEYWORDS.some(k => g.includes(k));
+  const hasLower = LOWER_KEYWORDS.some(k => g.includes(k));
+
+  if (hasUpper && hasLower) return "neutral"; // mixed = treat as neutral
+  if (hasUpper) return "upper";
+  if (hasLower) return "lower";
+  return "neutral";
+}
+
+// Extract primary muscle groups from a day's grupo string
+function extractPrimaryGroups(grupo: string): string[] {
+  const g = grupo.toLowerCase();
+  const found: string[] = [];
+  const allKeywords = [...UPPER_KEYWORDS, ...LOWER_KEYWORDS];
+  for (const k of allKeywords) {
+    if (g.includes(k)) found.push(k);
+  }
+  return found;
+}
+
+function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
   const result = [...plan];
+  
   for (let i = 1; i < result.length; i++) {
     const prev = result[i - 1];
     const curr = result[i];
-
-    const prevIsUpperHeavy = isUpperGroup(prev.grupo) && prev.intensidade === "pesado";
-    const currIsUpperHeavy = isUpperGroup(curr.grupo) && curr.intensidade === "pesado";
-    const prevIsLowerHeavy = isLowerGroup(prev.grupo) && prev.intensidade === "pesado";
-    const currIsLowerHeavy = isLowerGroup(curr.grupo) && curr.intensidade === "pesado";
-
-    if ((prevIsUpperHeavy && currIsUpperHeavy) || (prevIsLowerHeavy && currIsLowerHeavy)) {
-      result[i] = {
-        ...curr,
-        intensidade: "moderado",
-        exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
-      };
+    
+    const prevRegion = classifyDayRegion(prev.grupo);
+    const currRegion = classifyDayRegion(curr.grupo);
+    
+    // Rule 1: Two consecutive days of same region (both heavy) → downgrade current
+    if (prevRegion !== "neutral" && prevRegion === currRegion) {
+      if (prev.intensidade === "pesado" || curr.intensidade === "pesado") {
+        result[i] = {
+          ...curr,
+          intensidade: "moderado",
+          exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
+        };
+      }
+    }
+    
+    // Rule 2: Exact same primary muscle group on consecutive days → downgrade to leve
+    const prevGroups = extractPrimaryGroups(prev.grupo);
+    const currGroups = extractPrimaryGroups(curr.grupo);
+    const overlap = prevGroups.filter(g => currGroups.includes(g));
+    
+    if (overlap.length > 0 && !NEUTRAL_KEYWORDS.some(k => overlap.includes(k))) {
+      // Same muscle on consecutive days — force leve intensity
+      const currentIntensity = result[i].intensidade || "moderado";
+      if (currentIntensity === "pesado") {
+        result[i] = {
+          ...result[i],
+          intensidade: "moderado",
+          exercicios: result[i].exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
+        };
+      }
     }
   }
+  
   return result;
 }
 
