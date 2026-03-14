@@ -733,38 +733,7 @@ function applyIntensityLevel(plan: WorkoutDay[], intensityLevel: IntensityLevel)
   });
 }
 
-// Ensure no consecutive heavy days for the same area (superior/inferior)
-function ensureNoConsecutiveHeavy(plan: WorkoutDay[]): WorkoutDay[] {
-  const isUpperGroup = (grupo: string) => {
-    const g = grupo.toLowerCase();
-    return g.includes("peito") || g.includes("costas") || g.includes("ombro") || g.includes("bíceps") || g.includes("tríceps");
-  };
-  const isLowerGroup = (grupo: string) => {
-    const g = grupo.toLowerCase();
-    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo") || g.includes("panturrilha");
-  };
-
-  const result = [...plan];
-  for (let i = 1; i < result.length; i++) {
-    const prev = result[i - 1];
-    const curr = result[i];
-
-    const prevIsUpperHeavy = isUpperGroup(prev.grupo) && prev.intensidade === "pesado";
-    const currIsUpperHeavy = isUpperGroup(curr.grupo) && curr.intensidade === "pesado";
-    const prevIsLowerHeavy = isLowerGroup(prev.grupo) && prev.intensidade === "pesado";
-    const currIsLowerHeavy = isLowerGroup(curr.grupo) && curr.intensidade === "pesado";
-
-    // If same area is heavy on consecutive days, downgrade current to moderado
-    if ((prevIsUpperHeavy && currIsUpperHeavy) || (prevIsLowerHeavy && currIsLowerHeavy)) {
-      result[i] = {
-        ...curr,
-        intensidade: "moderado",
-        exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
-      };
-    }
-  }
-  return result;
-}
+// ensureNoConsecutiveHeavy is now replaced by enforceUpperLowerAlternation below
 
 export type UserGender = "masculino" | "feminino" | string | null | undefined;
 
