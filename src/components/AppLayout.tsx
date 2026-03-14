@@ -196,7 +196,7 @@ const AppLayout = () => {
             </div>
             <span className="font-display font-bold text-sm">FitPulse</span>
           </div>
-          <div className="w-7" />
+          <NotificationCenter />
         </header>
         <div className="p-4 lg:p-8 max-w-7xl mx-auto">
           <Outlet />
