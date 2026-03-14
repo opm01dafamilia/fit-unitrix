@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
 import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
 import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
