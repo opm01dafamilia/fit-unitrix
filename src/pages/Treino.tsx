@@ -1005,6 +1005,117 @@ const Treino = () => {
               </div>
             </TooltipProvider>
           )}
+
+          {/* Smart Recovery Alert */}
+          {recoverySummary && (recoverySummary.showAlert || recoverySummary.showConsecutiveWarning) && (
+            <div className="glass-card p-4 lg:p-5 border border-primary/15 animate-fade-in relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-chart-2/3 opacity-60" />
+              <div className="relative z-10">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center shrink-0">
+                    <Heart className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold">{recoverySummary.alertTitle}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.alertMessage}</p>
+                  </div>
+                </div>
+
+                {/* Load indicator bar */}
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-muted-foreground">Carga semanal</span>
+                    <span className={`text-[10px] font-bold ${
+                      recoverySummary.load.level === "overload" ? "text-destructive" :
+                      recoverySummary.load.level === "attention" ? "text-amber-400" : "text-primary"
+                    }`}>
+                      {recoverySummary.load.emoji} {recoverySummary.load.totalPoints}/{recoverySummary.load.maxPoints} pts
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-700 ${
+                      recoverySummary.load.level === "overload" ? "bg-gradient-to-r from-destructive to-orange-500" :
+                      recoverySummary.load.level === "attention" ? "bg-gradient-to-r from-amber-500 to-orange-400" :
+                      "bg-gradient-to-r from-primary to-chart-2"
+                    }`} style={{ width: `${Math.min(100, (recoverySummary.load.totalPoints / recoverySummary.load.maxPoints) * 100)}%` }} />
+                  </div>
+                </div>
+
+                {recoverySummary.consecutiveXPReduction && (
+                  <div className="mt-2 p-2 rounded-lg bg-destructive/5 border border-destructive/10">
+                    <p className="text-[10px] text-destructive font-medium">⚠️ XP reduzido em 20% — treinar sem descanso reduz seus ganhos.</p>
+                  </div>
+                )}
+
+                {/* Recovery action buttons */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {recoverySummary.actions.map(action => (
+                    <button
+                      key={action.id}
+                      onClick={() => {
+                        if (action.id === "regenerative") {
+                          setShowRegenerativeWorkout(true);
+                        }
+                        acceptRecoveryToday();
+                        toast.success(`+${10} XP bônus por recuperação inteligente! 🧘`, { duration: 4000 });
+                        // Refresh recovery summary
+                        const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
+                        setRecoverySummary(getRecoverySummary(sessionData));
+                      }}
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-secondary/40 border border-border/30 hover:bg-secondary/60 hover:border-primary/20 transition-all"
+                    >
+                      <span className="text-lg">{action.emoji}</span>
+                      <span className="text-[10px] font-medium text-foreground">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                  <p className="text-[10px] text-muted-foreground italic">💚 Recuperar faz parte da evolução. +10 XP bônus ao aceitar.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Regenerative Workout Modal */}
+          {showRegenerativeWorkout && (() => {
+            const regen = generateRegenerativeWorkout();
+            return (
+              <div className="glass-card p-4 lg:p-5 border-2 border-primary/20 animate-fade-in relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-chart-2/3" />
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                        <span className="text-lg">🧘</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">Treino Regenerativo</p>
+                        <p className="text-[10px] text-muted-foreground">~20 min • Mobilidade + Core + Respiração</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setShowRegenerativeWorkout(false)}>
+                      ✕
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {regen.exercicios.map((ex, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/20">
+                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
+                          {i + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{ex.nome}</p>
+                          <p className="text-[10px] text-muted-foreground">{ex.series}x{ex.reps} {ex.descanso !== "—" ? `• ${ex.descanso}` : ""}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Next Workout Hero Card */}
           {nextWorkout && (
             <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
