@@ -545,8 +545,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     }, 200);
   }, [currentExIndex]);
 
-  // Save exercise performance with RPE
-  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE) => {
+  // Save exercise performance with RPE + Load History
+  const saveExercisePerformance = useCallback((exIdx: number, rpe: RPE, effort?: EffortLevel) => {
     const ex = exercises[exIdx];
     const exSets = sets[exIdx] || [];
     if (exSets.length === 0) return;
@@ -568,6 +568,17 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       target_reps: targetRepNum,
       max_weight: maxWeight,
       rpe,
+      date: new Date().toISOString().slice(0, 10),
+    });
+
+    // Save to smart load engine
+    const effortLevel = effort || (rpe === "leve" ? "leve" : rpe === "moderado" ? "moderado" : "pesado") as EffortLevel;
+    saveLoadEntry(ex.nome, {
+      weight: maxWeight,
+      reps: Math.round(avgReps),
+      sets_completed: exSets.length,
+      sets_target: parseInt(ex.series) || 4,
+      effort: effortLevel,
       date: new Date().toISOString().slice(0, 10),
     });
 
