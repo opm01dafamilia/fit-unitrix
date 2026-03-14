@@ -282,6 +282,52 @@ const Dashboard = () => {
     weeksConsecutivelyActive: Math.floor(currentStreak / 7),
   });
 
+  // === PLATEAU DETECTION ===
+  const weeklyMaxWeights: { week: number; avgMaxWeight: number }[] = [];
+  // Group exercise history by week
+  const now = new Date();
+  for (let w = 0; w < 3; w++) {
+    const weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - (w + 1) * 7);
+    const weekEnd = new Date(now);
+    weekEnd.setDate(weekEnd.getDate() - w * 7);
+    const weekExercises = exerciseHistory.filter((h: any) => {
+      const d = new Date(h.created_at);
+      return d >= weekStart && d < weekEnd;
+    });
+    if (weekExercises.length > 0) {
+      const avgMax = weekExercises.reduce((a: number, h: any) => a + (h.weight || 0), 0) / weekExercises.length;
+      weeklyMaxWeights.push({ week: w, avgMaxWeight: avgMax });
+    }
+  }
+
+  const weeklyBodyWeight = bodyRecords.slice(-4).reverse().map((r: any, i: number) => ({
+    week: i, weight: Number(r.weight)
+  }));
+
+  const plateauResult = detectPlateau({
+    weeklyMaxWeights,
+    weeklyBodyWeight,
+    weeklyBodyFat: [],
+    weeklyVolume: [],
+    currentStreak,
+    previousStreak: currentStreak,
+    currentScore: fitnessScoreResult.score,
+    previousScore: fitnessScoreResult.score,
+    mealsFailedLast2Weeks: dietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0),
+    mealsTotalLast2Weeks: dietTracking.reduce((a: number, d: any) => a + (d.meals_total || 0), 0),
+    workoutsLast2Weeks: sessions.filter((s: any) => {
+      const d = new Date(s.completed_at);
+      return (now.getTime() - d.getTime()) < 14 * 24 * 60 * 60 * 1000;
+    }).length,
+    targetWorkoutsPerWeek: workoutPlans[0]?.days_per_week || 4,
+    exerciseFailuresLast2Weeks: 0,
+    totalSetsLast2Weeks: exerciseHistory.filter((h: any) => {
+      const d = new Date(h.created_at);
+      return (now.getTime() - d.getTime()) < 14 * 24 * 60 * 60 * 1000;
+    }).length,
+  });
+
   if (loading) return <DashboardSkeleton />;
 
   return (
