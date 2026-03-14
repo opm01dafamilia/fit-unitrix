@@ -66,26 +66,59 @@ const PageSkeleton = () => (
   </div>
 );
 
-// Offline banner component
+// Offline banner component with sync status
 const OfflineBanner = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+
+    const updatePending = () => {
+      try {
+        const queue = JSON.parse(localStorage.getItem("fitpulse_sync_queue") || "[]");
+        setPendingCount(queue.length);
+      } catch { setPendingCount(0); }
+    };
+    updatePending();
+    window.addEventListener("syncQueueChanged", updatePending);
+
+    const handleSyncDone = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.success > 0) {
+        setSyncMessage(`✅ ${detail.success} ação(ões) sincronizada(s)`);
+        setTimeout(() => setSyncMessage(null), 3000);
+      }
+    };
+    window.addEventListener("syncCompleted", handleSyncDone);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("syncQueueChanged", updatePending);
+      window.removeEventListener("syncCompleted", handleSyncDone);
     };
   }, []);
 
-  if (!isOffline) return null;
+  if (syncMessage) {
+    return (
+      <div className="fixed top-0 left-0 right-0 z-[100] bg-primary/90 text-primary-foreground text-center py-2 px-4 text-xs font-medium backdrop-blur-sm animate-in slide-in-from-top duration-300">
+        {syncMessage}
+      </div>
+    );
+  }
+
+  if (!isOffline && pendingCount === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] bg-destructive/90 text-destructive-foreground text-center py-2 px-4 text-xs font-medium backdrop-blur-sm">
-      📡 Modo offline — dados podem não estar atualizados
+    <div className="fixed top-0 left-0 right-0 z-[100] bg-muted/95 text-muted-foreground text-center py-2 px-4 text-xs font-medium backdrop-blur-sm border-b border-border/50">
+      {isOffline
+        ? `📡 Modo offline${pendingCount > 0 ? ` — ${pendingCount} ação(ões) pendente(s)` : " — dados em cache"}`
+        : `🔄 Sincronizando ${pendingCount} ação(ões)...`}
     </div>
   );
 };
