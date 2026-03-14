@@ -350,6 +350,118 @@ const EvolucaoTreino = () => {
   );
 };
 
+// ===== Force Evolution Tab Component =====
+
+const ForceEvolutionTab = () => {
+  const exerciseNames = useMemo(() => getExercisesWithHistory(), []);
+  const [selectedEx, setSelectedEx] = useState<string | null>(null);
+  const evolutionData = useMemo(() => {
+    if (!selectedEx) return [];
+    return getForceEvolution(selectedEx);
+  }, [selectedEx]);
+
+  if (exerciseNames.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Weight className="w-10 h-10 mx-auto mb-3 opacity-40" />
+        <p className="text-sm font-medium">Nenhum dado de força registrado</p>
+        <p className="text-xs mt-1">Complete treinos com registro de carga para ver a evolução</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Exercise selector */}
+      <div className="flex flex-wrap gap-1.5">
+        {exerciseNames.slice(0, 12).map((name) => (
+          <button
+            key={name}
+            onClick={() => setSelectedEx(selectedEx === name ? null : name)}
+            className={`text-[10px] font-medium px-2.5 py-1.5 rounded-lg border transition-all ${
+              selectedEx === name
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "bg-secondary/40 text-muted-foreground border-border/30 hover:border-border/60"
+            }`}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+
+      {/* Chart */}
+      {selectedEx && evolutionData.length > 1 && (
+        <div className="rounded-xl border border-border/60 bg-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+            <BarChart3 className="w-3.5 h-3.5 text-primary" /> {selectedEx}
+          </h3>
+          <div className="flex items-end gap-1.5 h-32">
+            {(() => {
+              const maxW = Math.max(...evolutionData.map(d => d.weight));
+              const minW = Math.min(...evolutionData.map(d => d.weight));
+              const range = maxW - minW || 1;
+              return evolutionData.map((point, i) => {
+                const height = 15 + ((point.weight - minW) / range) * 85;
+                const isLast = i === evolutionData.length - 1;
+                const effortColor = point.effort === "leve" ? "bg-green-500" :
+                  point.effort === "moderado" ? "bg-amber-500" :
+                  point.effort === "extremo" ? "bg-purple-500" : "bg-red-500";
+                return (
+                  <TooltipProvider key={i}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex flex-col items-center flex-1 gap-1 h-full justify-end">
+                          <div
+                            className={`w-full rounded-t-md transition-all ${isLast ? effortColor : effortColor + "/50"}`}
+                            style={{ height: `${height}%` }}
+                          />
+                          <span className="text-[7px] text-muted-foreground">{point.date.slice(5)}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-[10px]">
+                        {point.weight}kg • {point.reps} reps • {point.effort}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              });
+            })()}
+          </div>
+          {/* Summary */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+            <span className="text-[10px] text-muted-foreground">
+              {evolutionData[0].weight}kg → {evolutionData[evolutionData.length - 1].weight}kg
+            </span>
+            <span className={`text-xs font-bold ${
+              evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "text-primary" :
+              evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "text-destructive" :
+              "text-muted-foreground"
+            }`}>
+              {evolutionData[evolutionData.length - 1].weight > evolutionData[0].weight ? "📈 +" : 
+               evolutionData[evolutionData.length - 1].weight < evolutionData[0].weight ? "📉 " : "➡️ "}
+              {(evolutionData[evolutionData.length - 1].weight - evolutionData[0].weight).toFixed(1)}kg
+            </span>
+          </div>
+        </div>
+      )}
+
+      {selectedEx && evolutionData.length <= 1 && (
+        <div className="rounded-xl border border-border/60 bg-card p-6 text-center">
+          <Dumbbell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">Gráfico disponível após 2+ treinos registrados</p>
+        </div>
+      )}
+
+      {!selectedEx && (
+        <div className="rounded-xl border border-border/40 bg-card/50 p-6 text-center">
+          <Weight className="w-8 h-8 text-primary/30 mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">Selecione um exercício para ver a evolução de força</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ===== Adjustment Card Component =====
 
 const AdjustmentCard = ({ entry }: { entry: AdjustmentEntry }) => {
