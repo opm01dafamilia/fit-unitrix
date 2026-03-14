@@ -38,6 +38,7 @@ const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut } = useAuth();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
+  usePredictivePrefetch();
 
   useEffect(() => {
     const prefs = getMenuPreferences();
