@@ -54,6 +54,9 @@ const Dashboard = () => {
   const [microXP, setMicroXP] = useState(getTodayXP());
   const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
   const [levelUpData, setLevelUpData] = useState<FitnessLevel | null>(null);
+  const [coachMessages, setCoachMessages] = useState<CoachMessage[]>([]);
+  const [dropoutRisk, setDropoutRisk] = useState<DropoutRisk | null>(null);
+  const [riskDismissed, setRiskDismissed] = useState(false);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
