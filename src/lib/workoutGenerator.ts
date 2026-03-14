@@ -956,7 +956,8 @@ export function generateWorkoutPlan(
   } else {
     // 3-6 day standard generation with rotation
     const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
-    const split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+    let split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+    split = applyGenderToSplit(split, gender, objective);
 
     const intensityPatterns: Record<number, DayIntensity[]> = {
       3: ["pesado", "moderado", "pesado"],
