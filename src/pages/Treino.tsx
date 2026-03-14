@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
-import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel, ExercisePreferences } from "@/lib/workoutGenerator";
+import { generateWorkoutPlan, BodyFocus, DayIntensity, CardioFrequency, IntensityLevel, ExercisePreferences, UserGender } from "@/lib/workoutGenerator";
 import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
