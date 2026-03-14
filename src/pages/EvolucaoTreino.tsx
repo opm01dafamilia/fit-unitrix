@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, subDays } from "date-fns";
 import {
   getEvolutionSnapshot,
@@ -19,6 +20,7 @@ import {
   type EvolutionSnapshot,
   type AdjustmentEntry,
 } from "@/lib/aiPersonalTrainerEngine";
+import { getExercisesWithHistory, getForceEvolution, type ForceEvolutionPoint } from "@/lib/smartLoadEngine";
 
 const EvolucaoTreino = () => {
   const { user } = useAuth();
