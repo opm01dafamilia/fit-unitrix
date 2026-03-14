@@ -25,6 +25,7 @@ import { getWeeklyFatigueSummary, shouldTrainGroup, type WeeklyFatigueSummary } 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, logRecoveryEvent, getGroupRecoveryLevel, type RecoverySummary, type RecoveryLevel } from "@/lib/smartRecoveryEngine";
 import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
+import MuscleVolumeCard from "@/components/MuscleVolumeCard";
 import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
 
 type WorkoutSession = {
