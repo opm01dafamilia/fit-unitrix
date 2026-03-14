@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, SOCIAL_ROUTES } from "@/lib/menuPreferences";
+import NotificationCenter from "@/components/NotificationCenter";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal,
