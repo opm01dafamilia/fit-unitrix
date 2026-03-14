@@ -11,6 +11,9 @@ import {
 } from "@/lib/achievementsEngine";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { getFitnessLevel, getNextLevel, getStatusTitle } from "@/lib/fitnessLevelEngine";
+import AuraAvatar from "@/components/AuraAvatar";
+import FitnessProgressBar from "@/components/FitnessProgressBar";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 const motivationalFeedback = (pct: number): { emoji: string; text: string } => {
@@ -191,6 +194,14 @@ const PerfilFitness = () => {
   const legendaryCount = useMemo(() => stats ? getLegendaryAchievements(stats).length : 0, [stats]);
   const phase = useMemo(() => stats ? getCurrentPhase(stats) : 1, [stats]);
   const phaseInfo = phaseLabels[phase as 1 | 2 | 3 | 4];
+  const fitnessLevel = getFitnessLevel(totalXP);
+  const statusTitle = useMemo(() => getStatusTitle({
+    streak: stats?.currentStreak || 0,
+    totalWorkouts: stats?.totalWorkouts || 0,
+    goalsCompleted: 0,
+    totalXP,
+    dietStreak: stats?.dietStreak || 0,
+  }), [stats, totalXP]);
 
   const dietAdherence = weeklyMealsTotal > 0 ? Math.round((weeklyMealsDone / weeklyMealsTotal) * 100) : 0;
   const weeklyPct = Math.round((weeklyWorkouts / weeklyGoal) * 100);
@@ -217,32 +228,36 @@ const PerfilFitness = () => {
 
       {/* Premium Hero Card */}
       <div className="glass-card p-6 lg:p-8 relative overflow-hidden">
-        {/* Decorative background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
-        <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+        {/* Decorative background with level aura */}
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ background: fitnessLevel.auraGradient }} />
+        <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{ background: `radial-gradient(circle, hsl(${fitnessLevel.auraColor}), transparent)` }} />
 
         <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          {/* Large Avatar */}
-          <div className="w-24 h-24 rounded-3xl flex items-center justify-center shrink-0 border-2 border-primary/20 shadow-[0_0_30px_-8px_hsl(152_69%_46%_/_0.25)]"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-24 h-24 rounded-3xl object-cover" />
-            ) : (
-              <User className="w-10 h-10 text-primary" />
-            )}
-          </div>
+          {/* Aura Avatar */}
+          <AuraAvatar avatarUrl={profile?.avatar_url} totalXP={totalXP} size="lg" />
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
             <h2 className="text-xl font-display font-bold truncate">{profile?.full_name || "Usuário"}</h2>
-            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap mt-1.5">
-              <span className={`text-sm font-bold ${rank.color}`}>{rank.icon} {rank.label}</span>
-              <span className="text-xs text-muted-foreground">•</span>
-              <span className="text-sm font-display font-bold">{totalXP} XP</span>
+            
+            {/* Status Title */}
+            <p className="text-sm font-medium mt-0.5" style={{ color: `hsl(${fitnessLevel.auraColor})` }}>
+              {statusTitle.emoji} {statusTitle.title}
+            </p>
+
+            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap mt-2">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-md" 
+                style={{ 
+                  color: `hsl(${fitnessLevel.auraColor})`,
+                  background: `hsl(${fitnessLevel.auraColor} / 0.1)`,
+                  border: `1px solid hsl(${fitnessLevel.auraColor} / 0.2)`,
+                }}>
+                Nv. {fitnessLevel.level} — {fitnessLevel.title}
+              </span>
+              <span className={`text-xs font-bold ${rank.color}`}>{rank.icon} {rank.label}</span>
+              <span className="text-xs font-display font-bold text-muted-foreground">{totalXP} XP</span>
               {rankingPosition && (
-                <>
-                  <span className="text-xs text-muted-foreground">•</span>
-                  <span className="text-xs font-medium text-muted-foreground">#{rankingPosition} Ranking</span>
-                </>
+                <span className="text-[11px] font-medium text-muted-foreground">#{rankingPosition}</span>
               )}
             </div>
             <div className="flex items-center justify-center sm:justify-start gap-2 mt-1.5">
@@ -255,27 +270,12 @@ const PerfilFitness = () => {
                 </span>
               )}
             </div>
-
-            {/* Rank progress bar */}
-            {nextRankInfo && (
-              <div className="mt-4 max-w-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-muted-foreground">
-                    {nextRankInfo.nextRank.icon} {nextRankInfo.nextRank.label} em {nextRankInfo.xpNeeded} XP
-                  </span>
-                  <span className="text-[10px] font-bold text-primary">
-                    {Math.min(100, Math.round(((totalXP - rank.minXP) / (nextRankInfo.nextRank.minXP - rank.minXP)) * 100))}%
-                  </span>
-                </div>
-                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700"
-                    style={{ width: `${Math.min(100, ((totalXP - rank.minXP) / (nextRankInfo.nextRank.minXP - rank.minXP)) * 100)}%` }} />
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Fitness Level Progress Bar */}
+      <FitnessProgressBar totalXP={totalXP} />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-4 gap-3">

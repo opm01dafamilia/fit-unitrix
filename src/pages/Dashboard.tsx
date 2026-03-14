@@ -11,7 +11,10 @@ import { DashboardSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { format, subDays, startOfWeek, endOfWeek, differenceInCalendarDays } from "date-fns";
 import { useWorkoutPrefetch } from "@/hooks/useWorkoutPrefetch";
 import { useDietPrefetch } from "@/hooks/useDietPrefetch";
-import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine";
+import { calculateAchievements, calculateTotalXP, type UserStats } from "@/lib/achievementsEngine";
+import { checkLevelUp, type FitnessLevel } from "@/lib/fitnessLevelEngine";
+import FitnessProgressBar from "@/components/FitnessProgressBar";
+import LevelUpModal from "@/components/LevelUpModal";
 import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
@@ -47,6 +50,7 @@ const Dashboard = () => {
   const [microStreak, setMicroStreak] = useState(getMicroStreak());
   const [microXP, setMicroXP] = useState(getTodayXP());
   const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
+  const [levelUpData, setLevelUpData] = useState<FitnessLevel | null>(null);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
@@ -208,6 +212,15 @@ const Dashboard = () => {
   const achievements = calculateAchievements(userStats);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   const nextAchievement = achievements.find(a => !a.unlocked);
+  const totalXP = calculateTotalXP(userStats);
+
+  // Level-up detection (runs once per data load)
+  useEffect(() => {
+    if (!loading && totalXP > 0) {
+      const newLevel = checkLevelUp(totalXP);
+      if (newLevel) setLevelUpData(newLevel);
+    }
+  }, [loading, totalXP]);
 
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
@@ -407,6 +420,12 @@ const Dashboard = () => {
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Visão geral do seu progresso fitness</p>
       </div>
+
+      {/* Fitness Level Progress Bar */}
+      <FitnessProgressBar totalXP={totalXP} />
+
+      {/* Level Up Modal */}
+      <LevelUpModal level={levelUpData} onClose={() => setLevelUpData(null)} />
 
       {/* Comeback Alert */}
       {comebackAlert && comebackAlert.dashboardAlert && (
