@@ -585,20 +585,41 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     if (currentExIndex > 0) goToExercise(currentExIndex - 1);
   };
 
-  const MIN_WORKOUT_SECONDS = 180; // 3 minutes minimum
   const MIN_SETS_REQUIRED = 3; // At least 3 sets total
 
+  // Anti-fake validation result state
+  const [validationResult, setValidationResult] = useState<ReturnType<typeof validateWorkout> | null>(null);
+
   const handleFinish = async () => {
-    // Fraud prevention: minimum time
-    if (workoutSeconds < MIN_WORKOUT_SECONDS) {
-      toast.error(`⏱ Treino muito curto! Mínimo de ${Math.ceil(MIN_WORKOUT_SECONDS / 60)} minutos para validar.`, { duration: 4000 });
-      return;
-    }
-    // Fraud prevention: minimum sets
+    // Basic minimum sets check
     const totalSets = Object.values(sets).reduce((a, exSets) => a + exSets.length, 0);
     if (totalSets < MIN_SETS_REQUIRED) {
       toast.error(`💪 Registre pelo menos ${MIN_SETS_REQUIRED} séries para concluir o treino.`, { duration: 4000 });
       return;
+    }
+
+    // Calculate total series target
+    const totalSeriesTarget = exercises.reduce((a, ex) => a + (parseInt(ex.series) || 4), 0);
+
+    // Run anti-fake validation
+    const validation = validateWorkout({
+      totalSeconds: workoutSeconds,
+      totalRestsStarted: totalRestsStartedRef.current,
+      totalRestsPossible: totalRestsPossibleRef.current,
+      seriesCompleted: totalSets,
+      totalSeriesTarget,
+    });
+
+    setValidationResult(validation);
+
+    // Log validation result
+    if (validation.isExtra) {
+      logValidation({ type: "treino_extra", details: `Treino extra do dia — salvo no histórico sem XP` });
+    } else if (validation.isValid) {
+      logValidation({ type: "treino_validado", details: `Tempo: ${Math.floor(workoutSeconds / 60)}min, Séries: ${Math.round(validation.seriesCompletedPct)}%, Descansos: ${Math.round(validation.restStartsPct)}%` });
+      markWorkoutValidatedToday();
+    } else {
+      logValidation({ type: "treino_nao_validado", details: validation.reasons.join("; ") });
     }
 
     try {
@@ -637,9 +658,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
       const summary = getSessionSummary(exerciseNames, day.grupo.toLowerCase());
       setSessionSummary(summary);
       setShowCompletion(true);
-      // Register workout_completed micro-victory
-      registerMicroVictory("workout_completed");
-      registerMicroVictory("exercise_completed"); // last exercise
+
+      // Only register micro-victories if validated
+      if (validation.isValid) {
+        registerMicroVictory("workout_completed");
+        registerMicroVictory("exercise_completed");
+      }
     } catch {
       toast.error("Erro ao salvar sessão");
     }
