@@ -13,6 +13,8 @@ import { calculateAchievements, type UserStats } from "@/lib/achievementsEngine"
 import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
+import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
+import FitnessScoreCard from "@/components/FitnessScoreCard";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
