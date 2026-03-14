@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles, Crown, Users, Medal, ChevronRight } from "lucide-react";
+import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles, Crown, Users, Medal, ChevronRight, BookOpen, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
