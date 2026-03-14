@@ -16,6 +16,8 @@ import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
 import FitnessScoreCard from "@/components/FitnessScoreCard";
 import CommunityScoreCard from "@/components/CommunityScoreCard";
+import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
+import PlateauAlertCard from "@/components/PlateauAlertCard";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
