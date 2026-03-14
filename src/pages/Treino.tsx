@@ -232,6 +232,15 @@ const Treino = () => {
     if (loadingSessions) return;
     const summary = getWeeklyFatigueSummary();
     setFatigueSummary(summary);
+
+    // Recovery summary
+    const sessionData = sessions.map(s => ({
+      completed_at: s.completed_at,
+      muscle_group: s.muscle_group,
+      intensity: undefined as string | undefined,
+    }));
+    const recovery = getRecoverySummary(sessionData);
+    setRecoverySummary(recovery);
   }, [sessions, loadingSessions]);
 
   // Cycle status + evolution timeline
