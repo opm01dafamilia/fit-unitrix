@@ -50,6 +50,7 @@ const Dashboard = () => {
   const [microStreak, setMicroStreak] = useState(getMicroStreak());
   const [microXP, setMicroXP] = useState(getTodayXP());
   const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
+  const [levelUpData, setLevelUpData] = useState<FitnessLevel | null>(null);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
