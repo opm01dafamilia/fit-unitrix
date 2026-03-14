@@ -998,7 +998,8 @@ export function generateWorkoutPlan(
   // Post-processing pipeline
   plan = applyIntensityLevel(plan, intensityLevel);
   plan = applyCardioToWeek(plan, cardioFreq, level);
-  plan = ensureNoConsecutiveHeavy(plan);
+  plan = enrichFemaleExercises(plan, gender, level);
+  plan = enforceUpperLowerAlternation(plan);
 
   return plan;
 }
