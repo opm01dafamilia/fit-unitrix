@@ -11,6 +11,9 @@ import {
 } from "@/lib/achievementsEngine";
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { getFitnessLevel, getNextLevel, getStatusTitle } from "@/lib/fitnessLevelEngine";
+import AuraAvatar from "@/components/AuraAvatar";
+import FitnessProgressBar from "@/components/FitnessProgressBar";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 const motivationalFeedback = (pct: number): { emoji: string; text: string } => {
