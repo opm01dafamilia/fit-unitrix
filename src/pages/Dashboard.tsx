@@ -29,6 +29,7 @@ const Dashboard = () => {
   const [goals, setGoals] = useState<any[]>([]);
   const [workoutPlans, setWorkoutPlans] = useState<any[]>([]);
   const [dietPlans, setDietPlans] = useState<any[]>([]);
+  const [dietTracking, setDietTracking] = useState<any[]>([]);
   const [sessions, setSessions] = useState<any[]>([]);
   const [exerciseHistory, setExerciseHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
