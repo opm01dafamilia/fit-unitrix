@@ -24,6 +24,8 @@ import { getComebackStatus, getComebackProgress, getComebackFeedback, type Comeb
 import { getWeeklyFatigueSummary, shouldTrainGroup, type WeeklyFatigueSummary } from "@/lib/muscleFatigueEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, logRecoveryEvent, getGroupRecoveryLevel, type RecoverySummary, type RecoveryLevel } from "@/lib/smartRecoveryEngine";
+import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
+import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
 
 type WorkoutSession = {
   id: string;
