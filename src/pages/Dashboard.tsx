@@ -212,6 +212,15 @@ const Dashboard = () => {
   const achievements = calculateAchievements(userStats);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   const nextAchievement = achievements.find(a => !a.unlocked);
+  const totalXP = calculateTotalXP(userStats);
+
+  // Level-up detection (runs once per data load)
+  useEffect(() => {
+    if (!loading && totalXP > 0) {
+      const newLevel = checkLevelUp(totalXP);
+      if (newLevel) setLevelUpData(newLevel);
+    }
+  }, [loading, totalXP]);
 
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
