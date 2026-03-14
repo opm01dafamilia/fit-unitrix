@@ -22,6 +22,22 @@ const Configuracoes = () => {
   const [unidade, setUnidade] = useState<"kg" | "lb">("kg");
   const [honestyMode, setHonestyModeState] = useState(getHonestyMode());
   const validationStats = getValidationStats();
+  const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
+
+  const togglePin = (route: string) => {
+    const prefs = getMenuPreferences();
+    const idx = prefs.pinnedSocialItems.indexOf(route);
+    if (idx >= 0) {
+      prefs.pinnedSocialItems.splice(idx, 1);
+    } else {
+      prefs.pinnedSocialItems.push(route);
+    }
+    saveMenuPreferences(prefs);
+    setPinnedItems([...prefs.pinnedSocialItems]);
+    // Notify AppLayout
+    window.dispatchEvent(new Event("menuPrefsChanged"));
+    toast.success("Menu atualizado!");
+  };
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
