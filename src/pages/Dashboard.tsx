@@ -50,6 +50,7 @@ const Dashboard = () => {
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
+  useDietPrefetch(user?.id);
 
   // Register app_opened micro-victory on mount
   useEffect(() => {
