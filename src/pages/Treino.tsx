@@ -23,6 +23,7 @@ import { getCycleStatus, buildEvolutionTimeline, checkOvertrain, type CycleStatu
 import { getComebackStatus, getComebackProgress, getComebackFeedback, type ComebackStatus } from "@/lib/comebackEngine";
 import { getWeeklyFatigueSummary, shouldTrainGroup, type WeeklyFatigueSummary } from "@/lib/muscleFatigueEngine";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, logRecoveryEvent, getGroupRecoveryLevel, type RecoverySummary, type RecoveryLevel } from "@/lib/smartRecoveryEngine";
 
 type WorkoutSession = {
   id: string;
