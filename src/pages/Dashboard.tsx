@@ -228,6 +228,41 @@ const Dashboard = () => {
     }
   }, [loading, totalXP]);
 
+  // === COACH BEHAVIORAL FEEDBACK ===
+  useEffect(() => {
+    if (loading || !user) return;
+    const today2 = format(new Date(), "yyyy-MM-dd");
+    const trainedToday2 = sessions.some((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === today2);
+    const todayDiet2 = dietTracking.find((d: any) => d.tracked_date === today2);
+    const weekFailedMeals2 = dietTracking.reduce((a: number, d: any) => a + (d.meals_failed || 0), 0);
+
+    const coachCtx: CoachContext = {
+      workoutsThisWeek: weekWorkouts,
+      targetWorkoutsPerWeek: workoutPlans[0]?.days_per_week || 4,
+      currentStreak,
+      trainedToday: trainedToday2,
+      lastWorkoutDate: sessions[0]?.completed_at,
+      totalWorkouts: sessions.length,
+      mealsCompletedToday: todayDiet2?.meals_done || 0,
+      mealsTotalToday: todayDiet2?.meals_total || 0,
+      mealsFailedThisWeek: weekFailedMeals2,
+      dietStreak: 0,
+      activeGoals: activeGoals.map((g: any) => ({ title: g.title, progress: g.current_value, target: g.target_value })),
+      completedGoalsCount: completedGoals.length,
+      currentWeight,
+      previousWeight,
+      hasRecentBodyRecord: hasRecentBody,
+      fitnessScore: fitnessScoreResult.score,
+      totalXP,
+      currentLevel: 1,
+      coachModeActive: isCoachModeActive(),
+    };
+
+    setCoachMessages(generateCoachFeedback(coachCtx));
+    const risk = detectDropoutRisk(coachCtx);
+    if (risk) setDropoutRisk(risk);
+  }, [loading]);
+
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
   const hasWorkout = workoutPlans.length > 0;
   const hasDiet = dietPlans.length > 0;
