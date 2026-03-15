@@ -487,9 +487,6 @@ const Dashboard = () => {
       {/* Smart Replanning */}
       <ReplanningModal replan={replanResult} />
 
-      {/* Dropout Risk Modal */}
-      {!riskDismissed && <DropoutRiskModal risk={dropoutRisk} onDismiss={() => setRiskDismissed(true)} />}
-
       {/* Coach Feedback */}
       <CoachFeedbackCard messages={coachMessages} />
 
