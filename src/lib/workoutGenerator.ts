@@ -1422,9 +1422,18 @@ export function generateWorkoutPlan(
 
   // 7-day uses special templates with intensity metadata
   if (days === 7) {
-    const focusTemplates7 = focusSplitTemplates7[bodyFocus] || focusSplitTemplates7.completo;
-    let split7 = focusTemplates7[objective] || splitTemplates7[objective];
-    split7 = applyGenderTo7DaySplit(split7, gender);
+    let split7: SplitEntry7[];
+    
+    // Gender-specific 7-day templates when focus is "completo"
+    if (bodyFocus === "completo" && gender === "feminino") {
+      split7 = femaleSplit7Overrides[objective] || femaleSplit7Overrides.condicionamento;
+    } else if (bodyFocus === "completo" && gender === "masculino") {
+      split7 = maleSplit7Overrides[objective] || maleSplit7Overrides.condicionamento;
+    } else {
+      const focusTemplates7 = focusSplitTemplates7[bodyFocus] || focusSplitTemplates7.completo;
+      split7 = focusTemplates7[objective] || splitTemplates7[objective];
+      split7 = applyGenderTo7DaySplit(split7, gender);
+    }
 
     plan = split7.map((entry, i) => {
       const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
@@ -1454,9 +1463,17 @@ export function generateWorkoutPlan(
     });
   } else {
     // 3-6 day standard generation with rotation
-    const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
-    let split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
-    split = applyGenderToSplit(split, gender, objective);
+    // Gender-specific templates when focus is "completo"
+    let split: SplitEntry[];
+    if (bodyFocus === "completo" && gender === "feminino") {
+      split = femaleSplitOverrides[objective]?.[days] || femaleSplitOverrides[objective]?.[3];
+    } else if (bodyFocus === "completo" && gender === "masculino") {
+      split = maleSplitOverrides[objective]?.[days] || maleSplitOverrides[objective]?.[3];
+    } else {
+      const focusTemplates = focusSplitTemplates[bodyFocus] || focusSplitTemplates.completo;
+      split = focusTemplates[objective]?.[days] || focusTemplates[objective]?.[3] || splitTemplates[objective][3];
+      split = applyGenderToSplit(split, gender, objective);
+    }
 
     const intensityPatterns: Record<number, DayIntensity[]> = {
       3: ["pesado", "moderado", "pesado"],
