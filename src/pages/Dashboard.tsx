@@ -16,7 +16,7 @@ import { checkLevelUp, type FitnessLevel } from "@/lib/fitnessLevelEngine";
 import FitnessProgressBar from "@/components/FitnessProgressBar";
 import LevelUpModal from "@/components/LevelUpModal";
 import { getComebackStatus } from "@/lib/comebackEngine";
-import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
+import { generateSmartNotifications, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
 
@@ -25,9 +25,8 @@ import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
 import PlateauAlertCard from "@/components/PlateauAlertCard";
 import { analyzeReplanning } from "@/lib/smartReplanningEngine";
 import ReplanningModal from "@/components/ReplanningModal";
-import { generateCoachFeedback, detectDropoutRisk, isCoachModeActive, type CoachContext, type CoachMessage, type DropoutRisk } from "@/lib/fitnessCoachEngine";
+import { generateCoachFeedback, isCoachModeActive, type CoachContext, type CoachMessage } from "@/lib/fitnessCoachEngine";
 import CoachFeedbackCard from "@/components/CoachFeedbackCard";
-import DropoutRiskModal from "@/components/DropoutRiskModal";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
@@ -55,8 +54,6 @@ const Dashboard = () => {
   const [victoryFlash, setVictoryFlash] = useState<string | null>(null);
   const [levelUpData, setLevelUpData] = useState<FitnessLevel | null>(null);
   const [coachMessages, setCoachMessages] = useState<CoachMessage[]>([]);
-  const [dropoutRisk, setDropoutRisk] = useState<DropoutRisk | null>(null);
-  const [riskDismissed, setRiskDismissed] = useState(false);
 
   // Prefetch today's workout data + GIFs in background
   useWorkoutPrefetch(user?.id);
@@ -259,8 +256,6 @@ const Dashboard = () => {
     };
 
     setCoachMessages(generateCoachFeedback(coachCtx));
-    const risk = detectDropoutRisk(coachCtx);
-    if (risk) setDropoutRisk(risk);
   }, [loading]);
 
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
@@ -339,7 +334,6 @@ const Dashboard = () => {
     };
 
     generateSmartNotifications(ctx);
-    checkInactivityNotification(sessions[0]?.completed_at);
     window.dispatchEvent(new Event("fitpulse_notif_update"));
   }, [loading]);
 
@@ -492,9 +486,6 @@ const Dashboard = () => {
 
       {/* Smart Replanning */}
       <ReplanningModal replan={replanResult} />
-
-      {/* Dropout Risk Modal */}
-      {!riskDismissed && <DropoutRiskModal risk={dropoutRisk} onDismiss={() => setRiskDismissed(true)} />}
 
       {/* Coach Feedback */}
       <CoachFeedbackCard messages={coachMessages} />

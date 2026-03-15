@@ -29,7 +29,7 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-200">
-      {/* Dark overlay - optimized for print/story */}
+      {/* Dark overlay */}
       <div
         className="absolute inset-0"
         style={{
@@ -38,26 +38,31 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
         onClick={onClose}
       />
 
-      {/* Content container - perfectly centered for screenshots */}
-      <div className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+      {/* Content container — fixed, centered, no scroll, mobile-first */}
+      <div
+        className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          maxHeight: "95vh",
+          height: "100dvh",
+          maxHeight: "100dvh",
           overflow: "hidden",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 sm:right-0 z-20 w-9 h-9 rounded-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all print:hidden"
+          style={{ top: "calc(env(safe-area-inset-top, 12px) + 12px)" }}
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="w-full">
+        <div className="w-full" style={{ maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)", overflow: "hidden" }}>
           {children}
         </div>
       </div>

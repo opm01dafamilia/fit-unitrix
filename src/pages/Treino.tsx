@@ -12,9 +12,8 @@ import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skele
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
@@ -209,13 +208,7 @@ const Treino = () => {
     return { emoji: "🚀", text: "Continue amanhã!", color: "text-muted-foreground" };
   }, [weeklyConsistency]);
 
-  // Inactivity suggestion
-  const inactivitySuggestion = useMemo((): InactivitySuggestion | null => {
-    if (sessions.length === 0) return getInactivitySuggestion(999);
-    const lastSessionDate = new Date(sessions[0].completed_at);
-    const daysSince = differenceInCalendarDays(new Date(), lastSessionDate);
-    return getInactivitySuggestion(daysSince);
-  }, [sessions]);
+
 
   // Active plan (most recent)
   const activePlan = savedPlans[0];
@@ -309,8 +302,23 @@ const Treino = () => {
     const lastIndex = planSessions[0].day_index;
     return (lastIndex + 1) % activePlanData.length;
   }, [activePlanData, activePlan, sessions]);
+  // Map current weekday to plan day index — only this day can be started
+  const todayDayIndex = useMemo(() => {
+    if (!activePlanData) return -1;
+    const weekdays = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    const todayWeekday = weekdays[new Date().getDay()];
+    const idx = activePlanData.findIndex((day: any) => {
+      const dayName = (day.dia || "").toLowerCase();
+      return dayName.includes(todayWeekday) || dayName.includes(todayWeekday.replace("ç", "c"));
+    });
+    return idx >= 0 ? idx : nextDayIndex;
+  }, [activePlanData, nextDayIndex]);
 
-  const nextWorkout = activePlanData?.[nextDayIndex];
+  const canStartDay = useCallback((dayIndex: number) => {
+    return dayIndex === todayDayIndex && !todayCompleted;
+  }, [todayDayIndex, todayCompleted]);
+
+  const nextWorkout = activePlanData?.[todayDayIndex >= 0 ? todayDayIndex : nextDayIndex];
 
   // Progress for next workout
   const todayProgress = useMemo(() => {
@@ -1211,7 +1219,7 @@ const Treino = () => {
                 </div>
 
                 <Button 
-                  onClick={() => startWorkout(activePlan, nextDayIndex)} 
+                  onClick={() => startWorkout(activePlan, todayDayIndex >= 0 ? todayDayIndex : nextDayIndex)} 
                   className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
                   disabled={todayCompleted}
                 >
@@ -1416,25 +1424,6 @@ const Treino = () => {
             </p>
           </div>
 
-          {/* Inactivity Suggestion */}
-          {inactivitySuggestion && (
-            <div className="glass-card p-4 lg:p-5 border border-amber-500/20">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center shrink-0">
-                  <span className="text-lg">{inactivitySuggestion.icone}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{inactivitySuggestion.titulo}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{inactivitySuggestion.desc}</p>
-                </div>
-                {activePlan && (
-                  <Button size="sm" variant="outline" className="shrink-0 text-xs" onClick={() => startWorkout(activePlan, nextDayIndex)}>
-                    <Play className="w-3 h-3 mr-1" /> Treinar
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* ===== PREMIUM PLAN DAYS CARDS ===== */}
           {activePlanData && (
@@ -1444,35 +1433,36 @@ const Treino = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activePlanData.map((day: any, i: number) => {
-                  const isNext = i === nextDayIndex;
+                  const isTodays = i === todayDayIndex;
                   const isCompleted = sessions.some(s =>
                     s.workout_plan_id === activePlan.id &&
                     s.day_index === i &&
                     format(new Date(s.completed_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
                   );
+                  const canStart = canStartDay(i);
                   return (
                     <div
                       key={i}
-                      className={`relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group rounded-xl ${
-                        isNext
+                      className={`relative overflow-hidden transition-all duration-300 group rounded-xl ${
+                        isTodays
                           ? "border-2 border-primary/30 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.2)]"
                           : isCompleted
                           ? "border-2 border-green-500/25"
                           : "border border-border/50"
                       }`}
                       style={{
-                        background: isNext
+                        background: isTodays
                           ? 'linear-gradient(145deg, hsl(225 16% 13% / 0.98), hsl(225 16% 9% / 0.98))'
                           : 'linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95))',
-                        boxShadow: isNext
+                        boxShadow: isTodays
                           ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
                           : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
-                        opacity: todayCompleted && !isCompleted ? 0.6 : 1,
-                        cursor: todayCompleted ? 'default' : 'pointer',
+                        opacity: !isTodays && !isCompleted ? 0.6 : 1,
+                        cursor: canStart ? 'pointer' : 'default',
                       }}
-                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
+                      onClick={() => canStart && startWorkout(activePlan, i)}
                     >
-                      {isNext && (
+                      {isTodays && (
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
                              style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
                       )}
@@ -1480,7 +1470,7 @@ const Treino = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
-                              isNext ? "border-primary/20 shadow-primary/10" : "border-border/30"
+                              isTodays ? "border-primary/20 shadow-primary/10" : "border-border/30"
                             }`}>
                               <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
                             </div>
@@ -1488,17 +1478,17 @@ const Treino = () => {
                               <div className="flex items-center gap-2">
                                 <p className="text-sm font-bold text-foreground">{day.dia}</p>
                                 {getIntensityBadge(day.intensidade)}
-                                {isNext && !todayCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Próximo</span>
+                                {isTodays && !todayCompleted && (
+                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Hoje</span>
                                 )}
                                 {isCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
                                     <Check className="w-2.5 h-2.5" /> Feito
                                   </span>
                                 )}
-                                {todayCompleted && !isCompleted && (
+                                {!isTodays && !isCompleted && (
                                   <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-0.5 rounded-md bg-muted/50 border border-border/30">
-                                    Amanhã
+                                    Apenas visualizar
                                   </span>
                                 )}
                               </div>
@@ -1528,8 +1518,8 @@ const Treino = () => {
                             <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
                               <Eye className="w-3.5 h-3.5 mr-1" /> Ver
                             </Button>
-                            {!todayCompleted && (
-                              <Button variant="ghost" size="sm" className={`text-xs h-8 px-2 ${isNext ? "text-primary" : "text-foreground/60 hover:text-foreground"}`}>
+                            {canStart && (
+                              <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-primary">
                                 <Play className="w-3.5 h-3.5 mr-1" /> Treinar
                               </Button>
                             )}
@@ -1795,14 +1785,24 @@ const Treino = () => {
               ))}
             </div>
 
-            {/* Start button */}
+            {/* Start button — only if this is today's workout */}
             <div className="px-5 pb-5 space-y-3">
-              <Button
-                onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { const idx = activePlanData.findIndex((d: any) => d.dia === focusDay.dia); startWorkout(activePlan, idx >= 0 ? idx : 0); } }}
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
-              >
-                <Play className="w-5 h-5 mr-2" /> Iniciar Treino
-              </Button>
+              {(() => {
+                const idx = activePlanData ? activePlanData.findIndex((d: any) => d.dia === focusDay.dia) : -1;
+                const canStartThis = idx >= 0 && canStartDay(idx);
+                return canStartThis ? (
+                  <Button
+                    onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, idx); } }}
+                    className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+                  >
+                    <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+                  </Button>
+                ) : (
+                  <div className="w-full h-12 flex items-center justify-center text-sm text-muted-foreground font-medium rounded-lg bg-muted/30 border border-border/30">
+                    🔒 Disponível apenas no dia correspondente
+                  </div>
+                );
+              })()}
               <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
                 <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
                 <span className="text-[10px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
