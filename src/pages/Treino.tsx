@@ -413,7 +413,8 @@ const Treino = () => {
         const prefs: ExercisePreferences | undefined = (preferredExercises.length > 0 || preferenceText.trim())
           ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
           : undefined;
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, profile?.gender as UserGender);
+        const genderToUse = (selectedGender || profile?.gender) as UserGender;
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, genderToUse);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);
