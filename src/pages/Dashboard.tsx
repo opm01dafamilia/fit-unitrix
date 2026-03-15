@@ -256,8 +256,6 @@ const Dashboard = () => {
     };
 
     setCoachMessages(generateCoachFeedback(coachCtx));
-    const risk = detectDropoutRisk(coachCtx);
-    if (risk) setDropoutRisk(risk);
   }, [loading]);
 
   const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
