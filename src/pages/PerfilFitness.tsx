@@ -37,7 +37,7 @@ const socialHubItems = MODULAR_ROUTES.map(r => ({
 }));
 
 const PerfilFitness = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -49,6 +49,7 @@ const PerfilFitness = () => {
   const [weightData, setWeightData] = useState<{ date: string; weight: number }[]>([]);
   const [goalWeight, setGoalWeight] = useState<number | null>(null);
   const [lastAchievement, setLastAchievement] = useState<{ title: string; icon: string } | null>(null);
+  const [savingGender, setSavingGender] = useState(false);
 
   useEffect(() => {
     if (!user) return;
