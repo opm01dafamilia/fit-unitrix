@@ -16,7 +16,7 @@ import { checkLevelUp, type FitnessLevel } from "@/lib/fitnessLevelEngine";
 import FitnessProgressBar from "@/components/FitnessProgressBar";
 import LevelUpModal from "@/components/LevelUpModal";
 import { getComebackStatus } from "@/lib/comebackEngine";
-import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
+import { generateSmartNotifications, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
 
