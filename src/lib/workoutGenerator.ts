@@ -975,34 +975,86 @@ function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
 }
 
 // Add gluteo-specific exercises for female users on lower body days
+// Also adds metabolic finishers (short HIIT/burnout sets) for resistance training focus
 function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
   if (gender !== "feminino") return plan;
   
-  // Ensure lower body days include glute activation
   return plan.map(day => {
     const g = day.grupo.toLowerCase();
-    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("perna") || g.includes("glúteo");
+    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
+                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
     if (!isLowerDay) return day;
 
-    // Check if hip thrust or glute bridge is already present
-    const hasGlute = day.exercicios.some(ex => 
+    const exercicios = [...day.exercicios];
+
+    // 1) Ensure glute activation is present
+    const hasGlute = exercicios.some(ex => 
       ex.nome.toLowerCase().includes("hip thrust") || 
       ex.nome.toLowerCase().includes("elevação pélvica") ||
       ex.nome.toLowerCase().includes("glúteo") ||
-      ex.nome.toLowerCase().includes("abdutora")
+      ex.nome.toLowerCase().includes("abdutora") ||
+      ex.nome.toLowerCase().includes("kickback")
     );
-    if (hasGlute) return day;
-
-    // Add one glute finisher from the gluteos pool
-    const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
-    if (glutePool.length > 0) {
-      const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
-      return {
-        ...day,
-        exercicios: [...day.exercicios, { ...gluteEx, series: "3", reps: "12" }],
-      };
+    if (!hasGlute) {
+      const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
+      if (glutePool.length > 0) {
+        const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
+        exercicios.push({ ...gluteEx, series: "3", reps: "12" });
+      }
     }
-    return day;
+
+    // 2) Add panturrilha finisher if missing on quad days
+    const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
+    const hasCalf = exercicios.some(ex => ex.nome.toLowerCase().includes("panturrilha"));
+    if (isQuadDay && !hasCalf) {
+      const calfPool = exerciseDB.panturrilha?.[level] || exerciseDB.panturrilha?.intermediario || [];
+      if (calfPool.length > 0) {
+        exercicios.push({ ...calfPool[0], series: "4", reps: "15" });
+      }
+    }
+
+    return { ...day, exercicios };
+  });
+}
+
+// Add compound strength emphasis for male users on upper body days
+function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
+  if (gender !== "masculino") return plan;
+
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    const isUpperDay = g.includes("peito") || g.includes("costas") || g.includes("ombro");
+    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
+                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
+    if (!isUpperDay || isLowerDay) return day;
+
+    const exercicios = [...day.exercicios];
+
+    // Ensure compound movements are present on chest days
+    if (g.includes("peito")) {
+      const hasCompound = exercicios.some(ex => 
+        ex.nome.toLowerCase().includes("supino") || ex.nome.toLowerCase().includes("desenvolvimento")
+      );
+      if (!hasCompound && level !== "iniciante") {
+        const chestPool = exerciseDB.peito?.[level] || [];
+        const compound = chestPool.find(ex => ex.nome.toLowerCase().includes("supino"));
+        if (compound) exercicios.unshift({ ...compound });
+      }
+    }
+
+    // Ensure compound movements are present on back days
+    if (g.includes("costas")) {
+      const hasCompound = exercicios.some(ex => 
+        ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa")
+      );
+      if (!hasCompound && level !== "iniciante") {
+        const backPool = exerciseDB.costas?.[level] || [];
+        const compound = backPool.find(ex => ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa"));
+        if (compound) exercicios.unshift({ ...compound });
+      }
+    }
+
+    return { ...day, exercicios };
   });
 }
 
