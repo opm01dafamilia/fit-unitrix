@@ -1220,7 +1220,7 @@ const Treino = () => {
                 </div>
 
                 <Button 
-                  onClick={() => startWorkout(activePlan, nextDayIndex)} 
+                  onClick={() => startWorkout(activePlan, todayDayIndex >= 0 ? todayDayIndex : nextDayIndex)} 
                   className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
                   disabled={todayCompleted}
                 >
