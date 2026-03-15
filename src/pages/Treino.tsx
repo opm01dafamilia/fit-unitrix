@@ -209,13 +209,6 @@ const Treino = () => {
     return { emoji: "🚀", text: "Continue amanhã!", color: "text-muted-foreground" };
   }, [weeklyConsistency]);
 
-  // Inactivity suggestion
-  const inactivitySuggestion = useMemo((): InactivitySuggestion | null => {
-    if (sessions.length === 0) return getInactivitySuggestion(999);
-    const lastSessionDate = new Date(sessions[0].completed_at);
-    const daysSince = differenceInCalendarDays(new Date(), lastSessionDate);
-    return getInactivitySuggestion(daysSince);
-  }, [sessions]);
 
   // Active plan (most recent)
   const activePlan = savedPlans[0];
