@@ -85,11 +85,9 @@ const Perfil = () => {
 
       {/* Profile Summary Card */}
       <div className="glass-card p-5 lg:p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.1))' }}>
-            <User className="w-7 h-7 text-primary" />
-          </div>
-          <div>
+        <div className="flex flex-col sm:flex-row items-center gap-5 mb-6">
+          <ProfilePhotoUpload currentUrl={profile?.avatar_url} size="lg" />
+          <div className="text-center sm:text-left">
             <h2 className="text-lg font-display font-bold">{profile?.full_name || "Usuário"}</h2>
             <p className="text-sm text-muted-foreground">{objectiveLabel(profile?.objective || "")} • {profile?.activity_level || "—"}</p>
           </div>
