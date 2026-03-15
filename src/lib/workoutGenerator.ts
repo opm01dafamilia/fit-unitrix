@@ -1157,6 +1157,7 @@ export function generateWorkoutPlan(
   plan = applyIntensityLevel(plan, intensityLevel);
   plan = applyCardioToWeek(plan, cardioFreq, level);
   plan = enrichFemaleExercises(plan, gender, level);
+  plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
 
   return plan;
