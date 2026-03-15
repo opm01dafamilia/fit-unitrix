@@ -91,7 +91,7 @@ const Treino = () => {
     startLazyPreload();
     if (profile?.objective) setObjetivo(profile.objective === "manter" ? "condicionamento" : profile.objective);
     if (profile?.experience_level) setNivel(profile.experience_level);
-    if (profile?.gender) setSelectedGender(profile.gender);
+    
     if (profile?.experience_level) {
       const autoSuggest = profile.experience_level === "iniciante" ? "3" : profile.experience_level === "intermediario" ? "4" : "5";
       setDias(autoSuggest);
