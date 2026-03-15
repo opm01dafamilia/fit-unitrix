@@ -1226,8 +1226,27 @@ function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
   return result;
 }
 
-// Add gluteo-specific exercises for female users on lower body days
-// Also adds metabolic finishers (short HIIT/burnout sets) for resistance training focus
+// =====================================================
+// FEMALE EXERCISE ENRICHMENT
+// Priority exercises: Búlgaro, Hip Thrust, Stiff, Passadas, Abdução, Glute Bridge, Step-up
+// More volume, shorter rest, unilateral emphasis
+// =====================================================
+const FEMALE_PRIORITY_EXERCISES: Record<string, Exercise[]> = {
+  posterior: [
+    { nome: "Stiff Romeno", series: "4", reps: "10", desc: "Barra, descida lenta com foco em posterior e glúteos. Movimento essencial para cadeia posterior feminina.", descanso: "60s" },
+    { nome: "Agachamento Búlgaro", series: "4", reps: "10/perna", desc: "Pé traseiro elevado, halter em cada mão. Excelente para glúteos e equilíbrio.", descanso: "60s" },
+  ],
+  gluteos: [
+    { nome: "Hip Thrust", series: "4", reps: "12", desc: "Costas no banco, barra no quadril. Contraia forte no topo por 2s. Principal exercício para glúteos.", descanso: "60s" },
+    { nome: "Glute Bridge", series: "3", reps: "15", desc: "Deitada, eleve o quadril contraindo glúteos. Ativação máxima.", descanso: "45s" },
+    { nome: "Cadeira Abdutora", series: "4", reps: "15", desc: "Incline levemente o tronco para ativar glúteo máximo. Foco em abdução.", descanso: "45s" },
+  ],
+  quadriceps: [
+    { nome: "Passada Caminhando", series: "3", reps: "12/perna", desc: "Com halteres, passos longos. Ativa quadríceps e glúteos simultaneamente.", descanso: "60s" },
+    { nome: "Step-Up", series: "3", reps: "12/perna", desc: "Suba no banco com uma perna, foque em empurrar com o calcanhar.", descanso: "60s" },
+  ],
+};
+
 function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
   if (gender !== "feminino") return plan;
   
@@ -1239,23 +1258,33 @@ function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Le
 
     const exercicios = [...day.exercicios];
 
-    // 1) Ensure glute activation is present
-    const hasGlute = exercicios.some(ex => 
-      ex.nome.toLowerCase().includes("hip thrust") || 
-      ex.nome.toLowerCase().includes("elevação pélvica") ||
-      ex.nome.toLowerCase().includes("glúteo") ||
-      ex.nome.toLowerCase().includes("abdutora") ||
-      ex.nome.toLowerCase().includes("kickback")
-    );
+    // 1) Ensure priority glute activation exercises are present
+    const hasGlute = exercicios.some(ex => {
+      const n = ex.nome.toLowerCase();
+      return n.includes("hip thrust") || n.includes("elevação pélvica") || n.includes("glute bridge") ||
+             n.includes("abdutora") || n.includes("kickback");
+    });
     if (!hasGlute) {
-      const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
-      if (glutePool.length > 0) {
-        const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
-        exercicios.push({ ...gluteEx, series: "3", reps: "12" });
+      const priorityGlute = FEMALE_PRIORITY_EXERCISES.gluteos;
+      if (priorityGlute.length > 0) {
+        exercicios.push({ ...priorityGlute[Math.floor(Math.random() * priorityGlute.length)] });
       }
     }
 
-    // 2) Add panturrilha finisher if missing on quad days
+    // 2) Ensure búlgaro or passada on lower days
+    const hasUnilateral = exercicios.some(ex => {
+      const n = ex.nome.toLowerCase();
+      return n.includes("búlgaro") || n.includes("bulgaro") || n.includes("passada") || n.includes("step-up") || n.includes("step up");
+    });
+    if (!hasUnilateral && exercicios.length < 7) {
+      const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
+      const pool = isQuadDay ? FEMALE_PRIORITY_EXERCISES.quadriceps : FEMALE_PRIORITY_EXERCISES.posterior;
+      if (pool.length > 0) {
+        exercicios.push({ ...pool[Math.floor(Math.random() * pool.length)] });
+      }
+    }
+
+    // 3) Add panturrilha finisher if missing on quad days
     const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
     const hasCalf = exercicios.some(ex => ex.nome.toLowerCase().includes("panturrilha"));
     if (isQuadDay && !hasCalf) {
@@ -1265,7 +1294,29 @@ function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Le
       }
     }
 
-    return { ...day, exercicios };
+    // 4) Adjust rest times for female style: shorter rests, more metabolic stress
+    const adjustedExercicios = exercicios.map(ex => {
+      const rest = ex.descanso;
+      if (rest === "120s") return { ...ex, descanso: "90s" };
+      if (rest === "180s") return { ...ex, descanso: "120s" };
+      if (rest === "90s") return { ...ex, descanso: "75s" };
+      return ex;
+    });
+
+    // 5) On upper-body days for females: keep functional but reduce arm isolation
+    const isUpperOnly = g.includes("peito") || g.includes("costas") || g.includes("ombro");
+    if (isUpperOnly && !isLowerDay) {
+      // Add core work to upper days for females
+      const hasCore = exercicios.some(ex => ex.nome.toLowerCase().includes("prancha") || ex.nome.toLowerCase().includes("abdominal"));
+      if (!hasCore && exercicios.length < 6) {
+        const corePool = exerciseDB.abdomen?.[level] || exerciseDB.abdomen?.intermediario || [];
+        if (corePool.length > 0) {
+          adjustedExercicios.push({ ...corePool[0] });
+        }
+      }
+    }
+
+    return { ...day, exercicios: adjustedExercicios };
   });
 }
 
