@@ -810,6 +810,12 @@ const Treino = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Foco: {(viewingSaved?.body_focus || foco) === "superior" ? "Corpo Superior" : (viewingSaved?.body_focus || foco) === "inferior" ? "Corpo Inferior" : "Corpo Completo"}
                 </p>
+                {(selectedGender || profile?.gender) && (
+                  <p className="text-[10px] mt-1 font-medium text-primary flex items-center gap-1">
+                    <Target className="w-3 h-3" />
+                    Plano personalizado para seu perfil corporal e objetivo
+                  </p>
+                )}
               </div>
               {!viewingSaved && showPlan && (
                 <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
