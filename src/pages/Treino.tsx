@@ -208,23 +208,8 @@ const Treino = () => {
     if (pct >= 30) return { emoji: "🔥", text: "Continue firme!", color: "text-amber-400" };
     return { emoji: "🚀", text: "Continue amanhã!", color: "text-muted-foreground" };
   }, [weeklyConsistency]);
-  // Map current weekday to plan day index
-  const todayDayIndex = useMemo(() => {
-    if (!activePlanData) return -1;
-    const weekdays = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
-    const todayWeekday = weekdays[new Date().getDay()];
-    // Try to match plan day name to today's weekday
-    const idx = activePlanData.findIndex((day: any) => {
-      const dayName = (day.dia || "").toLowerCase();
-      return dayName.includes(todayWeekday) || dayName.includes(todayWeekday.replace("ç", "c"));
-    });
-    // Fallback: if plan uses "Dia 1", "Dia 2" etc, use nextDayIndex
-    return idx >= 0 ? idx : nextDayIndex;
-  }, [activePlanData, nextDayIndex]);
 
-  const isTodayWorkout = useCallback((dayIndex: number) => {
-    return dayIndex === todayDayIndex;
-  }, [todayDayIndex]);
+
 
   // Active plan (most recent)
   const activePlan = savedPlans[0];
