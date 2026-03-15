@@ -303,8 +303,23 @@ const Treino = () => {
     const lastIndex = planSessions[0].day_index;
     return (lastIndex + 1) % activePlanData.length;
   }, [activePlanData, activePlan, sessions]);
+  // Map current weekday to plan day index — only this day can be started
+  const todayDayIndex = useMemo(() => {
+    if (!activePlanData) return -1;
+    const weekdays = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+    const todayWeekday = weekdays[new Date().getDay()];
+    const idx = activePlanData.findIndex((day: any) => {
+      const dayName = (day.dia || "").toLowerCase();
+      return dayName.includes(todayWeekday) || dayName.includes(todayWeekday.replace("ç", "c"));
+    });
+    return idx >= 0 ? idx : nextDayIndex;
+  }, [activePlanData, nextDayIndex]);
 
-  const nextWorkout = activePlanData?.[nextDayIndex];
+  const canStartDay = useCallback((dayIndex: number) => {
+    return dayIndex === todayDayIndex && !todayCompleted;
+  }, [todayDayIndex, todayCompleted]);
+
+  const nextWorkout = activePlanData?.[todayDayIndex >= 0 ? todayDayIndex : nextDayIndex];
 
   // Progress for next workout
   const todayProgress = useMemo(() => {
