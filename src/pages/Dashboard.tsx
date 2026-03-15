@@ -334,7 +334,6 @@ const Dashboard = () => {
     };
 
     generateSmartNotifications(ctx);
-    checkInactivityNotification(sessions[0]?.completed_at);
     window.dispatchEvent(new Event("fitpulse_notif_update"));
   }, [loading]);
 
