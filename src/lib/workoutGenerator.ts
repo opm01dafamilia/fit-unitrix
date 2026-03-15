@@ -749,41 +749,87 @@ export type ExercisePreferences = {
 function resolveGenderFocus(bodyFocus: BodyFocus, gender: UserGender): BodyFocus {
   // Only auto-adjust when focus is "completo" — if user explicitly picks upper/inferior, respect it
   if (bodyFocus !== "completo") return bodyFocus;
-  // Don't override if gender unknown
   if (!gender) return bodyFocus;
-  // For completo, we handle gender inside split selection, not by changing focus
   return bodyFocus;
 }
 
-// Gender-specific split overrides for "completo" focus
-// Female: more lower body days (posterior, gluteos, panturrilha)
-// Male: standard balanced with arm emphasis
+// =====================================================
+// GENDER-SPECIFIC SPLIT MODIFICATIONS
+// Female: emphasize posterior chain (glutes, hamstrings, calves)
+//         add metabolic/resistance focus, reduce arm isolation volume
+// Male:   emphasize compound upper body (chest, back, shoulders)
+//         strategic arm training, strength/load focus
+// ALWAYS respects user's explicit body focus choice
+// =====================================================
+
 function applyGenderToSplit(split: SplitEntry[], gender: UserGender, objective: Objective): SplitEntry[] {
   if (!gender) return split;
 
   if (gender === "feminino") {
-    // Replace generic "pernas" entries with posterior/gluteos emphasis
-    // Add panturrilha where possible
-    return split.map((groups, i) => {
-      return groups.map(g => {
-        // Turn generic "pernas" into alternating posterior/quadriceps for women
-        if (g === "pernas") {
-          return i % 2 === 0 ? "posterior" : "quadriceps";
-        }
+    return split.map((groups, dayIdx) => {
+      const result = groups.map(g => {
+        // Generic "pernas" → alternate between posterior-focused and quad-focused
+        if (g === "pernas") return dayIdx % 2 === 0 ? "posterior" : "quadriceps";
         return g;
       });
+
+      // On lower-body days, ensure gluteos are included if not already
+      const hasLower = result.some(g => ["quadriceps", "posterior", "pernas"].includes(g));
+      const hasGluteos = result.includes("gluteos");
+      if (hasLower && !hasGluteos && result.length < 4) {
+        result.push("gluteos");
+      }
+
+      // On lower-body days, ensure panturrilha is included if not already
+      const hasPanturrilha = result.includes("panturrilha");
+      if (hasLower && !hasPanturrilha && result.length < 5) {
+        result.push("panturrilha");
+      }
+
+      // On upper-body days for females: keep them but lighter (fewer arm isolation)
+      // Remove standalone biceps if day already has 3+ groups (keep it lean)
+      const isUpperOnly = result.some(g => ["peito", "costas", "ombros"].includes(g)) &&
+                          !result.some(g => ["quadriceps", "posterior", "gluteos", "pernas"].includes(g));
+      if (isUpperOnly && result.length >= 4) {
+        const bicepsIdx = result.indexOf("biceps");
+        if (bicepsIdx !== -1 && result.includes("costas")) {
+          // Costas already trains biceps — remove isolation to reduce upper volume
+          result.splice(bicepsIdx, 1);
+        }
+      }
+
+      return result;
     });
   }
 
   if (gender === "masculino") {
-    // Males get standard split with arm emphasis on upper days
-    // Add biceps/triceps to upper-body-only days that don't have them
-    return split.map((groups) => {
-      const hasUpper = groups.some(g => ["peito", "costas", "ombros"].includes(g));
-      const hasArms = groups.some(g => ["biceps", "triceps"].includes(g));
-      const hasLower = groups.some(g => ["pernas", "quadriceps", "posterior", "gluteos", "panturrilha"].includes(g));
-      // If it's a pure upper day without arms and has room, don't modify (existing splits already handle this)
-      return groups;
+    return split.map((groups, dayIdx) => {
+      const result = [...groups];
+
+      // Generic "pernas" → alternate quad-focused and posterior-focused
+      for (let i = 0; i < result.length; i++) {
+        if (result[i] === "pernas") {
+          result[i] = dayIdx % 2 === 0 ? "quadriceps" : "posterior";
+        }
+      }
+
+      // On upper-body days: ensure arm training is included
+      const hasUpper = result.some(g => ["peito", "costas", "ombros"].includes(g));
+      const hasLower = result.some(g => ["quadriceps", "posterior", "gluteos", "pernas", "panturrilha"].includes(g));
+      const hasArms = result.some(g => ["biceps", "triceps"].includes(g));
+
+      if (hasUpper && !hasLower && !hasArms && result.length < 4) {
+        // Add strategic arm work: triceps with push days, biceps with pull days
+        const hasPush = result.includes("peito") || result.includes("ombros");
+        const hasPull = result.includes("costas");
+        if (hasPush && !result.includes("triceps")) {
+          result.push("triceps");
+        } else if (hasPull && !result.includes("biceps")) {
+          result.push("biceps");
+        }
+      }
+
+      return result;
     });
   }
 
@@ -795,13 +841,50 @@ function applyGenderTo7DaySplit(split: SplitEntry7[], gender: UserGender): Split
   if (!gender) return split;
 
   if (gender === "feminino") {
-    return split.map((entry, i) => ({
-      ...entry,
-      groups: entry.groups.map(g => {
+    return split.map((entry, i) => {
+      const groups = entry.groups.map(g => {
         if (g === "pernas") return i % 2 === 0 ? "posterior" : "quadriceps";
         return g;
-      }),
-    }));
+      });
+
+      // Add gluteos to lower days that don't have it
+      const hasLower = groups.some(g => ["quadriceps", "posterior"].includes(g));
+      const hasGluteos = groups.includes("gluteos");
+      if (hasLower && !hasGluteos && groups.length < 4) {
+        groups.push("gluteos");
+      }
+
+      // Boost intensity on lower days (female priority)
+      const isLowerDay = hasLower;
+      const newIntensity = isLowerDay && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity;
+
+      return { ...entry, groups, intensity: newIntensity };
+    });
+  }
+
+  if (gender === "masculino") {
+    return split.map((entry, i) => {
+      const groups = entry.groups.map(g => {
+        if (g === "pernas") return i % 2 === 0 ? "quadriceps" : "posterior";
+        return g;
+      });
+
+      // Add arm isolation to upper days that don't have it
+      const hasUpper = groups.some(g => ["peito", "costas", "ombros"].includes(g));
+      const hasLower = groups.some(g => ["quadriceps", "posterior", "gluteos", "panturrilha"].includes(g));
+      const hasArms = groups.some(g => ["biceps", "triceps"].includes(g));
+      if (hasUpper && !hasLower && !hasArms && groups.length < 4) {
+        const hasPush = groups.includes("peito") || groups.includes("ombros");
+        if (hasPush) groups.push("triceps");
+        else groups.push("biceps");
+      }
+
+      // Boost intensity on upper days (male priority)
+      const isUpperDay = hasUpper && !hasLower;
+      const newIntensity = isUpperDay && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity;
+
+      return { ...entry, groups, intensity: newIntensity };
+    });
   }
 
   return split;
@@ -892,34 +975,86 @@ function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
 }
 
 // Add gluteo-specific exercises for female users on lower body days
+// Also adds metabolic finishers (short HIIT/burnout sets) for resistance training focus
 function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
   if (gender !== "feminino") return plan;
   
-  // Ensure lower body days include glute activation
   return plan.map(day => {
     const g = day.grupo.toLowerCase();
-    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("perna") || g.includes("glúteo");
+    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
+                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
     if (!isLowerDay) return day;
 
-    // Check if hip thrust or glute bridge is already present
-    const hasGlute = day.exercicios.some(ex => 
+    const exercicios = [...day.exercicios];
+
+    // 1) Ensure glute activation is present
+    const hasGlute = exercicios.some(ex => 
       ex.nome.toLowerCase().includes("hip thrust") || 
       ex.nome.toLowerCase().includes("elevação pélvica") ||
       ex.nome.toLowerCase().includes("glúteo") ||
-      ex.nome.toLowerCase().includes("abdutora")
+      ex.nome.toLowerCase().includes("abdutora") ||
+      ex.nome.toLowerCase().includes("kickback")
     );
-    if (hasGlute) return day;
-
-    // Add one glute finisher from the gluteos pool
-    const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
-    if (glutePool.length > 0) {
-      const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
-      return {
-        ...day,
-        exercicios: [...day.exercicios, { ...gluteEx, series: "3", reps: "12" }],
-      };
+    if (!hasGlute) {
+      const glutePool = exerciseDB.gluteos?.[level] || exerciseDB.gluteos?.intermediario || [];
+      if (glutePool.length > 0) {
+        const gluteEx = glutePool[Math.floor(Math.random() * glutePool.length)];
+        exercicios.push({ ...gluteEx, series: "3", reps: "12" });
+      }
     }
-    return day;
+
+    // 2) Add panturrilha finisher if missing on quad days
+    const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
+    const hasCalf = exercicios.some(ex => ex.nome.toLowerCase().includes("panturrilha"));
+    if (isQuadDay && !hasCalf) {
+      const calfPool = exerciseDB.panturrilha?.[level] || exerciseDB.panturrilha?.intermediario || [];
+      if (calfPool.length > 0) {
+        exercicios.push({ ...calfPool[0], series: "4", reps: "15" });
+      }
+    }
+
+    return { ...day, exercicios };
+  });
+}
+
+// Add compound strength emphasis for male users on upper body days
+function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
+  if (gender !== "masculino") return plan;
+
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    const isUpperDay = g.includes("peito") || g.includes("costas") || g.includes("ombro");
+    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
+                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
+    if (!isUpperDay || isLowerDay) return day;
+
+    const exercicios = [...day.exercicios];
+
+    // Ensure compound movements are present on chest days
+    if (g.includes("peito")) {
+      const hasCompound = exercicios.some(ex => 
+        ex.nome.toLowerCase().includes("supino") || ex.nome.toLowerCase().includes("desenvolvimento")
+      );
+      if (!hasCompound && level !== "iniciante") {
+        const chestPool = exerciseDB.peito?.[level] || [];
+        const compound = chestPool.find(ex => ex.nome.toLowerCase().includes("supino"));
+        if (compound) exercicios.unshift({ ...compound });
+      }
+    }
+
+    // Ensure compound movements are present on back days
+    if (g.includes("costas")) {
+      const hasCompound = exercicios.some(ex => 
+        ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa")
+      );
+      if (!hasCompound && level !== "iniciante") {
+        const backPool = exerciseDB.costas?.[level] || [];
+        const compound = backPool.find(ex => ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa"));
+        if (compound) exercicios.unshift({ ...compound });
+      }
+    }
+
+    return { ...day, exercicios };
   });
 }
 
@@ -1022,6 +1157,7 @@ export function generateWorkoutPlan(
   plan = applyIntensityLevel(plan, intensityLevel);
   plan = applyCardioToWeek(plan, cardioFreq, level);
   plan = enrichFemaleExercises(plan, gender, level);
+  plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
 
   return plan;
