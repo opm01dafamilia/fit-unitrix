@@ -25,9 +25,8 @@ import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
 import PlateauAlertCard from "@/components/PlateauAlertCard";
 import { analyzeReplanning } from "@/lib/smartReplanningEngine";
 import ReplanningModal from "@/components/ReplanningModal";
-import { generateCoachFeedback, detectDropoutRisk, isCoachModeActive, type CoachContext, type CoachMessage, type DropoutRisk } from "@/lib/fitnessCoachEngine";
+import { generateCoachFeedback, isCoachModeActive, type CoachContext, type CoachMessage } from "@/lib/fitnessCoachEngine";
 import CoachFeedbackCard from "@/components/CoachFeedbackCard";
-import DropoutRiskModal from "@/components/DropoutRiskModal";
 
 const tooltipStyle = {
   background: 'hsl(225 16% 9%)',
