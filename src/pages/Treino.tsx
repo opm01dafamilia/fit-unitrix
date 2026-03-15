@@ -53,6 +53,7 @@ const Treino = () => {
   const [foco, setFoco] = useState<BodyFocus>("completo");
   const [cardioFreq, setCardioFreq] = useState<CardioFrequency>("0");
   const [intensityLevel, setIntensityLevel] = useState<IntensityLevel>("intenso");
+  const [selectedGender, setSelectedGender] = useState<string>("");
   const [preferredExercises, setPreferredExercises] = useState<string[]>([]);
   const [preferenceText, setPreferenceText] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
@@ -90,6 +91,7 @@ const Treino = () => {
     startLazyPreload();
     if (profile?.objective) setObjetivo(profile.objective === "manter" ? "condicionamento" : profile.objective);
     if (profile?.experience_level) setNivel(profile.experience_level);
+    if (profile?.gender) setSelectedGender(profile.gender);
     if (profile?.experience_level) {
       const autoSuggest = profile.experience_level === "iniciante" ? "3" : profile.experience_level === "intermediario" ? "4" : "5";
       setDias(autoSuggest);
@@ -411,7 +413,8 @@ const Treino = () => {
         const prefs: ExercisePreferences | undefined = (preferredExercises.length > 0 || preferenceText.trim())
           ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
           : undefined;
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, profile?.gender as UserGender);
+        const genderToUse = (selectedGender || profile?.gender) as UserGender;
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, genderToUse);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);
@@ -639,7 +642,28 @@ const Treino = () => {
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="inferior" id="foco-inferior" />
                 <Label htmlFor="foco-inferior" className="text-sm cursor-pointer">Corpo Inferior</Label>
+          </div>
+
+          {/* Gender selector */}
+          <div className="mb-5">
+            <label className="text-xs font-medium text-muted-foreground mb-3 block flex items-center gap-1.5">
+              Sexo Biológico
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Personaliza seu treino</span>
+            </label>
+            <RadioGroup value={selectedGender} onValueChange={setSelectedGender} className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="masculino" id="gender-m" />
+                <Label htmlFor="gender-m" className="text-sm cursor-pointer">Masculino</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="feminino" id="gender-f" />
+                <Label htmlFor="gender-f" className="text-sm cursor-pointer">Feminino</Label>
+              </div>
+            </RadioGroup>
+            <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+              💡 O treino será adaptado com exercícios e distribuição muscular otimizados para seu perfil corporal.
+            </p>
+          </div>
             </RadioGroup>
           </div>
 
@@ -786,6 +810,12 @@ const Treino = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Foco: {(viewingSaved?.body_focus || foco) === "superior" ? "Corpo Superior" : (viewingSaved?.body_focus || foco) === "inferior" ? "Corpo Inferior" : "Corpo Completo"}
                 </p>
+                {(selectedGender || profile?.gender) && (
+                  <p className="text-[10px] mt-1 font-medium text-primary flex items-center gap-1">
+                    <Target className="w-3 h-3" />
+                    Plano personalizado para seu perfil corporal e objetivo
+                  </p>
+                )}
               </div>
               {!viewingSaved && showPlan && (
                 <Button variant="outline" size="sm" onClick={handleSave} disabled={saving}>
