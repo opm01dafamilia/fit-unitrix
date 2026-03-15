@@ -413,9 +413,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }, [phase, restPaused, playRestDoneAlert]);
 
   function parseRestTime(descanso: string): number {
-    if (!descanso || descanso === "—") return 60;
+  if (!descanso || descanso === "—") return 50;
     const match = descanso.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 60;
+    return match ? parseInt(match[1]) : 50;
   }
 
   function formatTime(s: number): string {
