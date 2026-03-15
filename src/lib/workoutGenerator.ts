@@ -898,6 +898,114 @@ function resolveGenderFocus(bodyFocus: BodyFocus, gender: UserGender): BodyFocus
 }
 
 // =====================================================
+// GENDER-SPECIFIC DEDICATED SPLIT TEMPLATES
+// These override default "completo" splits when gender is known
+// Female: 3 lower : 2 upper ratio (or similar)
+// Male: 3 upper : 2 lower ratio (or similar)
+// =====================================================
+const femaleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
+  emagrecer: {
+    3: [["posterior", "gluteos", "panturrilha"], ["peito", "costas", "ombros"], ["quadriceps", "gluteos", "hiit"]],
+    4: [["posterior", "gluteos", "panturrilha"], ["peito", "triceps", "hiit"], ["quadriceps", "gluteos"], ["costas", "biceps", "abdomen"]],
+    5: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["gluteos", "posterior", "abdomen"]],
+    6: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["gluteos", "abdomen"], ["quadriceps", "panturrilha", "cardio"]],
+  },
+  massa: {
+    3: [["posterior", "gluteos", "panturrilha"], ["peito", "costas", "ombros"], ["quadriceps", "gluteos"]],
+    4: [["posterior", "gluteos", "panturrilha"], ["peito", "triceps"], ["quadriceps", "gluteos"], ["costas", "biceps", "abdomen"]],
+    5: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["gluteos", "posterior", "abdomen"]],
+    6: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["gluteos", "abdomen"], ["quadriceps", "panturrilha"]],
+  },
+  condicionamento: {
+    3: [["posterior", "gluteos", "hiit"], ["peito", "costas", "cardio"], ["quadriceps", "panturrilha", "hiit"]],
+    4: [["posterior", "gluteos", "hiit"], ["peito", "triceps", "cardio"], ["quadriceps", "panturrilha", "hiit"], ["costas", "ombros", "cardio"]],
+    5: [["posterior", "gluteos", "hiit"], ["peito", "triceps"], ["quadriceps", "panturrilha", "cardio"], ["costas", "biceps", "hiit"], ["gluteos", "abdomen", "cardio"]],
+    6: [["posterior", "gluteos"], ["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["gluteos", "abdomen", "hiit"], ["quadriceps", "panturrilha", "cardio"]],
+  },
+};
+
+const maleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
+  emagrecer: {
+    3: [["peito", "triceps", "hiit"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
+    4: [["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["ombros", "abdomen", "cardio"]],
+    5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "panturrilha"], ["ombros", "abdomen", "cardio"]],
+    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "panturrilha"], ["ombros", "abdomen"], ["peito", "costas", "cardio"]],
+  },
+  massa: {
+    3: [["peito", "triceps"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
+    4: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["ombros", "posterior", "abdomen"]],
+    5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "panturrilha"], ["ombros", "abdomen"]],
+    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "panturrilha"], ["ombros", "abdomen"], ["peito", "costas"]],
+  },
+  condicionamento: {
+    3: [["hiit", "peito", "costas"], ["quadriceps", "posterior", "cardio"], ["ombros", "triceps", "biceps"]],
+    4: [["hiit", "peito", "triceps"], ["quadriceps", "panturrilha", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "ombros", "cardio"]],
+    5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["posterior", "hiit"], ["ombros", "abdomen", "cardio"]],
+    6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "panturrilha", "cardio"], ["ombros", "triceps"], ["peito", "biceps", "cardio"]],
+  },
+};
+
+const femaleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
+  emagrecer: [
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },
+    { groups: ["peito", "triceps"], intensity: "moderado" },
+    { groups: ["quadriceps", "panturrilha", "hiit"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "moderado" },
+    { groups: ["gluteos", "posterior", "abdomen"], intensity: "pesado" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  massa: [
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },
+    { groups: ["peito", "triceps"], intensity: "moderado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "moderado" },
+    { groups: ["gluteos", "abdomen"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  condicionamento: [
+    { groups: ["posterior", "gluteos", "hiit"], intensity: "pesado" },
+    { groups: ["peito", "triceps", "cardio"], intensity: "moderado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["costas", "biceps", "hiit"], intensity: "moderado" },
+    { groups: ["gluteos", "abdomen", "cardio"], intensity: "pesado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
+  ],
+};
+
+const maleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
+  emagrecer: [
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "pesado" },
+    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
+    { groups: ["ombros", "abdomen", "hiit"], intensity: "pesado" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  massa: [
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "pesado" },
+    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
+    { groups: ["ombros", "abdomen"], intensity: "pesado" },
+    { groups: ["peito", "costas"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+  ],
+  condicionamento: [
+    { groups: ["hiit", "peito", "triceps"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" },
+    { groups: ["costas", "biceps", "hiit"], intensity: "pesado" },
+    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
+    { groups: ["ombros", "abdomen", "cardio"], intensity: "pesado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
+  ],
+};
+
+// =====================================================
 // GENDER-SPECIFIC SPLIT MODIFICATIONS
 // Female: emphasize posterior chain (glutes, hamstrings, calves)
 //         add metabolic/resistance focus, reduce arm isolation volume
