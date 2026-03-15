@@ -442,6 +442,293 @@ const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> 
   completo: splitTemplates7,
 };
 
+const groupLabels: Record<string, string> = {
+  peito: "Peito", costas: "Costas", pernas: "Pernas", ombros: "Ombros",
+  biceps: "Bíceps", triceps: "Tríceps", abdomen: "Abdômen",
+  hiit: "HIIT", cardio: "Cardio", mobilidade: "Mobilidade", recuperacao: "Recuperação",
+  quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
+};
+
+function shuffleArray<T>(arr: T[], seed: number): T[] {
+  const result = [...arr];
+  let s = seed;
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    const j = s % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function selectExercises(
+  pool: Exercise[], dayIndex: number, maxCount: number, usedNames: Set<string>, preferredNames?: Set<string>
+): Exercise[] {
+  if (pool.length === 0) return [];
+  const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
+  const isPreferred = (ex: Exercise) => {
+    if (!preferredNames || preferredNames.size === 0) return false;
+    const nameLower = ex.nome.toLowerCase();
+    for (const pref of preferredNames) {
+      if (nameLower.includes(pref.toLowerCase()) || pref.toLowerCase().includes(nameLower)) return true;
+    }
+    return false;
+  };
+  const preferred = shuffled.filter(ex => isPreferred(ex) && !usedNames.has(ex.nome));
+  const nonPreferred = shuffled.filter(ex => !isPreferred(ex) && !usedNames.has(ex.nome));
+  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.5));
+  const selected: Exercise[] = [];
+  for (const ex of preferred) { if (selected.length >= maxPreferred) break; selected.push(ex); }
+  for (const ex of nonPreferred) { if (selected.length >= maxCount) break; selected.push(ex); }
+  for (const ex of shuffled) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+  return selected;
+}
+
+function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Exercise {
+  const restMap: Record<DayIntensity, Record<string, string>> = {
+    pesado: { "30s": "60s", "45s": "90s", "60s": "90s", "90s": "120s", "120s": "180s" },
+    moderado: { "120s": "90s", "180s": "120s", "90s": "75s" },
+    leve: { "90s": "60s", "120s": "60s", "180s": "90s", "60s": "45s", "45s": "30s" },
+  };
+  return { ...exercise, descanso: restMap[intensity]?.[exercise.descanso] || exercise.descanso };
+}
+
+function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
+  // Capped at 2 per group to keep total at 4-5 per workout
+  const base = 2;
+  if (intensity === "leve") return 1;
+  return base;
+}
+
+export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
+export type IntensityLevel = "moderado" | "intenso";
+
+type CardioType = "leve" | "moderado" | "intenso";
+type CardioExerciseInfo = { nome: string; duracao: string; tipo: CardioType; desc: string };
+
+const cardioByObjectiveGen: Record<Objective, Record<CardioType, CardioExerciseInfo>> = {
+  emagrecer: {
+    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com 8-10% de inclinação, ritmo confortável." },
+    moderado: { nome: "Corrida Intervalada", duracao: "20min", tipo: "moderado", desc: "Alterne 1min forte + 1min leve." },
+    intenso: { nome: "HIIT Queima", duracao: "12min", tipo: "intenso", desc: "30s sprint máximo + 30s descanso." },
+  },
+  massa: {
+    leve: { nome: "Caminhada Leve", duracao: "10min", tipo: "leve", desc: "Caminhada em ritmo confortável." },
+    moderado: { nome: "Bike Leve", duracao: "15min", tipo: "moderado", desc: "Pedalada em ritmo moderado." },
+    intenso: { nome: "Cardio Controlado", duracao: "12min", tipo: "intenso", desc: "Sessão curta e controlada." },
+  },
+  condicionamento: {
+    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com inclinação, ritmo confortável." },
+    moderado: { nome: "Corrida Progressiva", duracao: "20min", tipo: "moderado", desc: "Comece leve e aumente a cada 5min." },
+    intenso: { nome: "HIIT Cardio", duracao: "15min", tipo: "intenso", desc: "Circuito intenso: 40s esforço + 20s descanso." },
+  },
+};
+const cardioDurationMultiplier: Record<Level, number> = { iniciante: 0.75, intermediario: 1, avancado: 1.25 };
+
+function applyCardioToWeek(plan: WorkoutDay[], cardioFreq: CardioFrequency, level: Level, objective: Objective = "condicionamento", gender?: UserGender): WorkoutDay[] {
+  if (cardioFreq === "0") {
+    return plan.map(day => {
+      const g = day.grupo.toLowerCase();
+      if (!g.includes("mobilidade") && !g.includes("recuperacao")) return day;
+      return { ...day, exercicios: [...day.exercicios, { nome: "Caminhada Leve (Opcional)", series: "1", reps: "10min", desc: "💡 Cardio opcional.", descanso: "—" }] };
+    });
+  }
+  let cardioDays: number;
+  switch (cardioFreq) { case "1-2": cardioDays = Math.min(2, plan.length); break; case "3-4": cardioDays = Math.min(4, plan.length); break; case "daily": cardioDays = plan.length; break; default: cardioDays = 0; }
+  if (cardioDays === 0) return plan;
+  const isLegDay = (grupo: string) => { const g = grupo.toLowerCase(); return g.includes("perna") || g.includes("quadriceps") || g.includes("posterior") || g.includes("gluteo") || g.includes("panturrilha"); };
+  const hasExistingCardio = (day: WorkoutDay) => { const g = day.grupo.toLowerCase(); return g.includes("cardio") || g.includes("hiit") || day.exercicios.some(e => { const n = e.nome.toLowerCase(); return n.includes("cardio") || n.includes("corrida") || n.includes("caminhada") || n.includes("hiit") || n.includes("bike"); }); };
+  function getCardioForDay(day: WorkoutDay, isLeg: boolean): CardioExerciseInfo {
+    const pool = cardioByObjectiveGen[objective]; const mult = cardioDurationMultiplier[level];
+    if (isLeg) { const info = { ...pool.leve, nome: "Caminhada Leve", desc: "🦵 Cardio leve pós-treino de perna." }; info.duracao = `${Math.round(Math.min(parseInt(info.duracao), 12) * mult)}min`; return info; }
+    if (day.intensidade === "pesado") { const info = { ...pool.leve }; info.duracao = `${Math.round(parseInt(info.duracao) * mult)}min`; return info; }
+    if (objective === "massa") { const info = { ...pool.leve }; info.duracao = `${Math.round(parseInt(info.duracao) * mult)}min`; return info; }
+    const info = { ...pool.moderado }; info.duracao = `${Math.round(parseInt(info.duracao) * mult)}min`; return info;
+  }
+  if (cardioFreq === "daily") {
+    return plan.map(day => {
+      if (hasExistingCardio(day)) return day;
+      const isLeg = isLegDay(day.grupo); const cardioInfo = getCardioForDay(day, isLeg);
+      const cardioEx: Exercise = { nome: cardioInfo.nome, series: "1", reps: cardioInfo.duracao, desc: cardioInfo.desc, descanso: "—" };
+      const exercicios = day.exercicios.length >= 5 ? [...day.exercicios.slice(0, -1), cardioEx] : [...day.exercicios, cardioEx];
+      return { ...day, grupo: day.grupo + ` + Cardio ${cardioInfo.tipo === "leve" ? "Leve" : "Moderado"}`, exercicios };
+    });
+  }
+  const dayAnalysis = plan.map((day, idx) => ({ idx, intensity: day.intensidade || "moderado" as DayIntensity, hasCardio: hasExistingCardio(day), isLeg: isLegDay(day.grupo), isRest: day.grupo.toLowerCase().includes("mobilidade") || day.grupo.toLowerCase().includes("recuperacao") }));
+  const sorted = [...dayAnalysis].filter(d => !d.hasCardio).sort((a, b) => { if (a.isRest && !b.isRest) return -1; if (!a.isRest && b.isRest) return 1; if (a.isLeg && !b.isLeg) return 1; if (!a.isLeg && b.isLeg) return -1; return 0; });
+  const selectedIndices: number[] = [];
+  for (const c of sorted) { if (selectedIndices.length >= cardioDays) break; const hasAdj = selectedIndices.some(si => Math.abs(si - c.idx) <= 1); if (!hasAdj || selectedIndices.length >= sorted.length - 1) selectedIndices.push(c.idx); }
+  for (const c of sorted) { if (selectedIndices.length >= cardioDays) break; if (!selectedIndices.includes(c.idx)) selectedIndices.push(c.idx); }
+  return plan.map((day, idx) => {
+    if (!selectedIndices.includes(idx)) return day;
+    const isLeg = isLegDay(day.grupo); const cardioInfo = getCardioForDay(day, isLeg);
+    const cardioEx: Exercise = { nome: cardioInfo.nome, series: "1", reps: cardioInfo.duracao, desc: cardioInfo.desc, descanso: "—" };
+    return { ...day, grupo: day.grupo + ` + Cardio ${cardioInfo.tipo === "leve" ? "Leve" : "Moderado"}`, exercicios: [...day.exercicios, cardioEx] };
+  });
+}
+
+function applyIntensityLevel(plan: WorkoutDay[], intensityLevel: IntensityLevel): WorkoutDay[] {
+  if (intensityLevel === "moderado") {
+    return plan.map(day => {
+      const newIntensity: DayIntensity = day.intensidade === "pesado" ? "moderado" : day.intensidade || "moderado";
+      const exercicios = day.exercicios.map(ex => { const series = Math.max(2, Number(ex.series) - (day.intensidade === "pesado" ? 1 : 0)); return adjustRestForIntensity({ ...ex, series: String(series) }, newIntensity); });
+      return { ...day, exercicios, intensidade: newIntensity };
+    });
+  }
+  return plan.map(day => {
+    if (day.intensidade === "leve") return day;
+    const exercicios = day.exercicios.map(ex => { const series = Math.min(6, Number(ex.series) + (day.intensidade === "moderado" ? 1 : 0)); return adjustRestForIntensity({ ...ex, series: String(series) }, "pesado"); });
+    return { ...day, exercicios, intensidade: "pesado" };
+  });
+}
+
+export type UserGender = "masculino" | "feminino" | string | null | undefined;
+export type ExercisePreferences = { preferred: string[]; freeText?: string };
+
+const femaleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
+  emagrecer: { 3: [["posterior","gluteos","panturrilha"],["peito","costas","ombros"],["quadriceps","gluteos","hiit"]], 4: [["posterior","gluteos","panturrilha"],["peito","triceps","hiit"],["quadriceps","gluteos"],["costas","biceps","abdomen"]], 5: [["posterior","gluteos"],["peito","triceps"],["quadriceps","panturrilha","hiit"],["costas","biceps"],["gluteos","posterior","abdomen"]], 6: [["posterior","gluteos"],["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps","hiit"],["gluteos","abdomen"],["quadriceps","panturrilha","cardio"]] },
+  massa: { 3: [["posterior","gluteos","panturrilha"],["peito","costas","ombros"],["quadriceps","gluteos"]], 4: [["posterior","gluteos","panturrilha"],["peito","triceps"],["quadriceps","gluteos"],["costas","biceps","abdomen"]], 5: [["posterior","gluteos"],["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps"],["gluteos","posterior","abdomen"]], 6: [["posterior","gluteos"],["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps"],["gluteos","abdomen"],["quadriceps","panturrilha"]] },
+  condicionamento: { 3: [["posterior","gluteos","hiit"],["peito","costas","cardio"],["quadriceps","panturrilha","hiit"]], 4: [["posterior","gluteos","hiit"],["peito","triceps","cardio"],["quadriceps","panturrilha","hiit"],["costas","ombros","cardio"]], 5: [["posterior","gluteos","hiit"],["peito","triceps"],["quadriceps","panturrilha","cardio"],["costas","biceps","hiit"],["gluteos","abdomen","cardio"]], 6: [["posterior","gluteos"],["peito","triceps","hiit"],["quadriceps","panturrilha"],["costas","biceps","cardio"],["gluteos","abdomen","hiit"],["quadriceps","panturrilha","cardio"]] },
+};
+const maleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
+  emagrecer: { 3: [["peito","triceps","hiit"],["quadriceps","posterior","panturrilha"],["costas","biceps","ombros"]], 4: [["peito","triceps"],["quadriceps","panturrilha","hiit"],["costas","biceps"],["ombros","abdomen","cardio"]], 5: [["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps","hiit"],["posterior","panturrilha"],["ombros","abdomen","cardio"]], 6: [["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps","hiit"],["posterior","panturrilha"],["ombros","abdomen"],["peito","costas","cardio"]] },
+  massa: { 3: [["peito","triceps"],["quadriceps","posterior","panturrilha"],["costas","biceps","ombros"]], 4: [["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps"],["ombros","posterior","abdomen"]], 5: [["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps"],["posterior","panturrilha"],["ombros","abdomen"]], 6: [["peito","triceps"],["quadriceps","panturrilha"],["costas","biceps"],["posterior","panturrilha"],["ombros","abdomen"],["peito","costas"]] },
+  condicionamento: { 3: [["hiit","peito","costas"],["quadriceps","posterior","cardio"],["ombros","triceps","biceps"]], 4: [["hiit","peito","triceps"],["quadriceps","panturrilha","cardio"],["costas","biceps","hiit"],["posterior","ombros","cardio"]], 5: [["hiit","peito"],["quadriceps","panturrilha"],["costas","biceps","cardio"],["posterior","hiit"],["ombros","abdomen","cardio"]], 6: [["hiit","peito"],["quadriceps","panturrilha"],["costas","hiit"],["posterior","panturrilha","cardio"],["ombros","triceps"],["peito","biceps","cardio"]] },
+};
+const femaleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
+  emagrecer: [{ groups: ["posterior","gluteos"], intensity: "pesado" },{ groups: ["peito","triceps"], intensity: "moderado" },{ groups: ["quadriceps","panturrilha","hiit"], intensity: "pesado" },{ groups: ["costas","biceps"], intensity: "moderado" },{ groups: ["gluteos","posterior","abdomen"], intensity: "pesado" },{ groups: ["hiit","cardio"], intensity: "moderado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" }],
+  massa: [{ groups: ["posterior","gluteos"], intensity: "pesado" },{ groups: ["peito","triceps"], intensity: "moderado" },{ groups: ["quadriceps","panturrilha"], intensity: "pesado" },{ groups: ["costas","biceps"], intensity: "moderado" },{ groups: ["gluteos","abdomen"], intensity: "pesado" },{ groups: ["quadriceps","panturrilha"], intensity: "moderado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" }],
+  condicionamento: [{ groups: ["posterior","gluteos","hiit"], intensity: "pesado" },{ groups: ["peito","triceps","cardio"], intensity: "moderado" },{ groups: ["quadriceps","panturrilha"], intensity: "pesado" },{ groups: ["costas","biceps","hiit"], intensity: "moderado" },{ groups: ["gluteos","abdomen","cardio"], intensity: "pesado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" },{ groups: ["hiit","cardio"], intensity: "moderado" }],
+};
+const maleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
+  emagrecer: [{ groups: ["peito","triceps"], intensity: "pesado" },{ groups: ["quadriceps","panturrilha"], intensity: "pesado" },{ groups: ["costas","biceps"], intensity: "pesado" },{ groups: ["posterior","panturrilha"], intensity: "moderado" },{ groups: ["ombros","abdomen","hiit"], intensity: "pesado" },{ groups: ["hiit","cardio"], intensity: "moderado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" }],
+  massa: [{ groups: ["peito","triceps"], intensity: "pesado" },{ groups: ["quadriceps","panturrilha"], intensity: "pesado" },{ groups: ["costas","biceps"], intensity: "pesado" },{ groups: ["posterior","panturrilha"], intensity: "moderado" },{ groups: ["ombros","abdomen"], intensity: "pesado" },{ groups: ["peito","costas"], intensity: "moderado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" }],
+  condicionamento: [{ groups: ["hiit","peito","triceps"], intensity: "pesado" },{ groups: ["quadriceps","panturrilha","cardio"], intensity: "pesado" },{ groups: ["costas","biceps","hiit"], intensity: "pesado" },{ groups: ["posterior","panturrilha"], intensity: "moderado" },{ groups: ["ombros","abdomen","cardio"], intensity: "pesado" },{ groups: ["mobilidade","recuperacao"], intensity: "leve" },{ groups: ["hiit","cardio"], intensity: "moderado" }],
+};
+
+function applyGenderToSplit(split: SplitEntry[], gender: UserGender, objective: Objective): SplitEntry[] {
+  if (!gender) return split;
+  if (gender === "feminino") {
+    return split.map((groups, dayIdx) => {
+      const result = groups.map(g => g === "pernas" ? (dayIdx % 2 === 0 ? "posterior" : "quadriceps") : g);
+      const hasLower = result.some(g => ["quadriceps","posterior","pernas"].includes(g));
+      if (hasLower && !result.includes("gluteos") && result.length < 4) result.push("gluteos");
+      if (hasLower && !result.includes("panturrilha") && result.length < 5) result.push("panturrilha");
+      return result;
+    });
+  }
+  if (gender === "masculino") {
+    return split.map((groups, dayIdx) => {
+      const result = groups.map(g => g === "pernas" ? (dayIdx % 2 === 0 ? "quadriceps" : "posterior") : g);
+      const hasUpper = result.some(g => ["peito","costas","ombros"].includes(g));
+      const hasLower = result.some(g => ["quadriceps","posterior","gluteos","pernas","panturrilha"].includes(g));
+      const hasArms = result.some(g => ["biceps","triceps"].includes(g));
+      if (hasUpper && !hasLower && !hasArms && result.length < 4) {
+        if (result.includes("peito") || result.includes("ombros")) result.push("triceps");
+        else result.push("biceps");
+      }
+      return result;
+    });
+  }
+  return split;
+}
+
+function applyGenderTo7DaySplit(split: SplitEntry7[], gender: UserGender): SplitEntry7[] {
+  if (!gender) return split;
+  if (gender === "feminino") {
+    return split.map((entry, i) => {
+      const groups = entry.groups.map(g => g === "pernas" ? (i % 2 === 0 ? "posterior" : "quadriceps") : g);
+      const hasLower = groups.some(g => ["quadriceps","posterior"].includes(g));
+      if (hasLower && !groups.includes("gluteos") && groups.length < 4) groups.push("gluteos");
+      return { ...entry, groups, intensity: hasLower && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity };
+    });
+  }
+  if (gender === "masculino") {
+    return split.map((entry, i) => {
+      const groups = entry.groups.map(g => g === "pernas" ? (i % 2 === 0 ? "quadriceps" : "posterior") : g);
+      const hasUpper = groups.some(g => ["peito","costas","ombros"].includes(g));
+      const hasLower = groups.some(g => ["quadriceps","posterior","gluteos","panturrilha"].includes(g));
+      if (hasUpper && !hasLower && !groups.some(g => ["biceps","triceps"].includes(g)) && groups.length < 4) {
+        if (groups.includes("peito") || groups.includes("ombros")) groups.push("triceps"); else groups.push("biceps");
+      }
+      return { ...entry, groups, intensity: hasUpper && !hasLower && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity };
+    });
+  }
+  return split;
+}
+
+const UPPER_KEYWORDS = ["peito","costas","ombro","biceps","triceps"];
+const LOWER_KEYWORDS = ["perna","quadriceps","posterior","gluteos","gluteo","panturrilha"];
+const NEUTRAL_KEYWORDS = ["hiit","cardio","mobilidade","recuperacao","abdomen"];
+
+function classifyDayRegion(grupo: string): "upper"|"lower"|"neutral" {
+  const g = grupo.toLowerCase();
+  const hasUpper = UPPER_KEYWORDS.some(k => g.includes(k));
+  const hasLower = LOWER_KEYWORDS.some(k => g.includes(k));
+  if (hasUpper && hasLower) return "neutral";
+  if (hasUpper) return "upper";
+  if (hasLower) return "lower";
+  return "neutral";
+}
+
+function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
+  const result = [...plan];
+  for (let i = 1; i < result.length; i++) {
+    const prevRegion = classifyDayRegion(result[i-1].grupo);
+    const currRegion = classifyDayRegion(result[i].grupo);
+    if (prevRegion !== "neutral" && prevRegion === currRegion && (result[i-1].intensidade === "pesado" || result[i].intensidade === "pesado")) {
+      result[i] = { ...result[i], intensidade: "moderado", exercicios: result[i].exercicios.map(ex => adjustRestForIntensity(ex, "moderado")) };
+    }
+  }
+  return result;
+}
+
+function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
+  if (gender !== "feminino") return plan;
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    const isLowerDay = g.includes("posterior") || g.includes("quadriceps") || g.includes("perna") || g.includes("gluteo");
+    if (!isLowerDay) return day;
+    const exercicios = [...day.exercicios];
+    const hasGlute = exercicios.some(ex => { const n = ex.nome.toLowerCase(); return n.includes("hip thrust") || n.includes("elevação pélvica") || n.includes("glute bridge") || n.includes("abdutora"); });
+    if (!hasGlute) exercicios.push({ nome: "Hip Thrust", series: "4", reps: "12", desc: "Costas no banco, barra no quadril. Contraia forte no topo.", descanso: "60s" });
+    return { ...day, exercicios: exercicios.map(ex => { if (ex.descanso === "120s") return { ...ex, descanso: "90s" }; if (ex.descanso === "180s") return { ...ex, descanso: "120s" }; return ex; }) };
+  });
+}
+
+function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
+  if (gender !== "masculino") return plan;
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    const isUpperDay = g.includes("peito") || g.includes("costas") || g.includes("ombro");
+    const isLowerDay = g.includes("posterior") || g.includes("quadriceps") || g.includes("perna") || g.includes("gluteo");
+    if (!isUpperDay || isLowerDay) return day;
+    const exercicios = [...day.exercicios];
+    if (g.includes("peito") && !exercicios.some(ex => ex.nome.toLowerCase().includes("supino")) && level !== "iniciante") {
+      exercicios.unshift({ nome: "Supino Reto", series: "4", reps: "8", desc: "Carga pesada, controle excêntrico.", descanso: "120s" });
+    }
+    return { ...day, exercicios: exercicios.map(ex => { if (ex.descanso === "60s" && day.intensidade === "pesado") return { ...ex, descanso: "90s" }; return ex; }) };
+  });
+}
+
+// Auxiliary exercises ordering + cap at 4-5
+function isAuxiliaryExercise(nome: string): boolean {
+  const n = nome.toLowerCase();
+  return ["panturrilha","rosca","bíceps","biceps","tríceps","triceps","prancha","abdominal","crunch","elevação de pernas","dragon flag"].some(k => n.includes(k));
+}
+
+function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
+  const MAX_EXERCISES = 5;
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao")) return day;
+    if (g.includes("hiit") && !g.includes("peito") && !g.includes("costas") && !g.includes("quadriceps") && !g.includes("posterior") && !g.includes("ombros")) return day;
+    const main: Exercise[] = [];
+    const aux: Exercise[] = [];
+    for (const ex of day.exercicios) { if (isAuxiliaryExercise(ex.nome)) aux.push(ex); else main.push(ex); }
+    return { ...day, exercicios: [...main, ...aux].slice(0, MAX_EXERCISES) };
+  });
+}
+
 // =====================================================
 // MAIN GENERATOR
 // =====================================================
