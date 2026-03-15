@@ -183,8 +183,8 @@ const AppLayout = () => {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border/50 lg:hidden safe-area-pb">
-        <div className="flex items-center justify-around px-2 py-1.5">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 lg:hidden safe-area-pb">
+        <div className="flex items-center justify-around px-1 py-1">
           {[
             { to: "/", icon: LayoutDashboard, label: "Home" },
             { to: "/treino", icon: Dumbbell, label: "Treino" },
@@ -197,8 +197,8 @@ const AppLayout = () => {
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all
-                ${isActive ? "text-primary" : "text-muted-foreground"}`
+                `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-2 py-1.5 rounded-xl text-[10px] font-medium transition-all active:scale-95
+                ${isActive ? "text-primary bg-primary/8" : "text-muted-foreground active:bg-secondary/60"}`
               }
             >
               <item.icon className="w-5 h-5" />

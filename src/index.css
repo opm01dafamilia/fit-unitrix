@@ -228,4 +228,35 @@
   .overflow-y-auto, .overflow-auto {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Horizontal scroll container for tabs/chips — mobile friendly */
+  .scroll-x-mobile {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.5rem;
+    padding-bottom: 2px;
+  }
+  .scroll-x-mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Tap-friendly minimum touch target */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Full-width utility on mobile */
+  @media (max-width: 639px) {
+    .mobile-full {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .mobile-stack {
+      grid-template-columns: 1fr !important;
+    }
+  }
 }
