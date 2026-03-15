@@ -642,6 +642,8 @@ const Treino = () => {
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="inferior" id="foco-inferior" />
                 <Label htmlFor="foco-inferior" className="text-sm cursor-pointer">Corpo Inferior</Label>
+              </div>
+            </RadioGroup>
           </div>
 
           {/* Gender selector */}
@@ -663,8 +665,6 @@ const Treino = () => {
             <p className="text-[10px] text-muted-foreground mt-1.5 italic">
               💡 O treino será adaptado com exercícios e distribuição muscular otimizados para seu perfil corporal.
             </p>
-          </div>
-            </RadioGroup>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 mb-5">

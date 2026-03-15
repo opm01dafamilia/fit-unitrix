@@ -293,7 +293,7 @@ const Metas = () => {
             </div>
 
             {/* Peso Atual + Peso Meta */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Peso Atual (kg) *</label>
                 <Input
