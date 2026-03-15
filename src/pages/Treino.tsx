@@ -1227,6 +1227,65 @@ const Treino = () => {
                     <><Play className="w-5 h-5 mr-2" /> Iniciar Treino</>
                   )}
                 </Button>
+                
+                {/* Warmup & Cardio Buttons */}
+                {!todayCompleted && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs border-amber-500/20 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                      onClick={() => {
+                        toast.info("🔥 Aquecimento iniciado! Faça 5-10 min de mobilidade e cardio leve.", { duration: 5000 });
+                      }}
+                    >
+                      <Flame className="w-3.5 h-3.5 mr-1.5" /> Iniciar Aquecimento
+                    </Button>
+                    {nextWorkout && nextWorkout.grupo?.toLowerCase().includes("cardio") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        onClick={() => {
+                          const cardioInfo = nextWorkout.exercicios?.find((ex: any) =>
+                            ex.nome?.toLowerCase().includes("cardio") || ex.nome?.toLowerCase().includes("corrida") ||
+                            ex.nome?.toLowerCase().includes("caminhada") || ex.nome?.toLowerCase().includes("hiit") ||
+                            ex.nome?.toLowerCase().includes("bicicleta")
+                          );
+                          const msg = cardioInfo
+                            ? `🏃 Cardio: ${cardioInfo.nome} — ${cardioInfo.reps || "20min"}`
+                            : "🏃 Cardio do dia iniciado!";
+                          toast.info(msg, { duration: 5000 });
+                        }}
+                      >
+                        <Heart className="w-3.5 h-3.5 mr-1.5" /> Iniciar Cardio
+                      </Button>
+                    )}
+                    {/* Show cardio button also when plan has cardio suffix */}
+                    {nextWorkout && !nextWorkout.grupo?.toLowerCase().includes("cardio") && 
+                     nextWorkout.grupo?.toLowerCase().includes("+ cardio") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        onClick={() => {
+                          const cardioEx = nextWorkout.exercicios?.find((ex: any) =>
+                            ex.nome?.toLowerCase().includes("cardio") || ex.nome?.toLowerCase().includes("corrida") ||
+                            ex.nome?.toLowerCase().includes("caminhada") || ex.nome?.toLowerCase().includes("hiit") ||
+                            ex.nome?.toLowerCase().includes("bicicleta")
+                          );
+                          toast.info(
+                            cardioEx ? `🏃 Cardio: ${cardioEx.nome} — ${cardioEx.reps || "15min"}` : "🏃 Cardio leve pós-treino — 15min",
+                            { duration: 5000 }
+                          );
+                        }}
+                      >
+                        <Heart className="w-3.5 h-3.5 mr-1.5" /> Iniciar Cardio
+                      </Button>
+                    )}
+                  </div>
+                )}
+
                 {todayCompleted && (
                   <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥

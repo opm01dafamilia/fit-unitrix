@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
   History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
-  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
@@ -27,6 +27,7 @@ const coreNavItems = [
   { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
+  { to: "/score-fitness", icon: Gauge, label: "Score Fitness" },
 ];
 
 const secondaryNavItems = [
@@ -141,10 +142,16 @@ const AppLayout = () => {
         <div className="mx-4 mb-3">
           <div className="p-3.5 rounded-xl bg-secondary/60 border border-border/50">
             <div className="flex items-center gap-2.5 mb-1.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                   style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.1))' }}>
-                <User className="w-4 h-4 text-primary" />
-              </div>
+              {profile?.avatar_url ? (
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                     style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.1))' }}>
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">{profile?.full_name || "Usuário"}</p>
                 <p className="text-[11px] text-muted-foreground">{objectiveLabel}</p>
