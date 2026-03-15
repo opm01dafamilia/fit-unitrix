@@ -27,6 +27,7 @@ const coreNavItems = [
   { to: "/convites", icon: Gift, label: "Convites" },
   { to: "/historico", icon: History, label: "Histórico" },
   { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
+  { to: "/score-fitness", icon: Gauge, label: "Score Fitness" },
 ];
 
 const secondaryNavItems = [
