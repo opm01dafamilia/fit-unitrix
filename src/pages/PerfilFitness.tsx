@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles, Crown, Users, Medal, ChevronRight, BookOpen, Activity } from "lucide-react";
+import { User, Flame, Trophy, TrendingUp, Star, ArrowLeft, Dumbbell, UtensilsCrossed, Target, Sparkles, Crown, Users, Medal, ChevronRight, BookOpen, Activity, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { PerfilFitnessSkeleton } from "@/components/skeletons/SkeletonPremium";
 import {
@@ -37,7 +38,7 @@ const socialHubItems = MODULAR_ROUTES.map(r => ({
 }));
 
 const PerfilFitness = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -49,6 +50,7 @@ const PerfilFitness = () => {
   const [weightData, setWeightData] = useState<{ date: string; weight: number }[]>([]);
   const [goalWeight, setGoalWeight] = useState<number | null>(null);
   const [lastAchievement, setLastAchievement] = useState<{ title: string; icon: string } | null>(null);
+  const [savingGender, setSavingGender] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -272,6 +274,56 @@ const PerfilFitness = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Gender Selector — Mandatory */}
+      <div className="glass-card p-4 border border-primary/10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold">Sexo Biológico</h3>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Obrigatório</span>
+          </div>
+          {profile?.gender && (
+            <span className="text-[10px] text-chart-2 font-medium flex items-center gap-1">
+              <Check className="w-3 h-3" /> Salvo
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] text-muted-foreground mb-3">
+          Usado para personalizar divisão muscular, volume, intensidade e exercícios do seu treino.
+        </p>
+        <div className="flex gap-3">
+          {(["masculino", "feminino"] as const).map((g) => {
+            const isSelected = profile?.gender === g;
+            return (
+              <button
+                key={g}
+                disabled={savingGender}
+                onClick={async () => {
+                  if (!user || isSelected) return;
+                  setSavingGender(true);
+                  const { error } = await supabase.from("profiles").update({ gender: g }).eq("user_id", user.id);
+                  if (error) { toast.error("Erro ao salvar sexo"); }
+                  else { toast.success(`Sexo definido: ${g === "masculino" ? "Masculino" : "Feminino"}`); await refreshProfile(); }
+                  setSavingGender(false);
+                }}
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
+                  isSelected
+                    ? "bg-primary/15 border-primary/30 text-primary"
+                    : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-primary/20"
+                }`}
+              >
+                {g === "masculino" ? "♂ Masculino" : "♀ Feminino"}
+              </button>
+            );
+          })}
+        </div>
+        {!profile?.gender && (
+          <p className="text-[10px] text-amber-400 mt-2 font-medium">
+            ⚠️ Defina seu sexo para gerar treinos personalizados.
+          </p>
+        )}
       </div>
 
       {/* Fitness Level Progress Bar */}
