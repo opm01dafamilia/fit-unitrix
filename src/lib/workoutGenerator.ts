@@ -1320,7 +1320,31 @@ function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Le
   });
 }
 
-// Add compound strength emphasis for male users on upper body days
+// =====================================================
+// MALE EXERCISE ENRICHMENT
+// Priority exercises: Supinos, Remadas, Barra Fixa, Desenvolvimento, Terra, Rosca, Tríceps Testa
+// More load, longer rest, compound emphasis
+// =====================================================
+const MALE_PRIORITY_EXERCISES: Record<string, Exercise[]> = {
+  peito: [
+    { nome: "Supino Reto", series: "4", reps: "8", desc: "Carga pesada, controle excêntrico. Principal composto para peito masculino.", descanso: "120s" },
+    { nome: "Supino Inclinado Halteres", series: "4", reps: "10", desc: "Banco a 30°, amplitude completa. Foco em peitoral superior.", descanso: "90s" },
+  ],
+  costas: [
+    { nome: "Barra Fixa", series: "4", reps: "8", desc: "Pegada pronada, puxe até o queixo passar. Exercício fundamental para dorsal.", descanso: "120s" },
+    { nome: "Remada Curvada", series: "4", reps: "10", desc: "Incline a 45°, puxe a barra ao abdômen. Carga progressiva.", descanso: "90s" },
+  ],
+  ombros: [
+    { nome: "Desenvolvimento Militar", series: "4", reps: "8", desc: "Barra ou halteres pesados. Principal composto para deltoides.", descanso: "120s" },
+  ],
+  biceps: [
+    { nome: "Rosca Direta Barra", series: "4", reps: "10", desc: "Carga pesada, cotovelos fixos. Sem embalar.", descanso: "90s" },
+  ],
+  triceps: [
+    { nome: "Tríceps Testa", series: "4", reps: "10", desc: "Barra EZ, excêntrica lenta. Foco em cabeça longa.", descanso: "90s" },
+  ],
+};
+
 function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
   if (gender !== "masculino") return plan;
 
@@ -1339,9 +1363,8 @@ function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Leve
         ex.nome.toLowerCase().includes("supino") || ex.nome.toLowerCase().includes("desenvolvimento")
       );
       if (!hasCompound && level !== "iniciante") {
-        const chestPool = exerciseDB.peito?.[level] || [];
-        const compound = chestPool.find(ex => ex.nome.toLowerCase().includes("supino"));
-        if (compound) exercicios.unshift({ ...compound });
+        const priority = MALE_PRIORITY_EXERCISES.peito[0];
+        exercicios.unshift({ ...priority });
       }
     }
 
@@ -1351,13 +1374,28 @@ function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Leve
         ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa")
       );
       if (!hasCompound && level !== "iniciante") {
-        const backPool = exerciseDB.costas?.[level] || [];
-        const compound = backPool.find(ex => ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa"));
-        if (compound) exercicios.unshift({ ...compound });
+        const priority = MALE_PRIORITY_EXERCISES.costas[0];
+        exercicios.unshift({ ...priority });
       }
     }
 
-    return { ...day, exercicios };
+    // Ensure development on shoulder days
+    if (g.includes("ombro")) {
+      const hasDev = exercicios.some(ex => ex.nome.toLowerCase().includes("desenvolvimento"));
+      if (!hasDev && level !== "iniciante") {
+        exercicios.unshift({ ...MALE_PRIORITY_EXERCISES.ombros[0] });
+      }
+    }
+
+    // Adjust rest times for male style: longer rests for strength
+    const adjustedExercicios = exercicios.map(ex => {
+      const rest = ex.descanso;
+      if (rest === "60s" && day.intensidade === "pesado") return { ...ex, descanso: "90s" };
+      if (rest === "90s" && day.intensidade === "pesado") return { ...ex, descanso: "120s" };
+      return ex;
+    });
+
+    return { ...day, exercicios: adjustedExercicios };
   });
 }
 
