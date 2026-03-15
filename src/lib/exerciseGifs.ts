@@ -283,7 +283,6 @@ export const exerciseNameSearchMap: Record<string, string> = {
   "Tríceps Testa": "barbell lying triceps extension",
   "Tríceps Kickback": "dumbbell kickback",
   "Tríceps Overhead Cabo": "cable overhead triceps extension",
-  "Flexão Diamante": "diamond push up",
   "Mergulho Paralelas": "dips",
   "Mergulho Máquina": "machine dip",
   "Mergulho em Cadeiras": "bench dip",
