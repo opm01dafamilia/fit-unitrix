@@ -1,4 +1,4 @@
-import { X, Share2 } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect } from "react";
 
 interface FocusModeProps {
@@ -28,24 +28,36 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-      {/* Dark overlay */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-200">
+      {/* Dark overlay - optimized for print/story */}
       <div
-        className="absolute inset-0 bg-background/95 backdrop-blur-md"
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(145deg, hsl(225 18% 4% / 0.97), hsl(225 16% 6% / 0.97))",
+        }}
         onClick={onClose}
       />
 
-      {/* Content container */}
-      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+      {/* Content container - perfectly centered for screenshots */}
+      <div className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        style={{
+          /* Ensure perfect centering for print */
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+          className="absolute top-3 right-3 sm:right-0 z-20 w-9 h-9 rounded-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all print:hidden"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        {children}
+        <div className="w-full">
+          {children}
+        </div>
       </div>
     </div>
   );
