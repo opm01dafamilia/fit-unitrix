@@ -219,6 +219,7 @@ const App = () => (
               <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
               <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
               <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
+              <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
             </Route>
             <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
           </Routes>
