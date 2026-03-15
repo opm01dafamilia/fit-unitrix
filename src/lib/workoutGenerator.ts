@@ -584,18 +584,77 @@ function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number 
 export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
 export type IntensityLevel = "moderado" | "intenso";
 
-// Determine which days get cardio based on frequency and total training days
-// SMART: considers leg days, day intensity, and objective-specific cardio types
+// =====================================================
+// CARDIO INTELIGENTE — Personal Trainer Logic
+// Considers: frequency, objective, gender, leg days, intensity, recovery
+// =====================================================
+
+type CardioType = "leve" | "moderado" | "intenso";
+
+type CardioExerciseInfo = {
+  nome: string;
+  duracao: string;
+  tipo: CardioType;
+  desc: string;
+};
+
+// Cardio prescription by objective
+const cardioByObjective: Record<Objective, Record<CardioType, CardioExerciseInfo>> = {
+  emagrecer: {
+    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com 8-10% de inclinação, ritmo confortável. Queima calórica sem estresse muscular." },
+    moderado: { nome: "Corrida Intervalada", duracao: "20min", tipo: "moderado", desc: "Alterne 1min forte + 1min leve. Ótimo para déficit calórico e condicionamento." },
+    intenso: { nome: "HIIT Queima", duracao: "12min", tipo: "intenso", desc: "30s sprint máximo + 30s descanso. Alta queima calórica em pouco tempo." },
+  },
+  massa: {
+    leve: { nome: "Caminhada Leve", duracao: "10min", tipo: "leve", desc: "Caminhada em ritmo confortável. Mínimo impacto para não comprometer ganhos." },
+    moderado: { nome: "Bike Leve", duracao: "15min", tipo: "moderado", desc: "Pedalada em ritmo moderado. Condicionamento sem prejudicar hipertrofia." },
+    intenso: { nome: "Cardio Controlado", duracao: "12min", tipo: "intenso", desc: "Sessão curta e controlada. Apenas para condicionamento básico." },
+  },
+  condicionamento: {
+    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com inclinação, ritmo confortável. Recuperação ativa." },
+    moderado: { nome: "Corrida Progressiva", duracao: "20min", tipo: "moderado", desc: "Comece leve e aumente a cada 5min. Construção de resistência." },
+    intenso: { nome: "HIIT Cardio", duracao: "15min", tipo: "intenso", desc: "Circuito intenso: 40s esforço + 20s descanso. Máximo condicionamento." },
+  },
+};
+
+// Duration adjustments by level
+const cardioDurationMultiplier: Record<Level, number> = {
+  iniciante: 0.75,
+  intermediario: 1,
+  avancado: 1.25,
+};
+
 function applyCardioToWeek(
   plan: WorkoutDay[],
   cardioFreq: CardioFrequency,
-  level: Level
+  level: Level,
+  objective: Objective = "condicionamento",
+  gender?: UserGender
 ): WorkoutDay[] {
-  if (cardioFreq === "0") return plan;
+  if (cardioFreq === "0") {
+    // Even with "0", suggest optional light cardio on rest/mobility days
+    return plan.map(day => {
+      const g = day.grupo.toLowerCase();
+      const isRestDay = g.includes("mobilidade") || g.includes("recuperação") || g.includes("recuperacao");
+      if (!isRestDay) return day;
+      
+      const optionalCardio: Exercise = {
+        nome: "Caminhada Leve (Opcional)",
+        series: "1",
+        reps: "10min",
+        desc: "💡 Cardio opcional — caminhada leve para circulação e recuperação ativa.",
+        descanso: "—",
+      };
+      return {
+        ...day,
+        exercicios: [...day.exercicios, optionalCardio],
+      };
+    });
+  }
 
   const totalDays = plan.length;
   
-  // Determine how many days get cardio
+  // Determine target cardio sessions
   let cardioDays: number;
   switch (cardioFreq) {
     case "1-2": cardioDays = Math.min(2, totalDays); break;
@@ -605,104 +664,189 @@ function applyCardioToWeek(
   }
   if (cardioDays === 0) return plan;
 
-  // Duration by level
-  const durationMap: Record<Level, string> = {
-    iniciante: "12min",
-    intermediario: "20min",
-    avancado: "30min",
-  };
-  const lightDuration: Record<Level, string> = {
-    iniciante: "10min",
-    intermediario: "12min",
-    avancado: "15min",
-  };
-
   // Helper: is this a leg-heavy day?
   const isLegDay = (grupo: string) => {
     const g = grupo.toLowerCase();
-    return g.includes("perna") || g.includes("quadríceps") || g.includes("posterior") || g.includes("glúteo");
+    return g.includes("perna") || g.includes("quadríceps") || g.includes("quadriceps") ||
+           g.includes("posterior") || g.includes("glúteo") || g.includes("gluteo") ||
+           g.includes("gluteos") || g.includes("panturrilha");
   };
 
-  // Build cardio exercise pool per day
-  const cardioPool = exerciseDB.cardio?.[level] || exerciseDB.cardio?.intermediario || [];
-  const baseCardio = cardioPool[0];
-  if (!baseCardio) return plan;
+  // Helper: does this day already have cardio?
+  const hasExistingCardio = (day: WorkoutDay) => {
+    const g = day.grupo.toLowerCase();
+    return g.includes("cardio") || g.includes("hiit") ||
+      day.exercicios.some(e => {
+        const n = e.nome.toLowerCase();
+        return n.includes("cardio") || n.includes("corrida") || n.includes("caminhada") || n.includes("hiit") || n.includes("bike");
+      });
+  };
 
-  // For "daily", add light cardio to every day
+  // Get appropriate cardio for a specific day context
+  function getCardioForDay(
+    day: WorkoutDay,
+    isLeg: boolean,
+    objective: Objective,
+    level: Level,
+    allowIntense: boolean
+  ): CardioExerciseInfo {
+    const pool = cardioByObjective[objective];
+    const mult = cardioDurationMultiplier[level];
+
+    // Leg day → ALWAYS light cardio (protect recovery)
+    if (isLeg) {
+      const info = { ...pool.leve };
+      info.nome = "Caminhada Leve";
+      info.desc = "🦵 Cardio leve pós-treino de perna — baixo impacto para proteger recuperação muscular.";
+      const baseDur = parseInt(info.duracao);
+      info.duracao = `${Math.round(Math.min(baseDur, 12) * mult)}min`;
+      return info;
+    }
+
+    // Heavy intensity day → light or moderate cardio
+    if (day.intensidade === "pesado" && !allowIntense) {
+      const info = { ...pool.leve };
+      const baseDur = parseInt(info.duracao);
+      info.duracao = `${Math.round(baseDur * mult)}min`;
+      info.desc += " Intensidade reduzida por ser dia de treino pesado.";
+      return info;
+    }
+
+    // Hipertrofia objective → keep cardio controlled
+    if (objective === "massa") {
+      const info = { ...pool.leve };
+      const baseDur = parseInt(info.duracao);
+      info.duracao = `${Math.round(baseDur * mult)}min`;
+      return info;
+    }
+
+    // Emagrecimento → more intense cardio when possible
+    if (objective === "emagrecer" && allowIntense) {
+      const tipo = day.intensidade === "leve" ? "intenso" : "moderado";
+      const info = { ...pool[tipo as CardioType] };
+      const baseDur = parseInt(info.duracao);
+      info.duracao = `${Math.round(baseDur * mult)}min`;
+      return info;
+    }
+
+    // Default: moderate
+    const info = { ...pool.moderado };
+    const baseDur = parseInt(info.duracao);
+    info.duracao = `${Math.round(baseDur * mult)}min`;
+    return info;
+  }
+
+  // Female-specific cardio adjustments
+  function applyGenderCardio(cardio: CardioExerciseInfo, gender: UserGender, isLeg: boolean): CardioExerciseInfo {
+    if (!gender) return cardio;
+    
+    if (gender === "feminino" && !isLeg) {
+      // Females: cardio more frequent, moderate intensity preferred for metabolic benefit
+      return { ...cardio, desc: cardio.desc + " Adaptado para resistência e metabolismo." };
+    }
+    if (gender === "masculino" && objective === "massa") {
+      // Males in hypertrophy: minimize cardio impact
+      const dur = parseInt(cardio.duracao);
+      return { ...cardio, duracao: `${Math.max(8, dur - 3)}min`, desc: cardio.desc + " Duração reduzida para preservar massa muscular." };
+    }
+    return cardio;
+  }
+
+  // ===== DAILY cardio: light post-workout on every day =====
   if (cardioFreq === "daily") {
-    return plan.map(day => {
-      const hasCardio = day.exercicios.some(e => 
-        e.nome.toLowerCase().includes("cardio") || e.nome.toLowerCase().includes("corrida") || 
-        e.nome.toLowerCase().includes("caminhada") || e.nome.toLowerCase().includes("hiit cardio")
-      );
-      if (hasCardio) return day;
+    return plan.map((day, idx) => {
+      if (hasExistingCardio(day)) return day;
       
-      const legDay = isLegDay(day.grupo);
-      // Leg day or intense day: use light cardio
-      const dur = legDay || day.intensidade === "pesado" ? lightDuration[level] : durationMap[level];
-      const desc = legDay 
-        ? "Cardio leve pós-treino de perna — baixo impacto para não comprometer recuperação."
-        : "Cardio pós-treino para condicionamento e queima adicional.";
+      const isLeg = isLegDay(day.grupo);
+      let cardioInfo = getCardioForDay(day, isLeg, objective, level, false);
+      cardioInfo = applyGenderCardio(cardioInfo, gender, isLeg);
       
-      const lightCardioEx: Exercise = {
-        ...baseCardio,
-        nome: legDay ? "Caminhada Leve" : baseCardio.nome,
+      const cardioEx: Exercise = {
+        nome: cardioInfo.nome,
         series: "1",
-        reps: dur,
-        desc,
+        reps: cardioInfo.duracao,
+        desc: cardioInfo.desc,
         descanso: "—",
       };
       
-      // Reduce volume: remove last exercise if day has 5+ exercises
+      // If day has 5+ exercises, replace last to keep volume manageable
       const exercicios = day.exercicios.length >= 5
-        ? [...day.exercicios.slice(0, -1), lightCardioEx]
-        : [...day.exercicios, lightCardioEx];
-      return { ...day, exercicios };
+        ? [...day.exercicios.slice(0, -1), cardioEx]
+        : [...day.exercicios, cardioEx];
+      
+      return {
+        ...day,
+        grupo: day.grupo + ` + Cardio ${cardioInfo.tipo === "leve" ? "Leve" : cardioInfo.tipo === "moderado" ? "Moderado" : "Intenso"}`,
+        exercicios,
+      };
     });
   }
 
-  // For 1-2 or 3-4: pick specific days
-  // Never put intense cardio on leg days
-  const dayPriority = plan.map((day, idx) => ({
+  // ===== 1-2 or 3-4: pick optimal days =====
+  const dayAnalysis = plan.map((day, idx) => ({
     idx,
     intensity: day.intensidade || "moderado" as DayIntensity,
-    hasCardio: day.grupo.toLowerCase().includes("cardio") || day.grupo.toLowerCase().includes("hiit"),
+    hasCardio: hasExistingCardio(day),
     isLeg: isLegDay(day.grupo),
+    isRest: day.grupo.toLowerCase().includes("mobilidade") || day.grupo.toLowerCase().includes("recuperacao"),
   }));
 
-  // Sort by priority: prefer non-leg, non-heavy days
-  const sorted = [...dayPriority]
+  // Priority: rest days first, then non-leg light days, then non-leg moderate, then leg days last
+  const sorted = [...dayAnalysis]
     .filter(d => !d.hasCardio)
     .sort((a, b) => {
-      // Leg days go last
+      // Rest/mobility days → best for cardio
+      if (a.isRest && !b.isRest) return -1;
+      if (!a.isRest && b.isRest) return 1;
+      // Leg days → worst for cardio
       if (a.isLeg && !b.isLeg) return 1;
       if (!a.isLeg && b.isLeg) return -1;
+      // Lighter days preferred
       const order: Record<DayIntensity, number> = { leve: 0, moderado: 1, pesado: 2 };
       return (order[a.intensity] || 1) - (order[b.intensity] || 1);
     });
 
-  const indicesToAddCardio = sorted.slice(0, cardioDays).map(d => d.idx);
+  // Ensure spacing: try not to put cardio on consecutive days
+  const selectedIndices: number[] = [];
+  for (const candidate of sorted) {
+    if (selectedIndices.length >= cardioDays) break;
+    // Check if previous or next selected index is adjacent
+    const hasAdjacent = selectedIndices.some(si => Math.abs(si - candidate.idx) <= 1);
+    if (!hasAdjacent || selectedIndices.length >= sorted.length - 1) {
+      selectedIndices.push(candidate.idx);
+    }
+  }
+  // If we didn't fill enough, add remaining
+  for (const candidate of sorted) {
+    if (selectedIndices.length >= cardioDays) break;
+    if (!selectedIndices.includes(candidate.idx)) {
+      selectedIndices.push(candidate.idx);
+    }
+  }
 
   return plan.map((day, idx) => {
-    if (!indicesToAddCardio.includes(idx)) return day;
+    if (!selectedIndices.includes(idx)) return day;
     
-    const legDay = isLegDay(day.grupo);
-    const dur = legDay ? lightDuration[level] : (cardioFreq === "3-4" ? durationMap[level] : durationMap[level]);
-    
-    const cardioForDay: Exercise = {
-      ...baseCardio,
-      nome: legDay ? "Caminhada Leve" : baseCardio.nome,
+    const isLeg = isLegDay(day.grupo);
+    // For 3-4x, allow moderate/intense on non-leg days; for 1-2x, allow intense
+    const allowIntense = cardioFreq === "3-4" ? !isLeg : true;
+    let cardioInfo = getCardioForDay(day, isLeg, objective, level, allowIntense && !isLeg);
+    cardioInfo = applyGenderCardio(cardioInfo, gender, isLeg);
+
+    const cardioEx: Exercise = {
+      nome: cardioInfo.nome,
       series: "1",
-      reps: dur,
-      desc: legDay 
-        ? "Cardio leve — dia de perna, priorize recuperação."
-        : "Cardio dedicado para condicionamento cardiovascular.",
+      reps: cardioInfo.duracao,
+      desc: cardioInfo.desc,
       descanso: "—",
     };
+
+    const tipoLabel = cardioInfo.tipo === "leve" ? "Leve" : cardioInfo.tipo === "moderado" ? "Moderado" : "HIIT";
+    
     return {
       ...day,
-      grupo: day.grupo + " + Cardio",
-      exercicios: [...day.exercicios, cardioForDay],
+      grupo: day.grupo + ` + Cardio ${tipoLabel}`,
+      exercicios: [...day.exercicios, cardioEx],
     };
   });
 }
