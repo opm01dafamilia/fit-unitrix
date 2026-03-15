@@ -1786,14 +1786,24 @@ const Treino = () => {
               ))}
             </div>
 
-            {/* Start button */}
+            {/* Start button — only if this is today's workout */}
             <div className="px-5 pb-5 space-y-3">
-              <Button
-                onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { const idx = activePlanData.findIndex((d: any) => d.dia === focusDay.dia); startWorkout(activePlan, idx >= 0 ? idx : 0); } }}
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
-              >
-                <Play className="w-5 h-5 mr-2" /> Iniciar Treino
-              </Button>
+              {(() => {
+                const idx = activePlanData ? activePlanData.findIndex((d: any) => d.dia === focusDay.dia) : -1;
+                const canStartThis = idx >= 0 && canStartDay(idx);
+                return canStartThis ? (
+                  <Button
+                    onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, idx); } }}
+                    className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+                  >
+                    <Play className="w-5 h-5 mr-2" /> Iniciar Treino
+                  </Button>
+                ) : (
+                  <div className="w-full h-12 flex items-center justify-center text-sm text-muted-foreground font-medium rounded-lg bg-muted/30 border border-border/30">
+                    🔒 Disponível apenas no dia correspondente
+                  </div>
+                );
+              })()}
               <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
                 <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
                 <span className="text-[10px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
