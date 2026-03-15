@@ -1249,6 +1249,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
+      {/* ===== NEXT EXERCISE BUTTON (between GIF and muscles) ===== */}
+      {phase === "input" && currentExIndex < totalExercises - 1 && currentSets.length > 0 && (
+        <Button onClick={goNext} className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+          Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
+        </Button>
+      )}
+
       {/* ===== MUSCLE BODY MAP ===== */}
       <div className={`glass-card p-4 transition-opacity duration-200 ${swapFading ? 'opacity-30' : 'opacity-100'}`}>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">

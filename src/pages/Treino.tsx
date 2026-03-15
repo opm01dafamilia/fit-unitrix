@@ -1770,18 +1770,14 @@ const Treino = () => {
             </div>
 
             {/* Stats bar */}
-            <div className="grid grid-cols-3 gap-0 border-y border-border/30">
+            <div className="grid grid-cols-2 gap-0 border-y border-border/30">
               <div className="p-3 text-center border-r border-border/20">
                 <p className="text-base font-display font-bold text-primary">{focusDay.exercicios.length}</p>
                 <p className="text-[10px] text-muted-foreground">Exercícios</p>
               </div>
-              <div className="p-3 text-center border-r border-border/20">
+              <div className="p-3 text-center">
                 <p className="text-base font-display font-bold text-chart-2">~{focusDay.exercicios.length * 5}min</p>
                 <p className="text-[10px] text-muted-foreground">Duração</p>
-              </div>
-              <div className="p-3 text-center">
-                <p className="text-base font-display font-bold text-chart-3">{focusDay.exercicios.reduce((a: number, ex: any) => a + (ex.series || 3), 0)}</p>
-                <p className="text-[10px] text-muted-foreground">Séries</p>
               </div>
             </div>
 

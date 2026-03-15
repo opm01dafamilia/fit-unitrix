@@ -231,7 +231,7 @@ const DietFocusMode = ({
       {/* Card container */}
       <div
         ref={cardRef}
-        className={`relative z-20 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto rounded-2xl animate-in zoom-in-95 duration-300 ${
+        className={`relative z-20 w-full max-w-md mx-4 max-h-[90vh] overflow-hidden rounded-2xl animate-in zoom-in-95 duration-300 ${
           slideDirection === "left" ? "animate-in slide-in-from-right-4 duration-300" :
           slideDirection === "right" ? "animate-in slide-in-from-left-4 duration-300" : ""
         }`}

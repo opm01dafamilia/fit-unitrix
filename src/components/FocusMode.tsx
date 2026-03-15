@@ -39,12 +39,14 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
       />
 
       {/* Content container - perfectly centered for screenshots */}
-      <div className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+      <div className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         style={{
-          /* Ensure perfect centering for print */
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
+          maxHeight: "95vh",
+          overflow: "hidden",
         }}
       >
         {/* Close button */}
