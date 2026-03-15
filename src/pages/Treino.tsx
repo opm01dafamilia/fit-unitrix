@@ -1434,33 +1434,34 @@ const Treino = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activePlanData.map((day: any, i: number) => {
-                  const isNext = i === nextDayIndex;
+                  const isTodays = i === todayDayIndex;
                   const isCompleted = sessions.some(s =>
                     s.workout_plan_id === activePlan.id &&
                     s.day_index === i &&
                     format(new Date(s.completed_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
                   );
+                  const canStart = canStartDay(i);
                   return (
                     <div
                       key={i}
-                      className={`relative overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer group rounded-xl ${
-                        isNext
+                      className={`relative overflow-hidden transition-all duration-300 group rounded-xl ${
+                        isTodays
                           ? "border-2 border-primary/30 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.2)]"
                           : isCompleted
                           ? "border-2 border-green-500/25"
                           : "border border-border/50"
                       }`}
                       style={{
-                        background: isNext
+                        background: isTodays
                           ? 'linear-gradient(145deg, hsl(225 16% 13% / 0.98), hsl(225 16% 9% / 0.98))'
                           : 'linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95))',
-                        boxShadow: isNext
+                        boxShadow: isTodays
                           ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
                           : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
-                        opacity: todayCompleted && !isCompleted ? 0.6 : 1,
-                        cursor: todayCompleted ? 'default' : 'pointer',
+                        opacity: !isTodays && !isCompleted ? 0.6 : 1,
+                        cursor: canStart ? 'pointer' : 'default',
                       }}
-                      onClick={() => !todayCompleted && startWorkout(activePlan, i)}
+                      onClick={() => canStart && startWorkout(activePlan, i)}
                     >
                       {isNext && (
                         <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
