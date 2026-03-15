@@ -19,8 +19,8 @@ import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, checkInactivityNotification, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
-import FitnessScoreCard from "@/components/FitnessScoreCard";
-import CommunityScoreCard from "@/components/CommunityScoreCard";
+
+
 import { detectPlateau, type PlateauInput } from "@/lib/plateauDetectionEngine";
 import PlateauAlertCard from "@/components/PlateauAlertCard";
 import { analyzeReplanning } from "@/lib/smartReplanningEngine";
