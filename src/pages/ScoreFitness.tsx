@@ -20,60 +20,78 @@ const ScoreFitness = () => {
         const now = new Date();
         const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
         const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
-        const thirtyDaysAgo = format(subDays(now, 30), "yyyy-MM-dd");
+        const sevenDaysAgo = format(subDays(now, 7), "yyyy-MM-dd");
 
-        const [sessionsRes, dietRes, bodyRes, goalsRes] = await Promise.all([
-          supabase.from("workout_sessions").select("*").eq("user_id", user.id).gte("completed_at", thirtyDaysAgo),
-          supabase.from("diet_tracking").select("*").eq("user_id", user.id).gte("tracked_date", thirtyDaysAgo),
+        const [sessionsWeekRes, sessionsAllRes, dietWeekRes, bodyRes, goalsRes, challengesRes] = await Promise.all([
+          supabase.from("workout_sessions").select("*").eq("user_id", user.id).gte("completed_at", weekStart).lte("completed_at", weekEnd + "T23:59:59"),
+          supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
+          supabase.from("diet_tracking").select("*").eq("user_id", user.id).gte("tracked_date", weekStart).lte("tracked_date", weekEnd),
           supabase.from("body_tracking").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
           supabase.from("fitness_goals").select("*").eq("user_id", user.id).eq("status", "active"),
+          supabase.from("user_challenge_progress").select("*").eq("user_id", user.id).eq("completed", true),
         ]);
 
-        const sessions = sessionsRes.data || [];
-        const dietDays = dietRes.data || [];
+        const sessionsWeek = sessionsWeekRes.data || [];
+        const sessionsAll = sessionsAllRes.data || [];
+        const dietWeek = dietWeekRes.data || [];
         const bodyEntries = bodyRes.data || [];
         const goals = goalsRes.data || [];
+        const challenges = challengesRes.data || [];
 
-        // Calculate workout frequency (weekly avg over last 30 days)
-        const uniqueDays = new Set(sessions.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")));
-        const weeklyFreq = Math.round((uniqueDays.size / 4.3) * 10) / 10;
-
-        // Calculate streak
-        const sortedDays = [...uniqueDays].sort().reverse();
+        // Workout streak
+        const uniqueDays = [...new Set(sessionsAll.map(s => format(new Date(s.completed_at), "yyyy-MM-dd")))].sort().reverse();
         let streak = 0;
         const today = format(now, "yyyy-MM-dd");
         const yesterday = format(subDays(now, 1), "yyyy-MM-dd");
-        if (sortedDays[0] === today || sortedDays[0] === yesterday) {
-          for (let i = 0; i < sortedDays.length; i++) {
-            const expected = format(subDays(now, i + (sortedDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
-            if (sortedDays[i] === expected) streak++;
+        if (uniqueDays[0] === today || uniqueDays[0] === yesterday) {
+          for (let i = 0; i < uniqueDays.length; i++) {
+            const expected = format(subDays(now, i + (uniqueDays[0] === today ? 0 : 1)), "yyyy-MM-dd");
+            if (uniqueDays[i] === expected) streak++;
             else break;
           }
         }
 
-        // Diet adherence
-        const dietAdherence = dietDays.length > 0
-          ? Math.round(dietDays.reduce((a, d) => a + Number(d.adherence_pct || 0), 0) / dietDays.length)
-          : 0;
-
-        // Diet streak
-        const dietDaysSorted = dietDays.filter(d => d.all_completed).map(d => d.tracked_date).sort().reverse();
-        let dietStreak = 0;
-        for (let i = 0; i < dietDaysSorted.length; i++) {
-          const expected = format(subDays(now, i + 1), "yyyy-MM-dd");
-          if (dietDaysSorted[i] === expected) dietStreak++;
+        // Weeks consecutively active
+        let weeksActive = 0;
+        for (let w = 0; w < 8; w++) {
+          const ws = format(subDays(startOfWeek(now, { weekStartsOn: 1 }), w * 7), "yyyy-MM-dd");
+          const we = format(subDays(endOfWeek(now, { weekStartsOn: 1 }), w * 7), "yyyy-MM-dd");
+          const hasSession = sessionsAll.some(s => {
+            const d = format(new Date(s.completed_at), "yyyy-MM-dd");
+            return d >= ws && d <= we;
+          });
+          if (hasSession) weeksActive++;
           else break;
         }
 
+        // Diet
+        const mealsCompleted = dietWeek.reduce((a, d) => a + (d.meals_done || 0), 0);
+        const mealsTotal = dietWeek.reduce((a, d) => a + (d.meals_total || 0), 0);
+        const consecutiveFailures = dietWeek.filter(d => !d.all_completed).length;
+
+        // Days active this week
+        const daysActive = new Set(sessionsWeek.map(s => format(new Date(s.completed_at), "yyyy-MM-dd"))).size;
+
+        // Body tracking
+        const hasRecentBody = bodyEntries.length > 0 && 
+          format(new Date(bodyEntries[0].created_at), "yyyy-MM-dd") >= sevenDaysAgo;
+
         const input: FitnessScoreInput = {
-          workoutFrequency: weeklyFreq,
+          workoutsThisWeek: sessionsWeek.length,
+          targetWorkoutsPerWeek: 5,
           workoutStreak: streak,
-          dietAdherence,
-          dietStreak,
-          bodyTrackingEntries: bodyEntries.length,
-          goalsActive: goals.length,
-          goalsCompleted: goals.filter(g => (g as any).status === "completed").length,
-          communityEngagement: 0,
+          totalWorkouts: sessionsAll.length,
+          mealsCompletedThisWeek: mealsCompleted,
+          mealsTotalThisWeek: mealsTotal || 1,
+          consecutiveDietFailures: consecutiveFailures,
+          hasRecentBodyRecord: hasRecentBody,
+          bodyProgressDirection: "unknown",
+          activeGoalsCount: goals.length,
+          goalsOnTrack: goals.filter(g => (Number(g.current_value) / Number(g.target_value)) >= 0.5).length,
+          challengesCompletedThisWeek: challenges.length,
+          invitesSent: 0,
+          daysActiveThisWeek: daysActive,
+          weeksConsecutivelyActive: weeksActive,
         };
         setScoreInput(input);
       } catch (e) {
@@ -114,12 +132,7 @@ const ScoreFitness = () => {
       {scoreResult && (
         <>
           <FitnessScoreCard result={scoreResult} />
-          <CommunityScoreCard
-            userScore={scoreResult.score}
-            userTier={scoreResult.tier}
-            city={profile?.city || undefined}
-            experienceLevel={profile?.experience_level || undefined}
-          />
+          <CommunityScoreCard userScore={scoreResult.score} />
         </>
       )}
 
