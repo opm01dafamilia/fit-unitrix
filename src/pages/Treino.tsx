@@ -53,6 +53,7 @@ const Treino = () => {
   const [foco, setFoco] = useState<BodyFocus>("completo");
   const [cardioFreq, setCardioFreq] = useState<CardioFrequency>("0");
   const [intensityLevel, setIntensityLevel] = useState<IntensityLevel>("intenso");
+  const [selectedGender, setSelectedGender] = useState<string>("");
   const [preferredExercises, setPreferredExercises] = useState<string[]>([]);
   const [preferenceText, setPreferenceText] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
