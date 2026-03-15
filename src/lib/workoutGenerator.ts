@@ -1299,7 +1299,7 @@ export function generateWorkoutPlan(
 
   // Post-processing pipeline
   plan = applyIntensityLevel(plan, intensityLevel);
-  plan = applyCardioToWeek(plan, cardioFreq, level);
+  plan = applyCardioToWeek(plan, cardioFreq, level, objective, gender);
   plan = enrichFemaleExercises(plan, gender, level);
   plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
