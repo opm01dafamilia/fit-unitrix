@@ -650,26 +650,16 @@ const Treino = () => {
             </RadioGroup>
           </div>
 
-          {/* Gender selector */}
-          <div className="mb-5">
-            <label className="text-xs font-medium text-muted-foreground mb-3 block flex items-center gap-1.5">
-              Sexo Biológico
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Personaliza seu treino</span>
-            </label>
-            <RadioGroup value={selectedGender} onValueChange={setSelectedGender} className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="masculino" id="gender-m" />
-                <Label htmlFor="gender-m" className="text-sm cursor-pointer">Masculino</Label>
+          {/* Gender notice */}
+          {!profile?.gender && (
+            <div className="mb-5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-amber-300">Sexo não definido</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Defina seu sexo no <button onClick={() => navigate("/perfil-fitness")} className="text-primary underline">Perfil Fitness</button> para gerar um treino personalizado.</p>
               </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="feminino" id="gender-f" />
-                <Label htmlFor="gender-f" className="text-sm cursor-pointer">Feminino</Label>
-              </div>
-            </RadioGroup>
-            <p className="text-[10px] text-muted-foreground mt-1.5 italic">
-              💡 O treino será adaptado com exercícios e distribuição muscular otimizados para seu perfil corporal.
-            </p>
-          </div>
+            </div>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4 mb-5">
             <div>
