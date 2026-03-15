@@ -413,9 +413,9 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   }, [phase, restPaused, playRestDoneAlert]);
 
   function parseRestTime(descanso: string): number {
-    if (!descanso || descanso === "—") return 60;
+  if (!descanso || descanso === "—") return 50;
     const match = descanso.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 60;
+    return match ? parseInt(match[1]) : 50;
   }
 
   function formatTime(s: number): string {
@@ -1248,6 +1248,13 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
         </div>
       </div>
+
+      {/* ===== NEXT EXERCISE BUTTON (between GIF and muscles) ===== */}
+      {phase === "input" && currentExIndex < totalExercises - 1 && currentSets.length > 0 && (
+        <Button onClick={goNext} className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+          Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
+        </Button>
+      )}
 
       {/* ===== MUSCLE BODY MAP ===== */}
       <div className={`glass-card p-4 transition-opacity duration-200 ${swapFading ? 'opacity-30' : 'opacity-100'}`}>
