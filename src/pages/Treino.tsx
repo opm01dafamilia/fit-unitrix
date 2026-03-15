@@ -642,7 +642,28 @@ const Treino = () => {
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="inferior" id="foco-inferior" />
                 <Label htmlFor="foco-inferior" className="text-sm cursor-pointer">Corpo Inferior</Label>
+          </div>
+
+          {/* Gender selector */}
+          <div className="mb-5">
+            <label className="text-xs font-medium text-muted-foreground mb-3 block flex items-center gap-1.5">
+              Sexo Biológico
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Personaliza seu treino</span>
+            </label>
+            <RadioGroup value={selectedGender} onValueChange={setSelectedGender} className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="masculino" id="gender-m" />
+                <Label htmlFor="gender-m" className="text-sm cursor-pointer">Masculino</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="feminino" id="gender-f" />
+                <Label htmlFor="gender-f" className="text-sm cursor-pointer">Feminino</Label>
+              </div>
+            </RadioGroup>
+            <p className="text-[10px] text-muted-foreground mt-1.5 italic">
+              💡 O treino será adaptado com exercícios e distribuição muscular otimizados para seu perfil corporal.
+            </p>
+          </div>
             </RadioGroup>
           </div>
 
