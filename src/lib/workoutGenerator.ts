@@ -87,7 +87,6 @@ const exerciseDB: Record<string, Record<string, Exercise[]>> = {
       { nome: "Panturrilha Sentado", series: "5", reps: "15", desc: "Amplitude máxima, controle total.", descanso: "45s" },
     ],
   },
-  // Sub-grupos de pernas para foco inferior com variação
   quadriceps: {
     iniciante: [
       { nome: "Leg Press", series: "3", reps: "12", desc: "Pés na largura dos ombros, foco em empurrar com os calcanhares.", descanso: "60s" },
@@ -291,34 +290,20 @@ type Objective = "emagrecer" | "massa" | "condicionamento";
 type Level = "iniciante" | "intermediario" | "avancado";
 export type BodyFocus = "superior" | "inferior" | "completo";
 
-// Each 7-day entry uses intensity metadata
 type SplitEntry = string[];
 type SplitEntry7 = { groups: string[]; intensity: DayIntensity };
 
-// =====================================================
-// SPLIT TEMPLATES — CORPO COMPLETO (default)
-// REGRA: alternância estrita SUPERIOR → INFERIOR → SUPERIOR
-// Nunca repetir mesma região em dias consecutivos
-// =====================================================
 const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
   emagrecer: {
-    // 3d: Superior → Inferior → Superior (com cardio/HIIT integrado)
     3: [["peito", "costas", "hiit"], ["quadriceps", "panturrilha", "cardio"], ["ombros", "triceps", "biceps", "hiit"]],
-    // 4d: Superior → Inferior → Superior → Inferior
     4: [["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "gluteos", "cardio"]],
-    // 5d: Superior → Inferior → Cardio/Core → Inferior(diff) → Superior(diff)
     5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["hiit", "abdomen", "cardio"], ["posterior", "gluteos"], ["costas", "biceps", "ombros"]],
-    // 6d: Sup → Inf → Sup → Inf → Sup → Cardio
     6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"], ["hiit", "cardio"]],
   },
   massa: {
-    // 3d: Superior → Inferior → Superior
     3: [["peito", "triceps"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
-    // 4d: Sup → Inf → Sup → Inf
     4: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos", "abdomen"]],
-    // 5d: Sup → Inf → Sup → Inf → Sup
     5: [["peito", "ombros"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["triceps", "ombros", "abdomen"]],
-    // 6d: Sup → Inf → Sup → Inf → Sup → Inf(leve)
     6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"], ["pernas", "panturrilha"]],
   },
   condicionamento: {
@@ -331,51 +316,41 @@ const splitTemplates: Record<Objective, Record<number, SplitEntry[]>> = {
 
 const splitTemplates7: Record<Objective, SplitEntry7[]> = {
   emagrecer: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },        // Seg: Superior
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" }, // Ter: Inferior
-    { groups: ["hiit", "abdomen"], intensity: "moderado" },        // Qua: Cardio/Core
-    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
-    { groups: ["costas", "biceps", "ombros"], intensity: "pesado" }, // Sex: Superior (diff)
-    { groups: ["hiit", "cardio"], intensity: "moderado" },          // Sab: Cardio
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Dom: Descanso
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["hiit", "abdomen"], intensity: "moderado" },
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },
+    { groups: ["costas", "biceps", "ombros"], intensity: "pesado" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
   ],
   massa: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },          // Seg: Superior
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" }, // Ter: Inferior
-    { groups: ["costas", "biceps"], intensity: "pesado" },          // Qua: Superior (diff)
-    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
-    { groups: ["ombros", "abdomen"], intensity: "moderado" },       // Sex: Superior (leve)
-    { groups: ["pernas", "panturrilha"], intensity: "moderado" },   // Sab: Inferior (leve)
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Dom: Descanso
+    { groups: ["peito", "triceps"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+    { groups: ["costas", "biceps"], intensity: "pesado" },
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },
+    { groups: ["ombros", "abdomen"], intensity: "moderado" },
+    { groups: ["pernas", "panturrilha"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
   ],
   condicionamento: [
-    { groups: ["hiit", "peito"], intensity: "pesado" },             // Seg: Superior
-    { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" }, // Ter: Inferior
-    { groups: ["costas", "hiit"], intensity: "pesado" },            // Qua: Superior (diff)
-    { groups: ["posterior", "gluteos"], intensity: "pesado" },      // Qui: Inferior (diff)
-    { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" }, // Sex: Superior
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },   // Sab: Descanso
-    { groups: ["hiit", "cardio"], intensity: "moderado" },          // Dom: Cardio ativo
+    { groups: ["hiit", "peito"], intensity: "pesado" },
+    { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" },
+    { groups: ["costas", "hiit"], intensity: "pesado" },
+    { groups: ["posterior", "gluteos"], intensity: "pesado" },
+    { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
+    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+    { groups: ["hiit", "cardio"], intensity: "moderado" },
   ],
 };
 
-// =====================================================
-// SPLIT TEMPLATES — FOCO SUPERIOR
-// Prioriza peito, costas, ombros, braços
-// Mantém estímulo leve/moderado de inferiores para equilíbrio
-// Alterna empurrar/puxar
-// =====================================================
-// =====================================================
-// SPLIT TEMPLATES — FOCO SUPERIOR
-// Mais dias de superior, mas NUNCA consecutivos sem buffer inferior/cardio
-// =====================================================
 const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, SplitEntry[]>>> = {
   superior: {
     emagrecer: {
       3: [["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "ombros"]],
-      4: [["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["ombros", "abdomen", "cardio"]],
-      5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "gluteos"], ["ombros", "abdomen", "cardio"]],
-      6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen"], ["cardio", "hiit"]],
+      4: [["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["ombros", "abdomen"]],
+      5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "gluteos"], ["ombros", "abdomen"]],
+      6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros", "abdomen"], ["cardio", "hiit"]],
     },
     massa: {
       3: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "ombros"]],
@@ -384,30 +359,30 @@ const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, Sp
       6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "gluteos"], ["ombros"], ["peito", "costas", "abdomen"]],
     },
     condicionamento: {
-      3: [["hiit", "peito", "costas"], ["quadriceps", "panturrilha", "cardio"], ["ombros", "triceps", "biceps"]],
-      4: [["hiit", "peito", "triceps"], ["quadriceps", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "ombros", "cardio"]],
-      5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen", "cardio"]],
-      6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "gluteos", "cardio"], ["ombros", "triceps"], ["hiit", "cardio"]],
+      3: [["hiit", "peito", "costas"], ["quadriceps", "panturrilha"], ["ombros", "triceps", "biceps"]],
+      4: [["hiit", "peito", "triceps"], ["quadriceps", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "gluteos", "cardio"]],
+      5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "cardio"], ["posterior", "gluteos", "hiit"], ["ombros", "abdomen", "cardio"]],
+      6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "gluteos", "cardio"], ["ombros", "abdomen"], ["hiit", "cardio"]],
     },
   },
   inferior: {
     emagrecer: {
       3: [["quadriceps", "panturrilha", "hiit"], ["peito", "costas", "cardio"], ["posterior", "gluteos", "abdomen"]],
       4: [["quadriceps", "panturrilha", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "abdomen"]],
-      5: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps", "cardio"], ["pernas", "abdomen"]],
-      6: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen", "cardio"], ["ombros", "hiit"]],
+      5: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"]],
+      6: [["quadriceps", "panturrilha"], ["peito", "triceps", "hiit"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"], ["pernas", "abdomen", "cardio"]],
     },
     massa: {
       3: [["quadriceps", "panturrilha"], ["peito", "costas", "ombros"], ["posterior", "gluteos"]],
       4: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"]],
-      5: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen"]],
-      6: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps"], ["pernas", "abdomen"], ["ombros", "panturrilha"]],
+      5: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"]],
+      6: [["quadriceps", "panturrilha"], ["peito", "triceps"], ["posterior", "gluteos"], ["costas", "biceps", "abdomen"]],
     },
     condicionamento: {
       3: [["quadriceps", "hiit", "panturrilha"], ["peito", "costas", "cardio"], ["posterior", "gluteos", "hiit"]],
       4: [["quadriceps", "hiit"], ["peito", "triceps", "cardio"], ["posterior", "gluteos", "hiit"], ["costas", "ombros", "cardio"]],
       5: [["quadriceps", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "hiit"], ["pernas", "abdomen", "cardio"]],
-      6: [["quadriceps", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "hiit"], ["pernas", "abdomen"], ["ombros", "cardio"]],
+      6: [["quadriceps", "hiit"], ["peito", "triceps"], ["posterior", "gluteos", "cardio"], ["costas", "biceps", "hiit"], ["pernas", "abdomen", "cardio"]],
     },
   },
   completo: {
@@ -417,9 +392,6 @@ const focusSplitTemplates: Record<BodyFocus, Record<Objective, Record<number, Sp
   },
 };
 
-// =====================================================
-// 7-DAY FOCUS OVERRIDES — strict alternation
-// =====================================================
 const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> = {
   superior: {
     emagrecer: [
@@ -427,978 +399,52 @@ const focusSplitTemplates7: Record<BodyFocus, Record<Objective, SplitEntry7[]>> 
       { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
       { groups: ["costas", "biceps"], intensity: "pesado" },
       { groups: ["posterior", "gluteos"], intensity: "moderado" },
-      { groups: ["ombros", "hiit"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
+      { groups: ["hiit", "cardio"], intensity: "leve" },
     ],
     massa: [
       { groups: ["peito", "triceps"], intensity: "pesado" },
-      { groups: ["quadriceps", "panturrilha"], intensity: "moderado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
       { groups: ["costas", "biceps"], intensity: "pesado" },
       { groups: ["posterior", "gluteos"], intensity: "moderado" },
-      { groups: ["ombros"], intensity: "pesado" },
-      { groups: ["peito", "costas", "abdomen"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
+      { groups: ["hiit", "cardio"], intensity: "leve" },
     ],
     condicionamento: [
       { groups: ["hiit", "peito"], intensity: "pesado" },
-      { groups: ["quadriceps", "cardio"], intensity: "moderado" },
-      { groups: ["costas", "hiit"], intensity: "pesado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+      { groups: ["costas", "biceps"], intensity: "pesado" },
       { groups: ["posterior", "gluteos"], intensity: "moderado" },
-      { groups: ["ombros", "triceps", "hiit"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
+      { groups: ["hiit", "cardio"], intensity: "leve" },
     ],
   },
   inferior: {
     emagrecer: [
       { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-      { groups: ["peito", "triceps", "hiit"], intensity: "moderado" },
+      { groups: ["peito", "costas"], intensity: "moderado" },
       { groups: ["posterior", "gluteos"], intensity: "pesado" },
-      { groups: ["costas", "biceps"], intensity: "moderado" },
-      { groups: ["pernas", "hiit"], intensity: "pesado" },
-      { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
     ],
     massa: [
       { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
       { groups: ["peito", "costas"], intensity: "moderado" },
       { groups: ["posterior", "gluteos"], intensity: "pesado" },
       { groups: ["ombros", "abdomen"], intensity: "moderado" },
-      { groups: ["pernas"], intensity: "pesado" },
-      { groups: ["panturrilha", "gluteos"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
     ],
     condicionamento: [
-      { groups: ["quadriceps", "hiit"], intensity: "pesado" },
-      { groups: ["peito", "costas", "cardio"], intensity: "moderado" },
+      { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
+      { groups: ["peito", "costas"], intensity: "moderado" },
       { groups: ["posterior", "gluteos"], intensity: "pesado" },
-      { groups: ["ombros", "abdomen", "cardio"], intensity: "moderado" },
-      { groups: ["pernas", "hiit"], intensity: "pesado" },
-      { groups: ["cardio", "abdomen"], intensity: "moderado" },
-      { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
+      { groups: ["ombros", "abdomen"], intensity: "moderado" },
     ],
   },
   completo: splitTemplates7,
 };
 
-const groupLabels: Record<string, string> = {
-  peito: "Peito", costas: "Costas", pernas: "Pernas", ombros: "Ombros",
-  biceps: "Bíceps", triceps: "Tríceps", abdomen: "Abdômen",
-  hiit: "HIIT", cardio: "Cardio", mobilidade: "Mobilidade", recuperacao: "Recuperação",
-  quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
-};
-
 // =====================================================
-// ROTATION & VARIATION ENGINE
+// MAIN GENERATOR
 // =====================================================
-
-// Deterministic shuffle based on a seed (day index + group) for consistency per plan
-function shuffleArray<T>(arr: T[], seed: number): T[] {
-  const result = [...arr];
-  let s = seed;
-  for (let i = result.length - 1; i > 0; i--) {
-    s = (s * 1664525 + 1013904223) & 0x7fffffff;
-    const j = s % (i + 1);
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-// Select a varied subset from pool, ensuring rotation across days
-// dayIndex shifts which exercises are picked, so consecutive days with same group get different exercises
-// preferredNames: exercises the user prefers — they get priority but don't dominate
-function selectExercises(
-  pool: Exercise[],
-  dayIndex: number,
-  maxCount: number,
-  usedNames: Set<string>,
-  preferredNames?: Set<string>
-): Exercise[] {
-  if (pool.length === 0) return [];
-  
-  // Shuffle pool deterministically based on day index
-  const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
-  
-  // Separate preferred vs non-preferred
-  const isPreferred = (ex: Exercise) => {
-    if (!preferredNames || preferredNames.size === 0) return false;
-    const nameLower = ex.nome.toLowerCase();
-    for (const pref of preferredNames) {
-      if (nameLower.includes(pref.toLowerCase()) || pref.toLowerCase().includes(nameLower)) return true;
-    }
-    return false;
-  };
-
-  const preferred = shuffled.filter(ex => isPreferred(ex) && !usedNames.has(ex.nome));
-  const nonPreferred = shuffled.filter(ex => !isPreferred(ex) && !usedNames.has(ex.nome));
-  
-  // Rule: preferred can fill at most ~50% of slots to avoid domination
-  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.5));
-  
-  const selected: Exercise[] = [];
-  
-  // First: add preferred exercises (capped)
-  for (const ex of preferred) {
-    if (selected.length >= maxPreferred) break;
-    selected.push(ex);
-  }
-  
-  // Then: fill with non-preferred
-  for (const ex of nonPreferred) {
-    if (selected.length >= maxCount) break;
-    selected.push(ex);
-  }
-  
-  // Fill remaining from any unused if needed
-  for (const ex of shuffled) {
-    if (selected.length >= maxCount) break;
-    if (!selected.includes(ex)) {
-      selected.push(ex);
-    }
-  }
-  
-  return selected;
-}
-
-// Adjust rest times based on day intensity
-function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Exercise {
-  const restMap: Record<DayIntensity, Record<string, string>> = {
-    pesado: { "30s": "60s", "45s": "90s", "60s": "90s", "90s": "120s", "120s": "180s" },
-    moderado: { "120s": "90s", "180s": "120s", "90s": "75s" },
-    leve: { "90s": "60s", "120s": "60s", "180s": "90s", "60s": "45s", "45s": "30s" },
-  };
-  const mapping = restMap[intensity];
-  const newDescanso = mapping?.[exercise.descanso] || exercise.descanso;
-  return { ...exercise, descanso: newDescanso };
-}
-
-// Max exercises per muscle group per day, varies by intensity
-function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
-  const base = level === "avancado" ? 4 : level === "intermediario" ? 3 : 2;
-  if (intensity === "leve") return Math.max(1, base - 1);
-  if (intensity === "moderado") return base;
-  return base + 1; // pesado: allow more
-}
-
-export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
-export type IntensityLevel = "moderado" | "intenso";
-
-// =====================================================
-// CARDIO INTELIGENTE — Personal Trainer Logic
-// Considers: frequency, objective, gender, leg days, intensity, recovery
-// =====================================================
-
-type CardioType = "leve" | "moderado" | "intenso";
-
-type CardioExerciseInfo = {
-  nome: string;
-  duracao: string;
-  tipo: CardioType;
-  desc: string;
-};
-
-// Cardio prescription by objective
-const cardioByObjective: Record<Objective, Record<CardioType, CardioExerciseInfo>> = {
-  emagrecer: {
-    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com 8-10% de inclinação, ritmo confortável. Queima calórica sem estresse muscular." },
-    moderado: { nome: "Corrida Intervalada", duracao: "20min", tipo: "moderado", desc: "Alterne 1min forte + 1min leve. Ótimo para déficit calórico e condicionamento." },
-    intenso: { nome: "HIIT Queima", duracao: "12min", tipo: "intenso", desc: "30s sprint máximo + 30s descanso. Alta queima calórica em pouco tempo." },
-  },
-  massa: {
-    leve: { nome: "Caminhada Leve", duracao: "10min", tipo: "leve", desc: "Caminhada em ritmo confortável. Mínimo impacto para não comprometer ganhos." },
-    moderado: { nome: "Bike Leve", duracao: "15min", tipo: "moderado", desc: "Pedalada em ritmo moderado. Condicionamento sem prejudicar hipertrofia." },
-    intenso: { nome: "Cardio Controlado", duracao: "12min", tipo: "intenso", desc: "Sessão curta e controlada. Apenas para condicionamento básico." },
-  },
-  condicionamento: {
-    leve: { nome: "Caminhada Inclinada", duracao: "15min", tipo: "leve", desc: "Esteira com inclinação, ritmo confortável. Recuperação ativa." },
-    moderado: { nome: "Corrida Progressiva", duracao: "20min", tipo: "moderado", desc: "Comece leve e aumente a cada 5min. Construção de resistência." },
-    intenso: { nome: "HIIT Cardio", duracao: "15min", tipo: "intenso", desc: "Circuito intenso: 40s esforço + 20s descanso. Máximo condicionamento." },
-  },
-};
-
-// Duration adjustments by level
-const cardioDurationMultiplier: Record<Level, number> = {
-  iniciante: 0.75,
-  intermediario: 1,
-  avancado: 1.25,
-};
-
-function applyCardioToWeek(
-  plan: WorkoutDay[],
-  cardioFreq: CardioFrequency,
-  level: Level,
-  objective: Objective = "condicionamento",
-  gender?: UserGender
-): WorkoutDay[] {
-  if (cardioFreq === "0") {
-    // Even with "0", suggest optional light cardio on rest/mobility days
-    return plan.map(day => {
-      const g = day.grupo.toLowerCase();
-      const isRestDay = g.includes("mobilidade") || g.includes("recuperação") || g.includes("recuperacao");
-      if (!isRestDay) return day;
-      
-      const optionalCardio: Exercise = {
-        nome: "Caminhada Leve (Opcional)",
-        series: "1",
-        reps: "10min",
-        desc: "💡 Cardio opcional — caminhada leve para circulação e recuperação ativa.",
-        descanso: "—",
-      };
-      return {
-        ...day,
-        exercicios: [...day.exercicios, optionalCardio],
-      };
-    });
-  }
-
-  const totalDays = plan.length;
-  
-  // Determine target cardio sessions
-  let cardioDays: number;
-  switch (cardioFreq) {
-    case "1-2": cardioDays = Math.min(2, totalDays); break;
-    case "3-4": cardioDays = Math.min(4, totalDays); break;
-    case "daily": cardioDays = totalDays; break;
-    default: cardioDays = 0;
-  }
-  if (cardioDays === 0) return plan;
-
-  // Helper: is this a leg-heavy day?
-  const isLegDay = (grupo: string) => {
-    const g = grupo.toLowerCase();
-    return g.includes("perna") || g.includes("quadríceps") || g.includes("quadriceps") ||
-           g.includes("posterior") || g.includes("glúteo") || g.includes("gluteo") ||
-           g.includes("gluteos") || g.includes("panturrilha");
-  };
-
-  // Helper: does this day already have cardio?
-  const hasExistingCardio = (day: WorkoutDay) => {
-    const g = day.grupo.toLowerCase();
-    return g.includes("cardio") || g.includes("hiit") ||
-      day.exercicios.some(e => {
-        const n = e.nome.toLowerCase();
-        return n.includes("cardio") || n.includes("corrida") || n.includes("caminhada") || n.includes("hiit") || n.includes("bike");
-      });
-  };
-
-  // Get appropriate cardio for a specific day context
-  function getCardioForDay(
-    day: WorkoutDay,
-    isLeg: boolean,
-    objective: Objective,
-    level: Level,
-    allowIntense: boolean
-  ): CardioExerciseInfo {
-    const pool = cardioByObjective[objective];
-    const mult = cardioDurationMultiplier[level];
-
-    // Leg day → ALWAYS light cardio (protect recovery)
-    if (isLeg) {
-      const info = { ...pool.leve };
-      info.nome = "Caminhada Leve";
-      info.desc = "🦵 Cardio leve pós-treino de perna — baixo impacto para proteger recuperação muscular.";
-      const baseDur = parseInt(info.duracao);
-      info.duracao = `${Math.round(Math.min(baseDur, 12) * mult)}min`;
-      return info;
-    }
-
-    // Heavy intensity day → light or moderate cardio
-    if (day.intensidade === "pesado" && !allowIntense) {
-      const info = { ...pool.leve };
-      const baseDur = parseInt(info.duracao);
-      info.duracao = `${Math.round(baseDur * mult)}min`;
-      info.desc += " Intensidade reduzida por ser dia de treino pesado.";
-      return info;
-    }
-
-    // Hipertrofia objective → keep cardio controlled
-    if (objective === "massa") {
-      const info = { ...pool.leve };
-      const baseDur = parseInt(info.duracao);
-      info.duracao = `${Math.round(baseDur * mult)}min`;
-      return info;
-    }
-
-    // Emagrecimento → more intense cardio when possible
-    if (objective === "emagrecer" && allowIntense) {
-      const tipo = day.intensidade === "leve" ? "intenso" : "moderado";
-      const info = { ...pool[tipo as CardioType] };
-      const baseDur = parseInt(info.duracao);
-      info.duracao = `${Math.round(baseDur * mult)}min`;
-      return info;
-    }
-
-    // Default: moderate
-    const info = { ...pool.moderado };
-    const baseDur = parseInt(info.duracao);
-    info.duracao = `${Math.round(baseDur * mult)}min`;
-    return info;
-  }
-
-  // Female-specific cardio adjustments
-  function applyGenderCardio(cardio: CardioExerciseInfo, gender: UserGender, isLeg: boolean): CardioExerciseInfo {
-    if (!gender) return cardio;
-    
-    if (gender === "feminino" && !isLeg) {
-      // Females: cardio more frequent, moderate intensity preferred for metabolic benefit
-      return { ...cardio, desc: cardio.desc + " Adaptado para resistência e metabolismo." };
-    }
-    if (gender === "masculino" && objective === "massa") {
-      // Males in hypertrophy: minimize cardio impact
-      const dur = parseInt(cardio.duracao);
-      return { ...cardio, duracao: `${Math.max(8, dur - 3)}min`, desc: cardio.desc + " Duração reduzida para preservar massa muscular." };
-    }
-    return cardio;
-  }
-
-  // ===== DAILY cardio: light post-workout on every day =====
-  if (cardioFreq === "daily") {
-    return plan.map((day, idx) => {
-      if (hasExistingCardio(day)) return day;
-      
-      const isLeg = isLegDay(day.grupo);
-      let cardioInfo = getCardioForDay(day, isLeg, objective, level, false);
-      cardioInfo = applyGenderCardio(cardioInfo, gender, isLeg);
-      
-      const cardioEx: Exercise = {
-        nome: cardioInfo.nome,
-        series: "1",
-        reps: cardioInfo.duracao,
-        desc: cardioInfo.desc,
-        descanso: "—",
-      };
-      
-      // If day has 5+ exercises, replace last to keep volume manageable
-      const exercicios = day.exercicios.length >= 5
-        ? [...day.exercicios.slice(0, -1), cardioEx]
-        : [...day.exercicios, cardioEx];
-      
-      return {
-        ...day,
-        grupo: day.grupo + ` + Cardio ${cardioInfo.tipo === "leve" ? "Leve" : cardioInfo.tipo === "moderado" ? "Moderado" : "Intenso"}`,
-        exercicios,
-      };
-    });
-  }
-
-  // ===== 1-2 or 3-4: pick optimal days =====
-  const dayAnalysis = plan.map((day, idx) => ({
-    idx,
-    intensity: day.intensidade || "moderado" as DayIntensity,
-    hasCardio: hasExistingCardio(day),
-    isLeg: isLegDay(day.grupo),
-    isRest: day.grupo.toLowerCase().includes("mobilidade") || day.grupo.toLowerCase().includes("recuperacao"),
-  }));
-
-  // Priority: rest days first, then non-leg light days, then non-leg moderate, then leg days last
-  const sorted = [...dayAnalysis]
-    .filter(d => !d.hasCardio)
-    .sort((a, b) => {
-      // Rest/mobility days → best for cardio
-      if (a.isRest && !b.isRest) return -1;
-      if (!a.isRest && b.isRest) return 1;
-      // Leg days → worst for cardio
-      if (a.isLeg && !b.isLeg) return 1;
-      if (!a.isLeg && b.isLeg) return -1;
-      // Lighter days preferred
-      const order: Record<DayIntensity, number> = { leve: 0, moderado: 1, pesado: 2 };
-      return (order[a.intensity] || 1) - (order[b.intensity] || 1);
-    });
-
-  // Ensure spacing: try not to put cardio on consecutive days
-  const selectedIndices: number[] = [];
-  for (const candidate of sorted) {
-    if (selectedIndices.length >= cardioDays) break;
-    // Check if previous or next selected index is adjacent
-    const hasAdjacent = selectedIndices.some(si => Math.abs(si - candidate.idx) <= 1);
-    if (!hasAdjacent || selectedIndices.length >= sorted.length - 1) {
-      selectedIndices.push(candidate.idx);
-    }
-  }
-  // If we didn't fill enough, add remaining
-  for (const candidate of sorted) {
-    if (selectedIndices.length >= cardioDays) break;
-    if (!selectedIndices.includes(candidate.idx)) {
-      selectedIndices.push(candidate.idx);
-    }
-  }
-
-  return plan.map((day, idx) => {
-    if (!selectedIndices.includes(idx)) return day;
-    
-    const isLeg = isLegDay(day.grupo);
-    // For 3-4x, allow moderate/intense on non-leg days; for 1-2x, allow intense
-    const allowIntense = cardioFreq === "3-4" ? !isLeg : true;
-    let cardioInfo = getCardioForDay(day, isLeg, objective, level, allowIntense && !isLeg);
-    cardioInfo = applyGenderCardio(cardioInfo, gender, isLeg);
-
-    const cardioEx: Exercise = {
-      nome: cardioInfo.nome,
-      series: "1",
-      reps: cardioInfo.duracao,
-      desc: cardioInfo.desc,
-      descanso: "—",
-    };
-
-    const tipoLabel = cardioInfo.tipo === "leve" ? "Leve" : cardioInfo.tipo === "moderado" ? "Moderado" : "HIIT";
-    
-    return {
-      ...day,
-      grupo: day.grupo + ` + Cardio ${tipoLabel}`,
-      exercicios: [...day.exercicios, cardioEx],
-    };
-  });
-}
-
-// Apply global intensity level adjustments
-function applyIntensityLevel(plan: WorkoutDay[], intensityLevel: IntensityLevel): WorkoutDay[] {
-  if (intensityLevel === "moderado") {
-    // Moderate: reduce pesado to moderado, keep others
-    return plan.map(day => {
-      const newIntensity: DayIntensity = day.intensidade === "pesado" ? "moderado" : day.intensidade || "moderado";
-      const exercicios = day.exercicios.map(ex => {
-        // Reduce volume slightly for moderate
-        const series = Math.max(2, Number(ex.series) - (day.intensidade === "pesado" ? 1 : 0));
-        return adjustRestForIntensity({ ...ex, series: String(series) }, newIntensity);
-      });
-      return { ...day, exercicios, intensidade: newIntensity };
-    });
-  }
-
-  // Intenso: boost pesado days, convert moderado to pesado, keep leve
-  return plan.map(day => {
-    if (day.intensidade === "leve") return day;
-    const newIntensity: DayIntensity = "pesado";
-    const exercicios = day.exercicios.map(ex => {
-      // Increase volume for intense
-      const series = Math.min(6, Number(ex.series) + (day.intensidade === "moderado" ? 1 : 0));
-      return adjustRestForIntensity({ ...ex, series: String(series) }, newIntensity);
-    });
-    return { ...day, exercicios, intensidade: newIntensity };
-  });
-}
-
-// ensureNoConsecutiveHeavy is now replaced by enforceUpperLowerAlternation below
-
-export type UserGender = "masculino" | "feminino" | string | null | undefined;
-
-export type ExercisePreferences = {
-  preferred: string[];
-  freeText?: string;
-};
-
-// Gender-aware body focus override:
-// If user picks "completo" and we know their gender, auto-adjust the focus distribution
-function resolveGenderFocus(bodyFocus: BodyFocus, gender: UserGender): BodyFocus {
-  // Only auto-adjust when focus is "completo" — if user explicitly picks upper/inferior, respect it
-  if (bodyFocus !== "completo") return bodyFocus;
-  if (!gender) return bodyFocus;
-  return bodyFocus;
-}
-
-// =====================================================
-// GENDER-SPECIFIC DEDICATED SPLIT TEMPLATES
-// These override default "completo" splits when gender is known
-// Female: 3 lower : 2 upper ratio (or similar)
-// Male: 3 upper : 2 lower ratio (or similar)
-// =====================================================
-const femaleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
-  emagrecer: {
-    3: [["posterior", "gluteos", "panturrilha"], ["peito", "costas", "ombros"], ["quadriceps", "gluteos", "hiit"]],
-    4: [["posterior", "gluteos", "panturrilha"], ["peito", "triceps", "hiit"], ["quadriceps", "gluteos"], ["costas", "biceps", "abdomen"]],
-    5: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["gluteos", "posterior", "abdomen"]],
-    6: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["gluteos", "abdomen"], ["quadriceps", "panturrilha", "cardio"]],
-  },
-  massa: {
-    3: [["posterior", "gluteos", "panturrilha"], ["peito", "costas", "ombros"], ["quadriceps", "gluteos"]],
-    4: [["posterior", "gluteos", "panturrilha"], ["peito", "triceps"], ["quadriceps", "gluteos"], ["costas", "biceps", "abdomen"]],
-    5: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["gluteos", "posterior", "abdomen"]],
-    6: [["posterior", "gluteos"], ["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["gluteos", "abdomen"], ["quadriceps", "panturrilha"]],
-  },
-  condicionamento: {
-    3: [["posterior", "gluteos", "hiit"], ["peito", "costas", "cardio"], ["quadriceps", "panturrilha", "hiit"]],
-    4: [["posterior", "gluteos", "hiit"], ["peito", "triceps", "cardio"], ["quadriceps", "panturrilha", "hiit"], ["costas", "ombros", "cardio"]],
-    5: [["posterior", "gluteos", "hiit"], ["peito", "triceps"], ["quadriceps", "panturrilha", "cardio"], ["costas", "biceps", "hiit"], ["gluteos", "abdomen", "cardio"]],
-    6: [["posterior", "gluteos"], ["peito", "triceps", "hiit"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["gluteos", "abdomen", "hiit"], ["quadriceps", "panturrilha", "cardio"]],
-  },
-};
-
-const maleSplitOverrides: Record<Objective, Record<number, SplitEntry[]>> = {
-  emagrecer: {
-    3: [["peito", "triceps", "hiit"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
-    4: [["peito", "triceps"], ["quadriceps", "panturrilha", "hiit"], ["costas", "biceps"], ["ombros", "abdomen", "cardio"]],
-    5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "panturrilha"], ["ombros", "abdomen", "cardio"]],
-    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps", "hiit"], ["posterior", "panturrilha"], ["ombros", "abdomen"], ["peito", "costas", "cardio"]],
-  },
-  massa: {
-    3: [["peito", "triceps"], ["quadriceps", "posterior", "panturrilha"], ["costas", "biceps", "ombros"]],
-    4: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["ombros", "posterior", "abdomen"]],
-    5: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "panturrilha"], ["ombros", "abdomen"]],
-    6: [["peito", "triceps"], ["quadriceps", "panturrilha"], ["costas", "biceps"], ["posterior", "panturrilha"], ["ombros", "abdomen"], ["peito", "costas"]],
-  },
-  condicionamento: {
-    3: [["hiit", "peito", "costas"], ["quadriceps", "posterior", "cardio"], ["ombros", "triceps", "biceps"]],
-    4: [["hiit", "peito", "triceps"], ["quadriceps", "panturrilha", "cardio"], ["costas", "biceps", "hiit"], ["posterior", "ombros", "cardio"]],
-    5: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "biceps", "cardio"], ["posterior", "hiit"], ["ombros", "abdomen", "cardio"]],
-    6: [["hiit", "peito"], ["quadriceps", "panturrilha"], ["costas", "hiit"], ["posterior", "panturrilha", "cardio"], ["ombros", "triceps"], ["peito", "biceps", "cardio"]],
-  },
-};
-
-const femaleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
-  emagrecer: [
-    { groups: ["posterior", "gluteos"], intensity: "pesado" },
-    { groups: ["peito", "triceps"], intensity: "moderado" },
-    { groups: ["quadriceps", "panturrilha", "hiit"], intensity: "pesado" },
-    { groups: ["costas", "biceps"], intensity: "moderado" },
-    { groups: ["gluteos", "posterior", "abdomen"], intensity: "pesado" },
-    { groups: ["hiit", "cardio"], intensity: "moderado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-  ],
-  massa: [
-    { groups: ["posterior", "gluteos"], intensity: "pesado" },
-    { groups: ["peito", "triceps"], intensity: "moderado" },
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-    { groups: ["costas", "biceps"], intensity: "moderado" },
-    { groups: ["gluteos", "abdomen"], intensity: "pesado" },
-    { groups: ["quadriceps", "panturrilha"], intensity: "moderado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-  ],
-  condicionamento: [
-    { groups: ["posterior", "gluteos", "hiit"], intensity: "pesado" },
-    { groups: ["peito", "triceps", "cardio"], intensity: "moderado" },
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-    { groups: ["costas", "biceps", "hiit"], intensity: "moderado" },
-    { groups: ["gluteos", "abdomen", "cardio"], intensity: "pesado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-    { groups: ["hiit", "cardio"], intensity: "moderado" },
-  ],
-};
-
-const maleSplit7Overrides: Record<Objective, SplitEntry7[]> = {
-  emagrecer: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-    { groups: ["costas", "biceps"], intensity: "pesado" },
-    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
-    { groups: ["ombros", "abdomen", "hiit"], intensity: "pesado" },
-    { groups: ["hiit", "cardio"], intensity: "moderado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-  ],
-  massa: [
-    { groups: ["peito", "triceps"], intensity: "pesado" },
-    { groups: ["quadriceps", "panturrilha"], intensity: "pesado" },
-    { groups: ["costas", "biceps"], intensity: "pesado" },
-    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
-    { groups: ["ombros", "abdomen"], intensity: "pesado" },
-    { groups: ["peito", "costas"], intensity: "moderado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-  ],
-  condicionamento: [
-    { groups: ["hiit", "peito", "triceps"], intensity: "pesado" },
-    { groups: ["quadriceps", "panturrilha", "cardio"], intensity: "pesado" },
-    { groups: ["costas", "biceps", "hiit"], intensity: "pesado" },
-    { groups: ["posterior", "panturrilha"], intensity: "moderado" },
-    { groups: ["ombros", "abdomen", "cardio"], intensity: "pesado" },
-    { groups: ["mobilidade", "recuperacao"], intensity: "leve" },
-    { groups: ["hiit", "cardio"], intensity: "moderado" },
-  ],
-};
-
-// =====================================================
-// GENDER-SPECIFIC SPLIT MODIFICATIONS
-// Female: emphasize posterior chain (glutes, hamstrings, calves)
-//         add metabolic/resistance focus, reduce arm isolation volume
-// Male:   emphasize compound upper body (chest, back, shoulders)
-//         strategic arm training, strength/load focus
-// ALWAYS respects user's explicit body focus choice
-// =====================================================
-
-function applyGenderToSplit(split: SplitEntry[], gender: UserGender, objective: Objective): SplitEntry[] {
-  if (!gender) return split;
-
-  if (gender === "feminino") {
-    return split.map((groups, dayIdx) => {
-      const result = groups.map(g => {
-        // Generic "pernas" → alternate between posterior-focused and quad-focused
-        if (g === "pernas") return dayIdx % 2 === 0 ? "posterior" : "quadriceps";
-        return g;
-      });
-
-      // On lower-body days, ensure gluteos are included if not already
-      const hasLower = result.some(g => ["quadriceps", "posterior", "pernas"].includes(g));
-      const hasGluteos = result.includes("gluteos");
-      if (hasLower && !hasGluteos && result.length < 4) {
-        result.push("gluteos");
-      }
-
-      // On lower-body days, ensure panturrilha is included if not already
-      const hasPanturrilha = result.includes("panturrilha");
-      if (hasLower && !hasPanturrilha && result.length < 5) {
-        result.push("panturrilha");
-      }
-
-      // On upper-body days for females: keep them but lighter (fewer arm isolation)
-      // Remove standalone biceps if day already has 3+ groups (keep it lean)
-      const isUpperOnly = result.some(g => ["peito", "costas", "ombros"].includes(g)) &&
-                          !result.some(g => ["quadriceps", "posterior", "gluteos", "pernas"].includes(g));
-      if (isUpperOnly && result.length >= 4) {
-        const bicepsIdx = result.indexOf("biceps");
-        if (bicepsIdx !== -1 && result.includes("costas")) {
-          // Costas already trains biceps — remove isolation to reduce upper volume
-          result.splice(bicepsIdx, 1);
-        }
-      }
-
-      return result;
-    });
-  }
-
-  if (gender === "masculino") {
-    return split.map((groups, dayIdx) => {
-      const result = [...groups];
-
-      // Generic "pernas" → alternate quad-focused and posterior-focused
-      for (let i = 0; i < result.length; i++) {
-        if (result[i] === "pernas") {
-          result[i] = dayIdx % 2 === 0 ? "quadriceps" : "posterior";
-        }
-      }
-
-      // On upper-body days: ensure arm training is included
-      const hasUpper = result.some(g => ["peito", "costas", "ombros"].includes(g));
-      const hasLower = result.some(g => ["quadriceps", "posterior", "gluteos", "pernas", "panturrilha"].includes(g));
-      const hasArms = result.some(g => ["biceps", "triceps"].includes(g));
-
-      if (hasUpper && !hasLower && !hasArms && result.length < 4) {
-        // Add strategic arm work: triceps with push days, biceps with pull days
-        const hasPush = result.includes("peito") || result.includes("ombros");
-        const hasPull = result.includes("costas");
-        if (hasPush && !result.includes("triceps")) {
-          result.push("triceps");
-        } else if (hasPull && !result.includes("biceps")) {
-          result.push("biceps");
-        }
-      }
-
-      return result;
-    });
-  }
-
-  return split;
-}
-
-// Gender-specific 7-day split overrides
-function applyGenderTo7DaySplit(split: SplitEntry7[], gender: UserGender): SplitEntry7[] {
-  if (!gender) return split;
-
-  if (gender === "feminino") {
-    return split.map((entry, i) => {
-      const groups = entry.groups.map(g => {
-        if (g === "pernas") return i % 2 === 0 ? "posterior" : "quadriceps";
-        return g;
-      });
-
-      // Add gluteos to lower days that don't have it
-      const hasLower = groups.some(g => ["quadriceps", "posterior"].includes(g));
-      const hasGluteos = groups.includes("gluteos");
-      if (hasLower && !hasGluteos && groups.length < 4) {
-        groups.push("gluteos");
-      }
-
-      // Boost intensity on lower days (female priority)
-      const isLowerDay = hasLower;
-      const newIntensity = isLowerDay && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity;
-
-      return { ...entry, groups, intensity: newIntensity };
-    });
-  }
-
-  if (gender === "masculino") {
-    return split.map((entry, i) => {
-      const groups = entry.groups.map(g => {
-        if (g === "pernas") return i % 2 === 0 ? "quadriceps" : "posterior";
-        return g;
-      });
-
-      // Add arm isolation to upper days that don't have it
-      const hasUpper = groups.some(g => ["peito", "costas", "ombros"].includes(g));
-      const hasLower = groups.some(g => ["quadriceps", "posterior", "gluteos", "panturrilha"].includes(g));
-      const hasArms = groups.some(g => ["biceps", "triceps"].includes(g));
-      if (hasUpper && !hasLower && !hasArms && groups.length < 4) {
-        const hasPush = groups.includes("peito") || groups.includes("ombros");
-        if (hasPush) groups.push("triceps");
-        else groups.push("biceps");
-      }
-
-      // Boost intensity on upper days (male priority)
-      const isUpperDay = hasUpper && !hasLower;
-      const newIntensity = isUpperDay && entry.intensity === "moderado" ? "pesado" as DayIntensity : entry.intensity;
-
-      return { ...entry, groups, intensity: newIntensity };
-    });
-  }
-
-  return split;
-}
-
-// =====================================================
-// STRICT UPPER/LOWER ALTERNATION ENFORCEMENT
-// Classifies each day as UPPER, LOWER, or NEUTRAL (cardio/mobility/abs)
-// If two consecutive days are the same region AND heavy, downgrade intensity
-// Also prevents exact same primary muscle group on consecutive days
-// =====================================================
-type DayRegion = "upper" | "lower" | "neutral";
-
-const UPPER_KEYWORDS = ["peito", "costas", "ombro", "bíceps", "tríceps", "biceps", "triceps"];
-const LOWER_KEYWORDS = ["perna", "quadríceps", "quadriceps", "posterior", "glúteo", "gluteos", "gluteo", "panturrilha"];
-const NEUTRAL_KEYWORDS = ["hiit", "cardio", "mobilidade", "recuperacao", "recuperação", "abdomen", "abdômen"];
-
-function classifyDayRegion(grupo: string): DayRegion {
-  const g = grupo.toLowerCase();
-  
-  // Check neutrals first (cardio-only, mobility, recovery)
-  const neutralTokens = g.split(/[\s+,/]+/);
-  const allNeutral = neutralTokens.every(t => 
-    NEUTRAL_KEYWORDS.some(k => t.includes(k)) || t.trim() === ""
-  );
-  if (allNeutral && neutralTokens.length > 0) return "neutral";
-
-  const hasUpper = UPPER_KEYWORDS.some(k => g.includes(k));
-  const hasLower = LOWER_KEYWORDS.some(k => g.includes(k));
-
-  if (hasUpper && hasLower) return "neutral"; // mixed = treat as neutral
-  if (hasUpper) return "upper";
-  if (hasLower) return "lower";
-  return "neutral";
-}
-
-// Extract primary muscle groups from a day's grupo string
-function extractPrimaryGroups(grupo: string): string[] {
-  const g = grupo.toLowerCase();
-  const found: string[] = [];
-  const allKeywords = [...UPPER_KEYWORDS, ...LOWER_KEYWORDS];
-  for (const k of allKeywords) {
-    if (g.includes(k)) found.push(k);
-  }
-  return found;
-}
-
-function enforceUpperLowerAlternation(plan: WorkoutDay[]): WorkoutDay[] {
-  const result = [...plan];
-  
-  for (let i = 1; i < result.length; i++) {
-    const prev = result[i - 1];
-    const curr = result[i];
-    
-    const prevRegion = classifyDayRegion(prev.grupo);
-    const currRegion = classifyDayRegion(curr.grupo);
-    
-    // Rule 1: Two consecutive days of same region (both heavy) → downgrade current
-    if (prevRegion !== "neutral" && prevRegion === currRegion) {
-      if (prev.intensidade === "pesado" || curr.intensidade === "pesado") {
-        result[i] = {
-          ...curr,
-          intensidade: "moderado",
-          exercicios: curr.exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
-        };
-      }
-    }
-    
-    // Rule 2: Exact same primary muscle group on consecutive days → downgrade to leve
-    const prevGroups = extractPrimaryGroups(prev.grupo);
-    const currGroups = extractPrimaryGroups(curr.grupo);
-    const overlap = prevGroups.filter(g => currGroups.includes(g));
-    
-    if (overlap.length > 0 && !NEUTRAL_KEYWORDS.some(k => overlap.includes(k))) {
-      // Same muscle on consecutive days — force leve intensity
-      const currentIntensity = result[i].intensidade || "moderado";
-      if (currentIntensity === "pesado") {
-        result[i] = {
-          ...result[i],
-          intensidade: "moderado",
-          exercicios: result[i].exercicios.map(ex => adjustRestForIntensity(ex, "moderado")),
-        };
-      }
-    }
-  }
-  
-  return result;
-}
-
-// =====================================================
-// FEMALE EXERCISE ENRICHMENT
-// Priority exercises: Búlgaro, Hip Thrust, Stiff, Passadas, Abdução, Glute Bridge, Step-up
-// More volume, shorter rest, unilateral emphasis
-// =====================================================
-const FEMALE_PRIORITY_EXERCISES: Record<string, Exercise[]> = {
-  posterior: [
-    { nome: "Stiff Romeno", series: "4", reps: "10", desc: "Barra, descida lenta com foco em posterior e glúteos. Movimento essencial para cadeia posterior feminina.", descanso: "60s" },
-    { nome: "Agachamento Búlgaro", series: "4", reps: "10/perna", desc: "Pé traseiro elevado, halter em cada mão. Excelente para glúteos e equilíbrio.", descanso: "60s" },
-  ],
-  gluteos: [
-    { nome: "Hip Thrust", series: "4", reps: "12", desc: "Costas no banco, barra no quadril. Contraia forte no topo por 2s. Principal exercício para glúteos.", descanso: "60s" },
-    { nome: "Glute Bridge", series: "3", reps: "15", desc: "Deitada, eleve o quadril contraindo glúteos. Ativação máxima.", descanso: "45s" },
-    { nome: "Cadeira Abdutora", series: "4", reps: "15", desc: "Incline levemente o tronco para ativar glúteo máximo. Foco em abdução.", descanso: "45s" },
-  ],
-  quadriceps: [
-    { nome: "Passada Caminhando", series: "3", reps: "12/perna", desc: "Com halteres, passos longos. Ativa quadríceps e glúteos simultaneamente.", descanso: "60s" },
-    { nome: "Step-Up", series: "3", reps: "12/perna", desc: "Suba no banco com uma perna, foque em empurrar com o calcanhar.", descanso: "60s" },
-  ],
-};
-
-function enrichFemaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
-  if (gender !== "feminino") return plan;
-  
-  return plan.map(day => {
-    const g = day.grupo.toLowerCase();
-    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
-                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
-    if (!isLowerDay) return day;
-
-    const exercicios = [...day.exercicios];
-
-    // 1) Ensure priority glute activation exercises are present
-    const hasGlute = exercicios.some(ex => {
-      const n = ex.nome.toLowerCase();
-      return n.includes("hip thrust") || n.includes("elevação pélvica") || n.includes("glute bridge") ||
-             n.includes("abdutora") || n.includes("kickback");
-    });
-    if (!hasGlute) {
-      const priorityGlute = FEMALE_PRIORITY_EXERCISES.gluteos;
-      if (priorityGlute.length > 0) {
-        exercicios.push({ ...priorityGlute[Math.floor(Math.random() * priorityGlute.length)] });
-      }
-    }
-
-    // 2) Ensure búlgaro or passada on lower days
-    const hasUnilateral = exercicios.some(ex => {
-      const n = ex.nome.toLowerCase();
-      return n.includes("búlgaro") || n.includes("bulgaro") || n.includes("passada") || n.includes("step-up") || n.includes("step up");
-    });
-    if (!hasUnilateral && exercicios.length < 7) {
-      const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
-      const pool = isQuadDay ? FEMALE_PRIORITY_EXERCISES.quadriceps : FEMALE_PRIORITY_EXERCISES.posterior;
-      if (pool.length > 0) {
-        exercicios.push({ ...pool[Math.floor(Math.random() * pool.length)] });
-      }
-    }
-
-    // 3) Add panturrilha finisher if missing on quad days
-    const isQuadDay = g.includes("quadríceps") || g.includes("quadriceps");
-    const hasCalf = exercicios.some(ex => ex.nome.toLowerCase().includes("panturrilha"));
-    if (isQuadDay && !hasCalf) {
-      const calfPool = exerciseDB.panturrilha?.[level] || exerciseDB.panturrilha?.intermediario || [];
-      if (calfPool.length > 0) {
-        exercicios.push({ ...calfPool[0], series: "4", reps: "15" });
-      }
-    }
-
-    // 4) Adjust rest times for female style: shorter rests, more metabolic stress
-    const adjustedExercicios = exercicios.map(ex => {
-      const rest = ex.descanso;
-      if (rest === "120s") return { ...ex, descanso: "90s" };
-      if (rest === "180s") return { ...ex, descanso: "120s" };
-      if (rest === "90s") return { ...ex, descanso: "75s" };
-      return ex;
-    });
-
-    // 5) On upper-body days for females: keep functional but reduce arm isolation
-    const isUpperOnly = g.includes("peito") || g.includes("costas") || g.includes("ombro");
-    if (isUpperOnly && !isLowerDay) {
-      // Add core work to upper days for females
-      const hasCore = exercicios.some(ex => ex.nome.toLowerCase().includes("prancha") || ex.nome.toLowerCase().includes("abdominal"));
-      if (!hasCore && exercicios.length < 6) {
-        const corePool = exerciseDB.abdomen?.[level] || exerciseDB.abdomen?.intermediario || [];
-        if (corePool.length > 0) {
-          adjustedExercicios.push({ ...corePool[0] });
-        }
-      }
-    }
-
-    return { ...day, exercicios: adjustedExercicios };
-  });
-}
-
-// =====================================================
-// MALE EXERCISE ENRICHMENT
-// Priority exercises: Supinos, Remadas, Barra Fixa, Desenvolvimento, Terra, Rosca, Tríceps Testa
-// More load, longer rest, compound emphasis
-// =====================================================
-const MALE_PRIORITY_EXERCISES: Record<string, Exercise[]> = {
-  peito: [
-    { nome: "Supino Reto", series: "4", reps: "8", desc: "Carga pesada, controle excêntrico. Principal composto para peito masculino.", descanso: "120s" },
-    { nome: "Supino Inclinado Halteres", series: "4", reps: "10", desc: "Banco a 30°, amplitude completa. Foco em peitoral superior.", descanso: "90s" },
-  ],
-  costas: [
-    { nome: "Barra Fixa", series: "4", reps: "8", desc: "Pegada pronada, puxe até o queixo passar. Exercício fundamental para dorsal.", descanso: "120s" },
-    { nome: "Remada Curvada", series: "4", reps: "10", desc: "Incline a 45°, puxe a barra ao abdômen. Carga progressiva.", descanso: "90s" },
-  ],
-  ombros: [
-    { nome: "Desenvolvimento Militar", series: "4", reps: "8", desc: "Barra ou halteres pesados. Principal composto para deltoides.", descanso: "120s" },
-  ],
-  biceps: [
-    { nome: "Rosca Direta Barra", series: "4", reps: "10", desc: "Carga pesada, cotovelos fixos. Sem embalar.", descanso: "90s" },
-  ],
-  triceps: [
-    { nome: "Tríceps Testa", series: "4", reps: "10", desc: "Barra EZ, excêntrica lenta. Foco em cabeça longa.", descanso: "90s" },
-  ],
-};
-
-function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Level): WorkoutDay[] {
-  if (gender !== "masculino") return plan;
-
-  return plan.map(day => {
-    const g = day.grupo.toLowerCase();
-    const isUpperDay = g.includes("peito") || g.includes("costas") || g.includes("ombro");
-    const isLowerDay = g.includes("posterior") || g.includes("quadríceps") || g.includes("quadriceps") ||
-                       g.includes("perna") || g.includes("glúteo") || g.includes("gluteo");
-    if (!isUpperDay || isLowerDay) return day;
-
-    const exercicios = [...day.exercicios];
-
-    // Ensure compound movements are present on chest days
-    if (g.includes("peito")) {
-      const hasCompound = exercicios.some(ex => 
-        ex.nome.toLowerCase().includes("supino") || ex.nome.toLowerCase().includes("desenvolvimento")
-      );
-      if (!hasCompound && level !== "iniciante") {
-        const priority = MALE_PRIORITY_EXERCISES.peito[0];
-        exercicios.unshift({ ...priority });
-      }
-    }
-
-    // Ensure compound movements are present on back days
-    if (g.includes("costas")) {
-      const hasCompound = exercicios.some(ex => 
-        ex.nome.toLowerCase().includes("remada") || ex.nome.toLowerCase().includes("barra fixa")
-      );
-      if (!hasCompound && level !== "iniciante") {
-        const priority = MALE_PRIORITY_EXERCISES.costas[0];
-        exercicios.unshift({ ...priority });
-      }
-    }
-
-    // Ensure development on shoulder days
-    if (g.includes("ombro")) {
-      const hasDev = exercicios.some(ex => ex.nome.toLowerCase().includes("desenvolvimento"));
-      if (!hasDev && level !== "iniciante") {
-        exercicios.unshift({ ...MALE_PRIORITY_EXERCISES.ombros[0] });
-      }
-    }
-
-    // Adjust rest times for male style: longer rests for strength
-    const adjustedExercicios = exercicios.map(ex => {
-      const rest = ex.descanso;
-      if (rest === "60s" && day.intensidade === "pesado") return { ...ex, descanso: "90s" };
-      if (rest === "90s" && day.intensidade === "pesado") return { ...ex, descanso: "120s" };
-      return ex;
-    });
-
-    return { ...day, exercicios: adjustedExercicios };
-  });
-}
-
 export function generateWorkoutPlan(
   objective: Objective,
   level: Level,
@@ -1412,19 +458,14 @@ export function generateWorkoutPlan(
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
 
-  // Build preferred names set from preferences
   const preferredNames = new Set(preferences?.preferred || []);
-
-  // Track used exercise names to avoid repetition on adjacent days
   const prevDayExercises: Set<string> = new Set();
 
   let plan: WorkoutDay[];
 
-  // 7-day uses special templates with intensity metadata
   if (days === 7) {
     let split7: SplitEntry7[];
-    
-    // Gender-specific 7-day templates when focus is "completo"
+
     if (bodyFocus === "completo" && gender === "feminino") {
       split7 = femaleSplit7Overrides[objective] || femaleSplit7Overrides.condicionamento;
     } else if (bodyFocus === "completo" && gender === "masculino") {
@@ -1462,8 +503,6 @@ export function generateWorkoutPlan(
       };
     });
   } else {
-    // 3-6 day standard generation with rotation
-    // Gender-specific templates when focus is "completo"
     let split: SplitEntry[];
     if (bodyFocus === "completo" && gender === "feminino") {
       split = femaleSplitOverrides[objective]?.[days] || femaleSplitOverrides[objective]?.[3];
@@ -1517,6 +556,8 @@ export function generateWorkoutPlan(
   plan = enrichFemaleExercises(plan, gender, level);
   plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
+  // NEW: reorder auxiliary exercises to end + cap at 4-5 exercises per day
+  plan = reorderAndCapExercises(plan);
 
   return plan;
 }
