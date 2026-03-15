@@ -407,13 +407,17 @@ const Treino = () => {
 
   const handleGenerate = () => {
     if (!objetivo || !nivel || !dias) { toast.error("Preencha todos os campos"); return; }
+    if (!profile?.gender) {
+      toast.error("Defina seu sexo no Perfil Fitness para gerar um treino personalizado.", { duration: 5000 });
+      return;
+    }
     setGenerating(true);
     setTimeout(() => {
       try {
         const prefs: ExercisePreferences | undefined = (preferredExercises.length > 0 || preferenceText.trim())
           ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
           : undefined;
-        const genderToUse = (selectedGender || profile?.gender) as UserGender;
+        const genderToUse = profile.gender as UserGender;
         const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, genderToUse);
         setGeneratedPlan(plan);
         setShowPlan(true);
