@@ -1790,7 +1790,6 @@ const Treino = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{ex.nome}</p>
-                    <p className="text-[11px] text-muted-foreground">{ex.series}x{ex.reps} {ex.descanso && ex.descanso !== "—" ? `• ${ex.descanso}` : ""}</p>
                   </div>
                 </div>
               ))}
