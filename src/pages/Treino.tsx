@@ -12,9 +12,8 @@ import { TreinoDashboardSkeleton, TreinoPlansSkeleton } from "@/components/skele
 import { calculateWeeklyEvolution, type WeeklyEvolution } from "@/lib/progressionEngine";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays, differenceInCalendarDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getInactivitySuggestion, type InactivitySuggestion } from "@/lib/workoutRecommendations";
 import { calculateAchievements, getMotivationalMessage, type UserStats } from "@/lib/achievementsEngine";
 import { useNavigate } from "react-router-dom";
 import { startLazyPreload } from "@/lib/exerciseGifs";
