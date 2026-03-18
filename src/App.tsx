@@ -8,7 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { useSSOAuth, redirectToEcosystem } from "./hooks/useSSOAuth";
+import { useSSOAuth, redirectToEcosystem, hasSSOParams } from "./hooks/useSSOAuth";
 
 // Lazy load all pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -128,6 +128,7 @@ const OfflineBanner = () => {
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading, setSubscriptionStatus } = useAuth();
   const { ssoLoading, subscriptionStatus } = useSSOAuth();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (subscriptionStatus) {
@@ -135,6 +136,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }, [subscriptionStatus, setSubscriptionStatus]);
 
+  // Still loading auth state or processing SSO token
   if (loading || ssoLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -148,7 +150,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) {
+  // No user AND no SSO params in URL → redirect to ecosystem
+  if (!user && !redirecting) {
+    // Double-check: if SSO params are still in the URL, don't redirect (edge case)
+    if (hasSSOParams()) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs text-muted-foreground">Autenticando via SSO...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    setRedirecting(true);
     redirectToEcosystem();
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -156,6 +172,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-muted-foreground">Redirecionando ao ecossistema...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
