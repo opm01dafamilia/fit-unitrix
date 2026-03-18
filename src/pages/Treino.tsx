@@ -1357,55 +1357,61 @@ const Treino = () => {
             </div>
           )}
 
-          {/* Streak + Stats Row */}
+          {/* Streak + Stats Row — Premium */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="glass-card p-4 lg:p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500/15 to-orange-500/5 flex items-center justify-center">
-                  <Flame className="w-4.5 h-4.5 text-orange-400" />
+            <div className="hero-card">
+              <div className="relative z-10 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
+                    <Flame className="w-5 h-5 text-primary" />
+                  </div>
                 </div>
+                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{streak}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+                  {streak > 0 ? "Dias em sequência 🔥" : "Treine hoje!"}
+                </p>
               </div>
-              <p className="font-display font-bold text-2xl">{streak} <span className="text-sm font-normal text-muted-foreground">dias</span></p>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {streak > 0 ? "Sequência ativa! 🔥" : "Treine hoje para iniciar sua sequência!"}
-              </p>
             </div>
-            <div className="glass-card p-4 lg:p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                  <Trophy className="w-4.5 h-4.5 text-primary" />
+            <div className="hero-card">
+              <div className="relative z-10 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
+                    <Trophy className="w-5 h-5 text-primary" />
+                  </div>
                 </div>
+                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{totalCompleted}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 font-medium">Treinos concluídos</p>
               </div>
-              <p className="font-display font-bold text-2xl">{totalCompleted}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">Treinos concluídos</p>
             </div>
           </div>
 
-          {/* Weekly Consistency Counter */}
-          <div className="glass-card p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
-                  <Target className="w-4.5 h-4.5 text-chart-2" />
+          {/* Weekly Consistency — Premium */}
+          <div className="hero-card">
+            <div className="relative z-10 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
+                    <Target className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-display font-bold">Consistência Semanal</p>
+                    <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold">Consistência Semanal</p>
-                  <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
-                </div>
+                <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
+                  {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
+                </span>
               </div>
-              <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
-                {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
-              </span>
+              <div className="h-3 bg-muted/60 rounded-full overflow-hidden mb-2">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.3)]" 
+                  style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
+                />
+              </div>
+              <p className={`text-xs font-medium ${consistencyFeedback.color}`}>
+                {consistencyFeedback.text}
+              </p>
             </div>
-            <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-2">
-              <div 
-                className="h-full bg-gradient-to-r from-chart-2 to-primary rounded-full transition-all duration-700 ease-out" 
-                style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
-              />
-            </div>
-            <p className={`text-[11px] font-medium ${consistencyFeedback.color}`}>
-              {consistencyFeedback.text}
-            </p>
           </div>
 
 
