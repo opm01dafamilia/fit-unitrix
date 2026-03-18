@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
@@ -6,6 +6,16 @@ const APP_KEY = "fitpulse";
 const SSO_TIMEOUT_MS = 15000;
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired";
+
+type ValidationPayload = {
+  token_hash?: string;
+  subscription_status?: SubscriptionStatus;
+  error?: string;
+  details?: string;
+  stage?: string;
+  ecosystem_url?: string;
+  ecosystem_status?: number;
+};
 
 /** Check if there are SSO params in the current URL */
 export const hasSSOParams = (): boolean => {
@@ -19,6 +29,25 @@ const clearSSOParamsFromUrl = () => {
   url.searchParams.delete("app_key");
   url.searchParams.delete("sso_app");
   window.history.replaceState({}, "", url.pathname + url.search);
+};
+
+const parseValidationPayload = (raw: string): ValidationPayload | null => {
+  try {
+    return JSON.parse(raw) as ValidationPayload;
+  } catch {
+    return null;
+  }
+};
+
+const buildValidationErrorMessage = (status: number, payload: ValidationPayload | null) => {
+  if (!payload) {
+    return `Falha na validação SSO (HTTP ${status}). O servidor retornou uma resposta inválida.`;
+  }
+
+  const stagePart = payload.stage ? `[etapa: ${payload.stage}] ` : "";
+  const errorPart = payload.error || "Falha na validação SSO";
+  const detailsPart = payload.details ? ` ${payload.details}` : "";
+  return `${stagePart}${errorPart}${detailsPart}`.trim();
 };
 
 export const useSSOAuth = () => {
@@ -35,6 +64,12 @@ export const useSSOAuth = () => {
     const params = new URLSearchParams(window.location.search);
     const ssoToken = params.get("sso_token");
     const receivedAppKey = params.get("app_key") || params.get("sso_app");
+
+    console.log("[SSO] URL params detected:", {
+      hasToken: !!ssoToken,
+      receivedAppKey,
+      expectedAppKey: APP_KEY,
+    });
 
     if (!ssoToken || !receivedAppKey) {
       setSsoLoading(false);
@@ -77,38 +112,41 @@ export const useSSOAuth = () => {
       });
 
       const rawResponse = await response.text();
+      const payload = parseValidationPayload(rawResponse);
+
+      console.log("[SSO] validate-sso-token response:", {
+        status: response.status,
+        ok: response.ok,
+        stage: payload?.stage,
+        ecosystemStatus: payload?.ecosystem_status,
+        ecosystemUrl: payload?.ecosystem_url,
+      });
 
       if (!response.ok) {
         console.error("[SSO] Validation failed:", response.status, rawResponse);
-        throw new Error("Não foi possível validar seu acesso automático. Tente novamente no ecossistema.");
+        throw new Error(buildValidationErrorMessage(response.status, payload));
       }
 
-      let data: { token_hash?: string; subscription_status?: SubscriptionStatus };
-      try {
-        data = JSON.parse(rawResponse);
-      } catch {
-        console.error("[SSO] Invalid validation payload:", rawResponse);
-        throw new Error("O servidor de autenticação retornou uma resposta inválida.");
-      }
-
-      if (!data?.token_hash) {
+      if (!payload?.token_hash) {
+        console.error("[SSO] Missing token_hash in payload:", payload || rawResponse);
         throw new Error("A validação SSO não retornou um token de sessão válido.");
       }
 
-      console.log("[SSO] Validation response received, creating session...");
+      console.log("[SSO] Validation response received, creating local session...");
 
       const { data: authData, error } = await supabase.auth.verifyOtp({
-        token_hash: data.token_hash,
+        token_hash: payload.token_hash,
         type: "magiclink",
       });
 
       if (error || !authData?.session) {
+        console.error("[SSO] verifyOtp failed:", error?.message);
         throw new Error(error?.message || "Não foi possível criar a sessão local do usuário.");
       }
 
       console.log("[SSO] Session created successfully for:", authData.user?.email);
 
-      const nextSubscriptionStatus = data.subscription_status || "active";
+      const nextSubscriptionStatus = payload.subscription_status || "active";
       setSubscriptionStatus(nextSubscriptionStatus);
       localStorage.setItem("fitpulse_sub_status", nextSubscriptionStatus);
 
