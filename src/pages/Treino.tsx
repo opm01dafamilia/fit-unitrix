@@ -1833,6 +1833,15 @@ const Treino = () => {
           </div>
         )}
       </FocusMode>
+
+      {/* PDF Viewer */}
+      {viewingPdf && (
+        <PdfViewer
+          url={viewingPdf.url}
+          fileName={viewingPdf.name}
+          onClose={() => setViewingPdf(null)}
+        />
+      )}
     </div>
     
   );
