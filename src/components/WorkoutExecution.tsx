@@ -3,8 +3,9 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
   TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame,
-  CheckCircle2, ChevronDown, Sparkles
+  CheckCircle2, ChevronDown, Sparkles, Activity
 } from "lucide-react";
+import CardioSession from "@/components/CardioSession";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
