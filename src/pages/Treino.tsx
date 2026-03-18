@@ -924,7 +924,7 @@ const Treino = () => {
           <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
           <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
         </div>
-        <Button onClick={() => setView("generator")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+        <Button onClick={() => setView("chooser")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
           <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
         </Button>
       </div>
