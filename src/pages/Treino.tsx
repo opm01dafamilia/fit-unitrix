@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
+import PdfViewer from "@/components/PdfViewer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
