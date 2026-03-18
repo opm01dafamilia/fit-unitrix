@@ -285,10 +285,21 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .glass-card, .metric-card, .glow-border {
+  .glass-card, .metric-card, .glow-border, .hero-card, .premium-card {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     will-change: auto;
+    /* GPU-accelerated compositing for smooth scrolling */
+    backface-visibility: hidden;
+  }
+
+  /* Active touch feedback for interactive elements */
+  .touch-feedback {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  .touch-feedback:active {
+    transform: scale(0.97);
+    opacity: 0.85;
   }
 
   /* Reduce animation complexity on low-power devices */
@@ -308,6 +319,7 @@
   /* Smoother scrolling on iOS */
   .overflow-y-auto, .overflow-auto {
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
   /* Horizontal scroll container for tabs/chips — mobile friendly */
@@ -319,15 +331,49 @@
     -ms-overflow-style: none;
     gap: 0.5rem;
     padding-bottom: 2px;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
   }
   .scroll-x-mobile::-webkit-scrollbar {
     display: none;
+  }
+  .scroll-x-mobile > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
   }
 
   /* Tap-friendly minimum touch target */
   .touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Bottom nav safe padding — extra height for gesture bar */
+  .safe-area-bottom-nav {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  }
+
+  /* Sticky header with safe area for notch */
+  .safe-area-header {
+    padding-top: max(env(safe-area-inset-top, 0px), 8px);
+  }
+
+  /* Smooth page enter animation */
+  .page-enter {
+    animation: pageEnter 0.25s ease-out forwards;
+  }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Loading pulse — smoother than default animate-pulse */
+  .loading-pulse {
+    animation: loadingPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes loadingPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
   }
 
   /* Full-width utility on mobile */
@@ -339,5 +385,34 @@
     .mobile-stack {
       grid-template-columns: 1fr !important;
     }
+    /* Comfortable card padding on small screens */
+    .mobile-card-p {
+      padding: 1rem !important;
+    }
+    /* Larger text on mobile for readability */
+    .mobile-text-base {
+      font-size: 0.9375rem !important;
+      line-height: 1.5 !important;
+    }
+  }
+
+  /* Keyboard-aware layout: shrink content when keyboard opens */
+  @media (max-height: 500px) and (max-width: 768px) {
+    .keyboard-aware {
+      padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    .keyboard-hide {
+      display: none !important;
+    }
+  }
+
+  /* Hide scrollbar but keep scrollable */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
