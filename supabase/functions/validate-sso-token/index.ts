@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate the SSO token against the ecosystem
-    const ecosystemUrl = "https://app.platformhub.com";
+    const ecosystemUrl = "https://eco-platform-hub.lovable.app";
     const validateResponse = await fetch(`${ecosystemUrl}/api/validate-sso`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

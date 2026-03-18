@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const ECOSYSTEM_URL = "https://app.platformhub.com";
+const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired";
 
