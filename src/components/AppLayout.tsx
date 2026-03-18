@@ -163,7 +163,7 @@ const AppLayout = () => {
 
         <button
           onClick={signOut}
-          className="flex items-center gap-2.5 px-7 py-4 text-[13px] text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border"
+          className="flex items-center gap-2.5 px-7 py-4 text-[13px] text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border touch-target touch-feedback min-h-[48px]"
         >
           <LogOut className="w-4 h-4" />
           Sair
