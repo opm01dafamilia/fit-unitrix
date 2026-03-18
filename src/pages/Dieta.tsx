@@ -1046,8 +1046,17 @@ const Dieta = () => {
         </div>
       )}
 
-      {/* Form */}
+      {/* Form - only show when source is "ia" or when plans already exist */}
+      {dietSource !== "chooser" && dietSource !== "pdf" && (
       <div className="glass-card p-5 lg:p-7 space-y-6">
+        {/* New Plan button when plans exist */}
+        {savedPlans.length > 0 && !displayPlan && (
+          <div className="flex justify-center mb-2">
+            <Button onClick={() => setDietSource("chooser")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+              <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
+            </Button>
+          </div>
+        )}
         {/* Section: Dados */}
         <div>
           <h3 className="font-display font-semibold text-xs mb-4 text-muted-foreground uppercase tracking-widest flex items-center gap-2">
