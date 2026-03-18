@@ -46,7 +46,7 @@ const Treino = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   // View state
-  const [view, setView] = useState<"dashboard" | "generator" | "execution">("dashboard");
+  const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "pdf-upload" | "execution">("dashboard");
   const [executionKey, setExecutionKey] = useState(0);
   // Generator state
   const [objetivo, setObjetivo] = useState("");
