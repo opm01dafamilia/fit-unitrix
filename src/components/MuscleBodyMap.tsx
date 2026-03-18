@@ -3,6 +3,9 @@ import { type MuscleId } from "@/lib/exerciseLibrary";
 interface MuscleBodyMapProps {
   highlightedMuscles: MuscleId[];
   className?: string;
+  size?: "sm" | "md" | "lg";
+  interactive?: boolean;
+  onMuscleClick?: (muscleId: MuscleId) => void;
 }
 
 // Maps muscle IDs to SVG path definitions (front view body)
@@ -104,22 +107,30 @@ const musclePaths: Record<string, { d: string; label: string; side: "front" | "b
   },
 };
 
-const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProps) => {
+const MuscleBodyMap = ({ highlightedMuscles, className = "", size = "md", interactive = false, onMuscleClick }: MuscleBodyMapProps) => {
   const isFullBody = highlightedMuscles.includes("corpo-inteiro");
   const primaryMuscle = highlightedMuscles[0];
 
+  const sizeConfig = {
+    sm: { svgW: "w-[72px]", svgH: "h-[100px]", labelSize: "text-[9px]", gap: "gap-1.5" },
+    md: { svgW: "w-[110px]", svgH: "h-[160px]", labelSize: "text-[10px]", gap: "gap-3" },
+    lg: { svgW: "w-[150px]", svgH: "h-[220px]", labelSize: "text-xs", gap: "gap-4" },
+  };
+
+  const cfg = sizeConfig[size];
+
   const getMuscleColor = (muscleId: string) => {
-    if (isFullBody) return "hsl(152 69% 46%)";
-    if (muscleId === primaryMuscle) return "hsl(152 69% 52%)";
-    if (highlightedMuscles.includes(muscleId as MuscleId)) return "hsl(152 69% 46% / 0.5)";
-    return "hsl(225 12% 18%)";
+    if (isFullBody) return "hsl(152 69% 50%)";
+    if (muscleId === primaryMuscle) return "hsl(152 69% 55%)";
+    if (highlightedMuscles.includes(muscleId as MuscleId)) return "hsl(152 69% 46% / 0.55)";
+    return "hsl(225 12% 16%)";
   };
 
   const getMuscleOpacity = (muscleId: string) => {
-    if (isFullBody) return 0.7;
+    if (isFullBody) return 0.75;
     if (muscleId === primaryMuscle) return 1;
-    if (highlightedMuscles.includes(muscleId as MuscleId)) return 0.65;
-    return 0.3;
+    if (highlightedMuscles.includes(muscleId as MuscleId)) return 0.7;
+    return 0.25;
   };
 
   const isActive = (muscleId: string) =>
@@ -128,9 +139,9 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
   const isPrimary = (muscleId: string) => muscleId === primaryMuscle;
 
   const renderSvgView = (side: "front" | "back", label: string) => (
-    <div className="relative">
-      <p className="text-[9px] text-center text-muted-foreground mb-0.5 uppercase tracking-widest font-semibold">{label}</p>
-      <svg viewBox="30 18 120 150" className="w-[72px] h-[100px]" xmlns="http://www.w3.org/2000/svg">
+    <div className="relative flex flex-col items-center">
+      <p className={`${cfg.labelSize} text-center text-muted-foreground mb-1 uppercase tracking-[0.2em] font-semibold`}>{label}</p>
+      <svg viewBox="30 18 120 150" className={`${cfg.svgW} ${cfg.svgH}`} xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id={`glow-${side}`} x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -139,7 +150,7 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          <filter id={`glow-strong-${side}`} x="-50%" y="-50%" width="200%" height="200%">
+          <filter id={`glow-strong-${side}`} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="5" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -147,14 +158,18 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          <linearGradient id={`bodyGrad-${side}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="hsl(225 12% 20%)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="hsl(225 12% 14%)" stopOpacity="0.15" />
+          </linearGradient>
         </defs>
-        {/* Body outline */}
+        {/* Body outline with subtle fill */}
         <path
           d="M90,24 Q96,24 100,28 Q104,32 104,38 L104,40 Q108,40 114,44 Q120,48 122,52 Q126,44 132,44 Q138,48 138,56 Q138,68 136,78 Q134,86 130,94 L128,98 Q130,98 132,100 Q134,104 132,108 L124,100 Q122,100 120,102 Q118,106 116,110 Q114,118 112,126 Q110,134 108,140 Q106,146 104,152 Q102,160 100,164 L80,164 Q78,160 76,152 Q74,146 72,140 Q70,134 68,126 Q66,118 64,110 Q62,106 60,102 Q58,100 56,100 L48,108 Q46,104 48,100 Q50,98 52,98 L50,94 Q46,86 44,78 Q42,68 42,56 Q42,48 48,44 Q54,44 58,52 Q60,48 66,44 Q72,40 76,40 L76,38 Q76,32 80,28 Q84,24 90,24 Z"
-          fill="none"
-          stroke="hsl(225 12% 25%)"
-          strokeWidth="0.8"
-          opacity="0.5"
+          fill={`url(#bodyGrad-${side})`}
+          stroke="hsl(225 12% 28%)"
+          strokeWidth="0.6"
+          opacity="0.7"
         />
         {Object.entries(musclePaths)
           .filter(([, config]) => config.side === side || config.side === "both")
@@ -164,10 +179,11 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
               d={config.d}
               fill={getMuscleColor(id)}
               opacity={getMuscleOpacity(id)}
-              stroke={isActive(id) ? "hsl(152 69% 52%)" : "transparent"}
-              strokeWidth={isPrimary(id) ? "1" : "0.5"}
+              stroke={isActive(id) ? "hsl(152 69% 60%)" : "transparent"}
+              strokeWidth={isPrimary(id) ? "1.2" : "0.6"}
               filter={isPrimary(id) ? `url(#glow-strong-${side})` : isActive(id) ? `url(#glow-${side})` : undefined}
-              className={isPrimary(id) ? "animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" : "transition-all duration-500"}
+              className={`${isPrimary(id) ? "animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" : "transition-all duration-500"} ${interactive ? "cursor-pointer hover:opacity-90" : ""}`}
+              onClick={interactive && onMuscleClick ? () => onMuscleClick(id as MuscleId) : undefined}
             >
               <title>{config.label}</title>
             </path>
@@ -177,7 +193,7 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "" }: MuscleBodyMapProp
   );
 
   return (
-    <div className={`inline-flex gap-1.5 items-start justify-center ${className}`}>
+    <div className={`inline-flex ${cfg.gap} items-start justify-center ${className}`}>
       {renderSvgView("front", "Frente")}
       {renderSvgView("back", "Costas")}
     </div>
