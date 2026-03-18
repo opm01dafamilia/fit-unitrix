@@ -1308,6 +1308,7 @@ const Dieta = () => {
           {generating ? "Calculando..." : `Gerar Plano — ${periodo === "hoje" ? "Hoje" : periodo === "semana" ? "Semana" : "Mês"}`}
         </Button>
       </div>
+      )}
 
       {/* Saved Plans */}
       {loadingPlans ? (
