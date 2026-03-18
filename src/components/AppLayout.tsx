@@ -115,7 +115,7 @@ const AppLayout = () => {
             <div className="hidden lg:block">
               <NotificationCenter />
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground p-2 -mr-2 touch-target touch-feedback rounded-xl">
               <X className="w-5 h-5" />
             </button>
           </div>
