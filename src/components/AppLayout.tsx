@@ -122,7 +122,7 @@ const AppLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-5 space-y-0.5 overflow-y-auto scrollbar-hide">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
           {coreNavItems.map(renderNavLink)}
 
