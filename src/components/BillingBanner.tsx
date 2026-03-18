@@ -1,7 +1,7 @@
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { SubscriptionStatus } from "@/hooks/useSSOAuth";
 
-const ECOSYSTEM_URL = "https://app.platformhub.com";
+const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
 
 interface BillingBannerProps {
   status: SubscriptionStatus;
