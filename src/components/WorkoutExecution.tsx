@@ -3,8 +3,9 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, Clock, Timer, Trophy, Dumbbell,
   Info, RefreshCw, Plus, Pencil, Trash2, X, Check, Play, Pause, RotateCcw,
   TrendingUp, TrendingDown, Minus, History, Heart, Zap, Home, Target, Flame,
-  CheckCircle2, ChevronDown, Sparkles
+  CheckCircle2, ChevronDown, Sparkles, Activity
 } from "lucide-react";
+import CardioSession from "@/components/CardioSession";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -160,6 +161,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [showHistory, setShowHistory] = useState(false);
   const [showStretching, setShowStretching] = useState(true);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [showCardio, setShowCardio] = useState(false);
 
   // Progression
   const [exerciseHistories, setExerciseHistories] = useState<Record<string, ExerciseHistoryEntry[]>>({});
@@ -819,6 +821,16 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
     );
   }
 
+  // ===== CARDIO SESSION SCREEN =====
+  if (showCardio) {
+    return (
+      <CardioSession
+        onFinish={onFinish}
+        onBack={onFinish}
+      />
+    );
+  }
+
   // ===== COMPLETION CELEBRATION SCREEN =====
   if (showCompletion) {
     return (
@@ -938,7 +950,32 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
             </div>
             <p className="text-[11px] text-muted-foreground mt-1.5">{completedCount} de {totalExercises} exercícios completados</p>
           </div>
-          <Button className="w-full h-12 text-base font-semibold" onClick={onFinish}>
+
+          {/* Cardio Prompt */}
+          <div className="glass-card p-5 w-full mb-4 border border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-red-500/5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-display font-bold">Deseja fazer cardio agora?</h3>
+                <p className="text-[11px] text-muted-foreground">Potencialize seus resultados</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold"
+                onClick={() => setShowCardio(true)}
+              >
+                <Flame className="w-4 h-4 mr-2" /> Sim, vamos!
+              </Button>
+              <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={onFinish}>
+                Não, obrigado
+              </Button>
+            </div>
+          </div>
+
+          <Button variant="ghost" className="w-full text-muted-foreground" onClick={onFinish}>
             <Home className="w-5 h-5 mr-2" /> Voltar ao Painel
           </Button>
         </div>
