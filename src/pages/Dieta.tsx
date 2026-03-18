@@ -1459,12 +1459,34 @@ const Dieta = () => {
       )}
 
       {/* Empty state */}
-      {!loadingPlans && savedPlans.length === 0 && !displayPlan && (
+      {!loadingPlans && savedPlans.length === 0 && !displayPlan && dietSource !== "chooser" && dietSource !== "pdf" && (
         <div className="empty-state">
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
-          <p className="text-muted-foreground text-sm">Preencha seus dados e gere seu plano alimentar personalizado.</p>
+          <p className="text-muted-foreground text-sm mb-5">Crie seu plano alimentar personalizado.</p>
+          <button onClick={() => setDietSource("chooser")} className="btn-premium flex items-center justify-center gap-2 mx-auto">
+            <Zap className="w-5 h-5" /> Criar Plano Alimentar
+          </button>
         </div>
+      )}
+
+      {/* Source Choice */}
+      {dietSource === "chooser" && (
+        <PlanSourceChoice
+          type="dieta"
+          onChooseAI={() => setDietSource("ia")}
+          onChoosePDF={() => setDietSource("pdf")}
+          onBack={() => setDietSource(null)}
+        />
+      )}
+
+      {/* PDF Upload */}
+      {dietSource === "pdf" && (
+        <PdfUploadFlow
+          type="dieta"
+          onBack={() => setDietSource("chooser")}
+          onComplete={() => setDietSource(null)}
+        />
       )}
 
       {/* Focus Mode for Meals */}
