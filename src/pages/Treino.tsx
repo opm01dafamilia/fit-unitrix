@@ -599,6 +599,29 @@ const Treino = () => {
     );
   }
 
+  // ==================== CHOOSER VIEW ====================
+  if (view === "chooser") {
+    return (
+      <PlanSourceChoice
+        type="treino"
+        onChooseAI={() => setView("generator")}
+        onChoosePDF={() => setView("pdf-upload")}
+        onBack={() => setView("dashboard")}
+      />
+    );
+  }
+
+  // ==================== PDF UPLOAD VIEW ====================
+  if (view === "pdf-upload") {
+    return (
+      <PdfUploadFlow
+        type="treino"
+        onBack={() => setView("chooser")}
+        onComplete={() => setView("dashboard")}
+      />
+    );
+  }
+
   // ==================== GENERATOR VIEW ====================
   if (view === "generator") {
     const displayPlan = viewingSaved ? (viewingSaved.plan_data as any[]) : generatedPlan;
