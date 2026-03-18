@@ -185,6 +185,9 @@ const Perfil = () => {
           {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </div>
+
+      {/* Meus Arquivos - PDFs */}
+      <MeusArquivos />
     </div>
   );
 };
