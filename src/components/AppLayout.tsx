@@ -72,7 +72,7 @@ const AppLayout = () => {
       end={item.to === "/"}
       onClick={() => setSidebarOpen(false)}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
+        `flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 touch-feedback min-h-[44px]
         ${isActive 
           ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
           : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
@@ -115,14 +115,14 @@ const AppLayout = () => {
             <div className="hidden lg:block">
               <NotificationCenter />
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground">
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-muted-foreground hover:text-foreground p-2 -mr-2 touch-target touch-feedback rounded-xl">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-5 space-y-0.5 overflow-y-auto scrollbar-hide">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
           {coreNavItems.map(renderNavLink)}
 
@@ -163,7 +163,7 @@ const AppLayout = () => {
 
         <button
           onClick={signOut}
-          className="flex items-center gap-2.5 px-7 py-4 text-[13px] text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border"
+          className="flex items-center gap-2.5 px-7 py-4 text-[13px] text-muted-foreground hover:text-destructive transition-colors border-t border-sidebar-border touch-target touch-feedback min-h-[48px]"
         >
           <LogOut className="w-4 h-4" />
           Sair
@@ -171,9 +171,9 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen pb-16 lg:pb-0">
-        <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3.5 bg-background/70 backdrop-blur-xl border-b border-border/50 lg:hidden">
-          <button onClick={() => setSidebarOpen(true)} className="text-foreground p-1">
+      <main className="flex-1 min-h-screen pb-20 lg:pb-0">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-background/80 backdrop-blur-2xl border-b border-border/30 lg:hidden safe-area-header">
+          <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
@@ -183,17 +183,19 @@ const AppLayout = () => {
             </div>
             <span className="font-display font-bold text-sm">FitPulse</span>
           </div>
-          <NotificationCenter />
+          <div className="touch-target flex items-center justify-center">
+            <NotificationCenter />
+          </div>
         </header>
         <BillingBanner status={subscriptionStatus} />
-        <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+        <div className="p-4 lg:p-8 max-w-7xl mx-auto page-enter">
           <Outlet />
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 lg:hidden safe-area-pb">
-        <div className="flex items-center justify-around px-1 py-1">
+      {/* Mobile Bottom Nav — premium feel with safe area */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-2xl border-t border-border/30 lg:hidden safe-area-bottom-nav keyboard-hide">
+        <div className="flex items-center justify-around px-2 pt-1.5 pb-1">
           {[
             { to: "/", icon: LayoutDashboard, label: "Home" },
             { to: "/treino", icon: Dumbbell, label: "Treino" },
@@ -206,12 +208,14 @@ const AppLayout = () => {
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-2 py-1.5 rounded-xl text-[10px] font-medium transition-all active:scale-95
-                ${isActive ? "text-primary bg-primary/8" : "text-muted-foreground active:bg-secondary/60"}`
+                `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-3 py-2 rounded-2xl text-[10px] font-medium transition-all duration-200 touch-feedback
+                ${isActive 
+                  ? "text-primary bg-primary/10 shadow-[0_0_12px_-4px_hsl(152_69%_46%_/_0.2)]" 
+                  : "text-muted-foreground"}`
               }
             >
-              <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <item.icon className="w-[22px] h-[22px]" />
+              <span className="leading-none">{item.label}</span>
             </NavLink>
           ))}
         </div>
