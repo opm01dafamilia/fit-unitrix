@@ -502,6 +502,39 @@ export type Database = {
           },
         ]
       }
+      user_files: {
+        Row: {
+          ai_extracted_data: Json | null
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          ai_extracted_data?: Json | null
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          ai_extracted_data?: Json | null
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_invites: {
         Row: {
           created_at: string

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import FocusMode from "@/components/FocusMode";
+import PdfViewer from "@/components/PdfViewer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,6 +85,8 @@ const Treino = () => {
   const [fatigueSummary, setFatigueSummary] = useState<WeeklyFatigueSummary | null>(null);
   const [recoverySummary, setRecoverySummary] = useState<RecoverySummary | null>(null);
   const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
+  const [treinoPdfs, setTreinoPdfs] = useState<any[]>([]);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
@@ -120,6 +123,16 @@ const Treino = () => {
       if (!sessionsRes.error) { setSessions((sessionsRes.data as WorkoutSession[]) || []); writeCache(CACHE_KEYS.workoutSessions(user.id), sessionsRes.data || []); }
       setLoadingPlans(false);
       setLoadingSessions(false);
+
+      // Fetch treino PDFs
+      const { data: pdfData } = await supabase
+        .from("user_files")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("file_type", "treino")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (pdfData) setTreinoPdfs(pdfData);
     };
     fetchAll();
   }, [user]);
@@ -1272,6 +1285,25 @@ const Treino = () => {
                   </div>
                 )}
 
+                {/* Ver treino em PDF */}
+                {treinoPdfs.length > 0 && (
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5 w-full"
+                      onClick={async () => {
+                        const pdf = treinoPdfs[0];
+                        const { data } = await supabase.storage.from("user-pdfs").createSignedUrl(pdf.file_path, 3600);
+                        if (data?.signedUrl) setViewingPdf({ url: data.signedUrl, name: pdf.file_name });
+                        else toast.error("Erro ao abrir PDF");
+                      }}
+                    >
+                      <FileText className="w-3.5 h-3.5 mr-1.5 text-primary" /> Ver treino em PDF
+                    </Button>
+                  </div>
+                )}
+
                 {todayCompleted && (
                   <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5 justify-center">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥
@@ -1801,6 +1833,15 @@ const Treino = () => {
           </div>
         )}
       </FocusMode>
+
+      {/* PDF Viewer */}
+      {viewingPdf && (
+        <PdfViewer
+          url={viewingPdf.url}
+          fileName={viewingPdf.name}
+          onClose={() => setViewingPdf(null)}
+        />
+      )}
     </div>
     
   );

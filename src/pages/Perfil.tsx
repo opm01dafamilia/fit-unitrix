@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
+import MeusArquivos from "@/components/MeusArquivos";
 
 const Perfil = () => {
   const { profile, refreshProfile } = useAuth();
@@ -184,6 +185,9 @@ const Perfil = () => {
           {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
       </div>
+
+      {/* Meus Arquivos - PDFs */}
+      <MeusArquivos />
     </div>
   );
 };
