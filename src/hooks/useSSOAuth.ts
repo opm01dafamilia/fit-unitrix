@@ -1,20 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired";
 
+/** Check if there are SSO params in the current URL */
+export const hasSSOParams = (): boolean => {
+  const params = new URLSearchParams(window.location.search);
+  return !!(params.get("sso_token") && params.get("sso_app"));
+};
+
 export const useSSOAuth = () => {
-  const [ssoLoading, setSsoLoading] = useState(false);
+  const [ssoLoading, setSsoLoading] = useState(() => hasSSOParams());
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>("active");
+  const didRun = useRef(false);
 
   useEffect(() => {
+    if (didRun.current) return;
+    
     const params = new URLSearchParams(window.location.search);
     const ssoToken = params.get("sso_token");
     const ssoApp = params.get("sso_app");
 
     if (ssoToken && ssoApp) {
+      didRun.current = true;
       handleSSOLogin(ssoToken, ssoApp);
     }
   }, []);
@@ -36,8 +46,8 @@ export const useSSOAuth = () => {
       );
 
       if (!response.ok) {
-        console.error("SSO validation failed");
-        redirectToEcosystem();
+        console.error("SSO validation failed:", response.status);
+        setSsoLoading(false);
         return;
       }
 
@@ -51,7 +61,7 @@ export const useSSOAuth = () => {
 
       if (error) {
         console.error("SSO session creation failed:", error.message);
-        redirectToEcosystem();
+        setSsoLoading(false);
         return;
       }
 
@@ -59,14 +69,13 @@ export const useSSOAuth = () => {
       setSubscriptionStatus(data.subscription_status || "active");
       localStorage.setItem("fitpulse_sub_status", data.subscription_status || "active");
 
-      // Clean URL
+      // Clean URL params
       const url = new URL(window.location.href);
       url.searchParams.delete("sso_token");
       url.searchParams.delete("sso_app");
       window.history.replaceState({}, "", url.pathname + url.search);
     } catch (err) {
       console.error("SSO error:", err);
-      redirectToEcosystem();
     } finally {
       setSsoLoading(false);
     }
