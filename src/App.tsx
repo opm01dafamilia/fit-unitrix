@@ -127,8 +127,9 @@ const OfflineBanner = () => {
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading, setSubscriptionStatus } = useAuth();
-  const { ssoLoading, subscriptionStatus } = useSSOAuth();
+  const { ssoLoading, ssoFinished, ssoError, subscriptionStatus } = useSSOAuth();
   const [redirecting, setRedirecting] = useState(false);
+  const hasParams = hasSSOParams();
 
   useEffect(() => {
     if (subscriptionStatus) {
@@ -150,20 +151,36 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // No user AND no SSO params in URL → redirect to ecosystem
-  if (!user && !redirecting) {
-    // Double-check: if SSO params are still in the URL, don't redirect (edge case)
-    if (hasSSOParams()) {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-muted-foreground">Autenticando via SSO...</p>
+  if (!user && hasParams && ssoFinished) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h1 className="text-base font-semibold text-foreground">Não foi possível concluir o SSO</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {ssoError || "Não conseguimos validar seu acesso automático agora."}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              Tentar novamente
+            </button>
+            <button
+              type="button"
+              onClick={redirectToEcosystem}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Voltar ao ecossistema
+            </button>
           </div>
         </div>
-      );
-    }
-    
+      </div>
+    );
+  }
+
+  if (!user && !redirecting) {
     setRedirecting(true);
     redirectToEcosystem();
     return (

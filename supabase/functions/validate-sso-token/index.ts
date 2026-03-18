@@ -30,25 +30,83 @@ Deno.serve(async (req) => {
     // Validate the SSO token against the ecosystem
     const ecosystemUrl = "https://eco-platform-hub.lovable.app";
     console.log("[validate-sso-token] Calling ecosystem validation...");
-    
-    const validateResponse = await fetch(`${ecosystemUrl}/api/validate-sso`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: sso_token, app_key: app_key }),
-    });
 
-    console.log("[validate-sso-token] Ecosystem response status:", validateResponse.status);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    let validateResponse: Response;
+    let validateRawBody = "";
+
+    try {
+      validateResponse = await fetch(`${ecosystemUrl}/api/validate-sso`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ token: sso_token, app_key: app_key }),
+        signal: controller.signal,
+      });
+      validateRawBody = await validateResponse.text();
+    } catch (fetchError) {
+      const isTimeout = fetchError instanceof Error && fetchError.name === "AbortError";
+      console.error("[validate-sso-token] Ecosystem request failed:", fetchError);
+      return new Response(
+        JSON.stringify({
+          error: isTimeout ? "SSO validation timeout" : "Ecosystem validation request failed",
+        }),
+        { status: isTimeout ? 504 : 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    const contentType = validateResponse.headers.get("content-type") || "unknown";
+    console.log(
+      "[validate-sso-token] Ecosystem response status:",
+      validateResponse.status,
+      "content-type:",
+      contentType
+    );
 
     if (!validateResponse.ok) {
-      const errorText = await validateResponse.text();
-      console.log("[validate-sso-token] Ecosystem validation failed:", errorText);
+      console.log("[validate-sso-token] Ecosystem validation failed:", validateRawBody.slice(0, 300));
       return new Response(
         JSON.stringify({ error: "Invalid SSO token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const ecosystemData = await validateResponse.json();
+    let ecosystemData: {
+      email?: string;
+      full_name?: string;
+      user_id?: string;
+      subscription_status?: string;
+    };
+
+    try {
+      ecosystemData = JSON.parse(validateRawBody);
+    } catch {
+      console.error(
+        "[validate-sso-token] Invalid JSON from ecosystem. Body preview:",
+        validateRawBody.slice(0, 300)
+      );
+      return new Response(
+        JSON.stringify({
+          error: "Invalid validation response",
+          details: "Ecosystem returned non-JSON payload",
+        }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!ecosystemData?.email) {
+      return new Response(
+        JSON.stringify({ error: "Missing email in SSO validation response" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log("[validate-sso-token] Ecosystem data received for:", ecosystemData.email);
 
     const supabaseAdmin = createClient(
