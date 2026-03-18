@@ -161,6 +161,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [showHistory, setShowHistory] = useState(false);
   const [showStretching, setShowStretching] = useState(true);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [showCardio, setShowCardio] = useState(false);
 
   // Progression
   const [exerciseHistories, setExerciseHistories] = useState<Record<string, ExerciseHistoryEntry[]>>({});
