@@ -880,12 +880,13 @@ const Treino = () => {
   // ==================== DASHBOARD VIEW ====================
   return (
     <div className="space-y-5 animate-slide-up">
+      {/* Premium Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Plano Ativo</h1>
-          <p className="text-muted-foreground text-sm mt-1">Acesso rápido ao seu treino</p>
+          <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
+          <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
         </div>
-        <Button onClick={() => setView("generator")} size="sm">
+        <Button onClick={() => setView("generator")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
           <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
         </Button>
       </div>
@@ -893,13 +894,15 @@ const Treino = () => {
       {loadingPlans || loadingSessions ? (
         <TreinoDashboardSkeleton />
       ) : !activePlan ? (
-        <div className="empty-state py-16">
-          <Dumbbell className="w-12 h-12 text-primary mx-auto mb-4 opacity-60" />
-          <h3 className="font-display font-semibold text-lg mb-2">Nenhum plano ativo</h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">Crie seu primeiro plano de treino personalizado para começar a acompanhar seu progresso.</p>
-          <Button onClick={() => setView("generator")}>
-            <Zap className="w-4 h-4 mr-2" /> Criar Plano de Treino
-          </Button>
+        <div className="hero-card p-10 flex flex-col items-center text-center">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-5 shadow-xl">
+            <Dumbbell className="w-10 h-10 text-primary" />
+          </div>
+          <h3 className="font-display font-bold text-2xl mb-2">Crie seu primeiro plano</h3>
+          <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
+          <button onClick={() => setView("generator")} className="btn-premium flex items-center justify-center gap-2">
+            <Zap className="w-5 h-5" /> Criar Plano de Treino
+          </button>
         </div>
       ) : (
         <>
