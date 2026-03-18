@@ -1187,112 +1187,93 @@ const Treino = () => {
             />
           )}
 
-          {/* Next Workout Hero Card */}
+          {/* ===== AI HERO CARD — Next Workout ===== */}
           {nextWorkout && (
-            <div className="glass-card p-6 lg:p-7 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-[0.08] pointer-events-none -translate-y-10 translate-x-10"
-                   style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
-              <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full opacity-[0.04] pointer-events-none translate-y-6 -translate-x-6"
-                   style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
-              <div className="relative z-10">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${getGradient(nextWorkout.grupo)} flex items-center justify-center shadow-lg border border-primary/10`}>
-                      <span className="text-2xl">{getMuscleIcon(nextWorkout.grupo)}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Próximo Treino</span>
-                        {getIntensityBadge(nextWorkout.intensidade)}
-                      </div>
-                      <h2 className="font-display font-bold text-xl">{nextWorkout.dia}</h2>
-                      <p className="text-sm text-muted-foreground">{nextWorkout.grupo} • {nextWorkout.exercicios.length} exercícios</p>
+            <div className="hero-card">
+              <div className="relative z-10 p-6">
+                {/* AI Badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                    <Zap className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold">IA Recomenda</span>
+                  </div>
+                  {getIntensityBadge(nextWorkout.intensidade)}
+                </div>
+
+                {/* Workout Info */}
+                <div className="flex items-start gap-4 mb-5">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${getGradient(nextWorkout.grupo)} flex items-center justify-center border border-primary/10 shadow-xl shrink-0`}>
+                    <span className="text-3xl">{getMuscleIcon(nextWorkout.grupo)}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display font-bold text-2xl leading-tight">{nextWorkout.dia}</h2>
+                    <p className="text-base text-muted-foreground mt-0.5">{nextWorkout.grupo}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="flex items-center gap-1 text-xs text-foreground/60 font-medium px-2.5 py-1 rounded-lg bg-secondary/60 border border-border/30">
+                        <Dumbbell className="w-3.5 h-3.5 text-primary/70" /> {nextWorkout.exercicios.length} exercícios
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-foreground/60 font-medium px-2.5 py-1 rounded-lg bg-secondary/60 border border-border/30">
+                        <Clock className="w-3.5 h-3.5 text-primary/70" /> ~{nextWorkout.exercicios.length * 5}min
+                      </span>
                     </div>
                   </div>
                 </div>
 
+                {/* Progress */}
                 <div className="mb-5">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs text-muted-foreground">Progresso de hoje</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-muted-foreground font-medium">Progresso de hoje</span>
                     <span className="text-xs font-bold text-primary">{todayProgress}%</span>
                   </div>
-                  <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.3)]" style={{ width: `${todayProgress}%` }} />
+                  <div className="h-3 bg-muted/60 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out shadow-[0_0_12px_hsl(var(--primary)/0.35)]" style={{ width: `${todayProgress}%` }} />
                   </div>
                 </div>
 
-                <Button 
+                {/* Premium CTA */}
+                <button 
                   onClick={() => startWorkout(activePlan, todayDayIndex >= 0 ? todayDayIndex : nextDayIndex)} 
-                  className="w-full sm:w-auto h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20"
+                  className={`btn-premium flex items-center justify-center gap-2 ${todayCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
                   disabled={todayCompleted}
+                  style={todayCompleted ? { background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', boxShadow: 'none' } : {}}
                 >
                   {todayCompleted ? (
-                    <><CheckCircle2 className="w-5 h-5 mr-2" /> Treino Concluído</>
+                    <><CheckCircle2 className="w-5 h-5" /> Treino Concluído Hoje</>
                   ) : (
-                    <><Play className="w-5 h-5 mr-2" /> Iniciar Treino</>
+                    <><Play className="w-5 h-5" /> Iniciar Treino</>
                   )}
-                </Button>
+                </button>
                 
-                {/* Warmup & Cardio Buttons */}
+                {/* Warmup & Cardio */}
                 {!todayCompleted && (
                   <div className="flex flex-wrap gap-2 mt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs border-amber-500/20 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
-                      onClick={() => {
-                        toast.info("🔥 Aquecimento iniciado! Faça 5-10 min de mobilidade e cardio leve.", { duration: 5000 });
-                      }}
-                    >
-                      <Flame className="w-3.5 h-3.5 mr-1.5" /> Iniciar Aquecimento
+                    <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
+                      onClick={() => toast.info("🔥 Aquecimento iniciado! Faça 5-10 min de mobilidade e cardio leve.", { duration: 5000 })}>
+                      <Flame className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Aquecimento
                     </Button>
-                    {nextWorkout && nextWorkout.grupo?.toLowerCase().includes("cardio") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    {nextWorkout.grupo?.toLowerCase().includes("cardio") && (
+                      <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
                         onClick={() => {
-                          const cardioInfo = nextWorkout.exercicios?.find((ex: any) =>
-                            ex.nome?.toLowerCase().includes("cardio") || ex.nome?.toLowerCase().includes("corrida") ||
-                            ex.nome?.toLowerCase().includes("caminhada") || ex.nome?.toLowerCase().includes("hiit") ||
-                            ex.nome?.toLowerCase().includes("bicicleta")
-                          );
-                          const msg = cardioInfo
-                            ? `🏃 Cardio: ${cardioInfo.nome} — ${cardioInfo.reps || "20min"}`
-                            : "🏃 Cardio do dia iniciado!";
-                          toast.info(msg, { duration: 5000 });
-                        }}
-                      >
-                        <Heart className="w-3.5 h-3.5 mr-1.5" /> Iniciar Cardio
+                          const cardioInfo = nextWorkout.exercicios?.find((ex: any) => ["cardio","corrida","caminhada","hiit","bicicleta"].some(k => ex.nome?.toLowerCase().includes(k)));
+                          toast.info(cardioInfo ? `🏃 Cardio: ${cardioInfo.nome} — ${cardioInfo.reps || "20min"}` : "🏃 Cardio do dia iniciado!", { duration: 5000 });
+                        }}>
+                        <Heart className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Cardio
                       </Button>
                     )}
-                    {/* Show cardio button also when plan has cardio suffix */}
-                    {nextWorkout && !nextWorkout.grupo?.toLowerCase().includes("cardio") && 
-                     nextWorkout.grupo?.toLowerCase().includes("+ cardio") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                    {!nextWorkout.grupo?.toLowerCase().includes("cardio") && nextWorkout.grupo?.toLowerCase().includes("+ cardio") && (
+                      <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
                         onClick={() => {
-                          const cardioEx = nextWorkout.exercicios?.find((ex: any) =>
-                            ex.nome?.toLowerCase().includes("cardio") || ex.nome?.toLowerCase().includes("corrida") ||
-                            ex.nome?.toLowerCase().includes("caminhada") || ex.nome?.toLowerCase().includes("hiit") ||
-                            ex.nome?.toLowerCase().includes("bicicleta")
-                          );
-                          toast.info(
-                            cardioEx ? `🏃 Cardio: ${cardioEx.nome} — ${cardioEx.reps || "15min"}` : "🏃 Cardio leve pós-treino — 15min",
-                            { duration: 5000 }
-                          );
-                        }}
-                      >
-                        <Heart className="w-3.5 h-3.5 mr-1.5" /> Iniciar Cardio
+                          const cardioEx = nextWorkout.exercicios?.find((ex: any) => ["cardio","corrida","caminhada","hiit","bicicleta"].some(k => ex.nome?.toLowerCase().includes(k)));
+                          toast.info(cardioEx ? `🏃 Cardio: ${cardioEx.nome} — ${cardioEx.reps || "15min"}` : "🏃 Cardio leve pós-treino — 15min", { duration: 5000 });
+                        }}>
+                        <Heart className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Cardio
                       </Button>
                     )}
                   </div>
                 )}
 
                 {todayCompleted && (
-                  <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5">
+                  <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5 justify-center">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥
                   </p>
                 )}
