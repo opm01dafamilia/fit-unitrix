@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
+import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 
 const iconMap: Record<string, any> = {
@@ -37,7 +38,7 @@ const secondaryNavItems = [
 
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, subscriptionStatus } = useAuth();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
@@ -184,6 +185,7 @@ const AppLayout = () => {
           </div>
           <NotificationCenter />
         </header>
+        <BillingBanner status={subscriptionStatus} />
         <div className="p-4 lg:p-8 max-w-7xl mx-auto">
           <Outlet />
         </div>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionStatus, getStoredSubscriptionStatus } from "@/hooks/useSSOAuth";
 
 type Profile = {
   id: string;
@@ -28,8 +29,11 @@ type AuthContextType = {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  subscriptionStatus: SubscriptionStatus;
+  isPremiumBlocked: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  setSubscriptionStatus: (status: SubscriptionStatus) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -37,8 +41,11 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   profile: null,
   loading: true,
+  subscriptionStatus: "active",
+  isPremiumBlocked: false,
   signOut: async () => {},
   refreshProfile: async () => {},
+  setSubscriptionStatus: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -48,6 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>(
+    getStoredSubscriptionStatus()
+  );
+
+  const isPremiumBlocked = subscriptionStatus === "pending" || subscriptionStatus === "canceled" || subscriptionStatus === "expired";
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -58,8 +70,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(data);
   };
 
+  const fetchSubscriptionStatus = async (userId: string) => {
+    const { data } = await supabase
+      .from("user_subscriptions")
+      .select("status")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+    if (data?.status) {
+      const status = data.status as SubscriptionStatus;
+      setSubscriptionStatus(status);
+      localStorage.setItem("fitpulse_sub_status", status);
+    }
+  };
+
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) {
+      await fetchProfile(user.id);
+      await fetchSubscriptionStatus(user.id);
+    }
   };
 
   useEffect(() => {
@@ -68,8 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid potential deadlock with Supabase auth
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+            fetchSubscriptionStatus(session.user.id);
+          }, 0);
         } else {
           setProfile(null);
         }
@@ -82,6 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        fetchSubscriptionStatus(session.user.id);
       }
       setLoading(false);
     });
@@ -94,10 +127,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setProfile(null);
+    localStorage.removeItem("fitpulse_sub_status");
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user, session, profile, loading,
+      subscriptionStatus, isPremiumBlocked,
+      signOut, refreshProfile, setSubscriptionStatus
+    }}>
       {children}
     </AuthContext.Provider>
   );

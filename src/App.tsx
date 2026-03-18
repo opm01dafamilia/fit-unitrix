@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { useSSOAuth, redirectToEcosystem } from "./hooks/useSSOAuth";
 
 // Lazy load all pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -125,20 +126,40 @@ const OfflineBanner = () => {
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, setSubscriptionStatus } = useAuth();
+  const { ssoLoading, subscriptionStatus } = useSSOAuth();
 
-  if (loading) {
+  useEffect(() => {
+    if (subscriptionStatus) {
+      setSubscriptionStatus(subscriptionStatus);
+    }
+  }, [subscriptionStatus, setSubscriptionStatus]);
+
+  if (loading || ssoLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">Carregando...</p>
+          <p className="text-xs text-muted-foreground">
+            {ssoLoading ? "Autenticando via SSO..." : "Carregando..."}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) {
+    redirectToEcosystem();
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-muted-foreground">Redirecionando ao ecossistema...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (profile && !profile.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
   return <>{children}</>;
