@@ -49,10 +49,10 @@ const InviteLanding = () => {
           <>
             <p className="text-muted-foreground text-sm mb-6">
               Você foi convidado para o FitPulse! 🎉<br />
-              Crie sua conta e comece sua jornada fitness.
+              Acesse pelo ecossistema para começar.
             </p>
-            <Button onClick={() => navigate("/auth")} className="w-full h-12 text-sm font-medium">
-              Criar Conta Grátis
+            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} className="w-full h-12 text-sm font-medium">
+              Acessar pelo Ecossistema
             </Button>
           </>
         ) : (
@@ -60,8 +60,8 @@ const InviteLanding = () => {
             <p className="text-muted-foreground text-sm mb-6">
               Link de convite inválido ou expirado.
             </p>
-            <Button onClick={() => navigate("/auth")} variant="outline" className="w-full">
-              Ir para o Login
+            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} variant="outline" className="w-full">
+              Ir para o Ecossistema
             </Button>
           </>
         )}
