@@ -123,6 +123,59 @@ const OfflineBanner = () => {
   );
 };
 
+const AUTO_REDIRECT_SECONDS = 8;
+
+const SSOErrorScreen = ({ ssoError }: { ssoError: string | null }) => {
+  const [countdown, setCountdown] = useState(AUTO_REDIRECT_SECONDS);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          redirectToEcosystem();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+          <span className="text-xl">⚠️</span>
+        </div>
+        <h1 className="text-base font-semibold text-foreground">Acesse pelo ecossistema para continuar</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {ssoError || "Não conseguimos validar seu acesso automático. Por favor, tente novamente pelo ecossistema."}
+        </p>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Redirecionando em <span className="font-semibold text-foreground">{countdown}s</span>…
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Tentar novamente
+          </button>
+          <button
+            type="button"
+            onClick={redirectToEcosystem}
+            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Ir ao ecossistema
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading, setSubscriptionStatus } = useAuth();
   const { ssoLoading, ssoFinished, ssoError, subscriptionStatus } = useSSOAuth();
