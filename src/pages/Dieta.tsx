@@ -1307,7 +1307,7 @@ const Dieta = () => {
         </div>
 
         {/* Generate Button */}
-        <Button onClick={handleGenerate} disabled={generating} size="lg" className="w-full sm:w-auto">
+        <Button onClick={() => guardAction(handleGenerate)} disabled={generating} size="lg" className="w-full sm:w-auto">
           {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
           {generating ? "Calculando..." : `Gerar Plano — ${periodo === "hoje" ? "Hoje" : periodo === "semana" ? "Semana" : "Mês"}`}
         </Button>
