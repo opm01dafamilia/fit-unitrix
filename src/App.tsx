@@ -238,8 +238,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/auth" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Auth /></Suspense></PublicRoute>} />
-            <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
             <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
             <Route path="/onboarding" element={<OnboardingRoute />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
