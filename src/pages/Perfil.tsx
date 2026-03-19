@@ -80,6 +80,8 @@ const Perfil = () => {
   };
 
   return (
+    <>
+    <GateModal />
     <div className="space-y-7 animate-slide-up">
       <div>
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Meu Perfil</h1>
