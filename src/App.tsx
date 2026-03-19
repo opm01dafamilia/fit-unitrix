@@ -126,7 +126,6 @@ const OfflineBanner = () => {
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, profile, loading, setSubscriptionStatus } = useAuth();
   const { ssoLoading, ssoFinished, ssoError, subscriptionStatus } = useSSOAuth();
-  const [redirecting, setRedirecting] = useState(false);
   const hasParams = hasSSOParams();
 
   useEffect(() => {
@@ -134,6 +133,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       setSubscriptionStatus(subscriptionStatus);
     }
   }, [subscriptionStatus, setSubscriptionStatus]);
+
+  // Redirect to ecosystem when no session, no SSO params, and auth is done loading
+  useEffect(() => {
+    if (!loading && !ssoLoading && ssoFinished && !user && !hasParams) {
+      redirectToEcosystem();
+    }
+  }, [loading, ssoLoading, ssoFinished, user, hasParams]);
 
   // Still loading auth state or processing SSO token
   if (loading || ssoLoading) {
@@ -149,6 +155,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
+  // SSO finished but failed — show error with retry options
   if (!user && hasParams && ssoFinished) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -178,23 +185,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user && !redirecting) {
-    setRedirecting(true);
-    redirectToEcosystem();
+  // No user and no SSO params — show redirecting state (effect above handles the redirect)
+  if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-muted-foreground">Redirecionando ao ecossistema...</p>
         </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
