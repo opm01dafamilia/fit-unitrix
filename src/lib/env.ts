@@ -22,7 +22,7 @@ export const APP_KEY: string =
 export const SSO_TIMEOUT_MS: number =
   Number(import.meta.env.VITE_SSO_TIMEOUT_MS) || 15000;
 
-/** Full URL of the SSO validation edge function */
+/** Full URL of the LOCAL SSO validation edge function (this project's proxy) */
 export const SSO_VALIDATE_URL: string =
   import.meta.env.VITE_SSO_VALIDATE_URL ||
-  "https://rjhigmcbfbtyfbrvgeth.supabase.co/functions/v1/validate-sso-token";
+  `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || "jaqmvfzbawokunalkmjz"}.supabase.co/functions/v1/validate-sso-token`;

@@ -102,6 +102,7 @@ export const useSSOAuth = () => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ sso_token: ssoToken, app_key: appKey }),
         signal: controller.signal,
