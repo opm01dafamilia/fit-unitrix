@@ -165,7 +165,23 @@ Deno.serve(async (req) => {
         }, ecoRes.status === 401 ? 401 : 502);
       }
 
-      if (!parsed?.email) {
+      // Map ecosystem field names (user_email, user_name) to internal names
+      const anyParsed = parsed as Record<string, unknown>;
+      const mappedData: EcosystemValidationData = {
+        email: (parsed?.email || anyParsed?.user_email) as string | undefined,
+        full_name: (parsed?.full_name || anyParsed?.user_name) as string | undefined,
+        user_id: (parsed?.user_id || anyParsed?.user_id) as string | undefined,
+        access_type: (parsed?.access_type || anyParsed?.access_type) as string | undefined,
+        subscription_status: parsed?.subscription_status,
+      };
+
+      console.log("[validate-sso-token] Mapped fields:", {
+        email: mappedData.email,
+        full_name: mappedData.full_name,
+        access_type: mappedData.access_type,
+      });
+
+      if (!mappedData.email) {
         return jsonResponse({
           error: "Missing email in SSO validation response",
           details: JSON.stringify(parsed),
@@ -173,7 +189,7 @@ Deno.serve(async (req) => {
         }, 502);
       }
 
-      ecosystemData = parsed;
+      ecosystemData = mappedData;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error("[validate-sso-token] Ecosystem call failed:", msg);
