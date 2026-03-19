@@ -102,6 +102,7 @@ export const useSSOAuth = () => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ sso_token: ssoToken, app_key: appKey }),
         signal: controller.signal,
@@ -140,7 +141,8 @@ export const useSSOAuth = () => {
 
       console.log("[SSO] Session created successfully for:", authData.user?.email);
 
-      const nextSubscriptionStatus = payload.subscription_status || "active";
+      // Sync subscription status from edge function response
+      const nextSubscriptionStatus = (payload.subscription_status || "active") as SubscriptionStatus;
       setSubscriptionStatus(nextSubscriptionStatus);
       localStorage.setItem("fitpulse_sub_status", nextSubscriptionStatus);
 
