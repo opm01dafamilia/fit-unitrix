@@ -9,12 +9,13 @@ export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "
 
 type ValidationPayload = {
   token_hash?: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
   subscription_status?: SubscriptionStatus;
   error?: string;
   details?: string;
   stage?: string;
-  ecosystem_url?: string;
-  ecosystem_status?: number;
 };
 
 /** Check if there are SSO params in the current URL */
@@ -118,8 +119,6 @@ export const useSSOAuth = () => {
         status: response.status,
         ok: response.ok,
         stage: payload?.stage,
-        ecosystemStatus: payload?.ecosystem_status,
-        ecosystemUrl: payload?.ecosystem_url,
       });
 
       if (!response.ok) {

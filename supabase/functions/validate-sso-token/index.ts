@@ -15,13 +15,6 @@ type EcosystemValidationData = {
   details?: string;
 };
 
-type ValidationAttempt = {
-  url: string;
-  status?: number;
-  contentType?: string;
-  error?: string;
-  preview?: string;
-};
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -42,22 +35,9 @@ const isJsonContentType = (contentType: string) =>
 
 const maskToken = (token: string) => `${token.slice(0, 6)}...${token.slice(-4)}`;
 
-const buildValidationUrls = () => {
-  const ecosystemBaseUrl =
-    Deno.env.get("ECOSYSTEM_URL")?.trim() || "https://eco-platform-hub.lovable.app";
-  const customValidationUrl = Deno.env.get("ECOSYSTEM_SSO_VALIDATE_URL")?.trim();
-
-  return Array.from(
-    new Set(
-      [
-        customValidationUrl,
-        `${ecosystemBaseUrl}/api/validate-sso`,
-        `${ecosystemBaseUrl}/api/sso/validate`,
-        `${ecosystemBaseUrl}/api/validate-sso-token`,
-      ].filter(Boolean)
-    )
-  ) as string[];
-};
+const ECOSYSTEM_VALIDATE_URL =
+  Deno.env.get("ECOSYSTEM_SSO_VALIDATE_URL")?.trim() ||
+  "https://rjhigmcbfbtyfbrvgeth.supabase.co/functions/v1/validate-sso-token";
 
 const callValidationEndpoint = async (
   url: string,
@@ -138,100 +118,69 @@ Deno.serve(async (req) => {
       sso_app: app_key,
     };
 
-    const validationUrls = buildValidationUrls();
-    const attempts: ValidationAttempt[] = [];
-
-    console.log("[validate-sso-token] Trying ecosystem validation endpoints", validationUrls);
+    console.log("[validate-sso-token] Calling ecosystem validation at", ECOSYSTEM_VALIDATE_URL);
 
     let ecosystemData: EcosystemValidationData | null = null;
-    let selectedEndpoint: string | null = null;
 
-    for (const url of validationUrls) {
-      try {
-        const { response, rawBody, contentType, parsedBody } = await callValidationEndpoint(
-          url,
-          validationPayload
+    try {
+      const { response, rawBody, contentType, parsedBody } = await callValidationEndpoint(
+        ECOSYSTEM_VALIDATE_URL,
+        validationPayload,
+        12000
+      );
+
+      console.log("[validate-sso-token] Ecosystem response", {
+        status: response.status,
+        contentType,
+        preview: rawBody.slice(0, 200),
+      });
+
+      if (!isJsonContentType(contentType)) {
+        return jsonResponse(
+          {
+            error: "Endpoint de validação retornou resposta não-JSON",
+            details: `Content-Type: ${contentType}`,
+            stage: "ecosystem_validation",
+            ecosystem_url: ECOSYSTEM_VALIDATE_URL,
+          },
+          502
         );
-
-        attempts.push({
-          url,
-          status: response.status,
-          contentType,
-          preview: rawBody.slice(0, 180),
-        });
-
-        console.log("[validate-sso-token] Ecosystem response", {
-          url,
-          status: response.status,
-          contentType,
-        });
-
-        if (!isJsonContentType(contentType)) {
-          console.warn("[validate-sso-token] Non-JSON response from ecosystem endpoint", {
-            url,
-            status: response.status,
-            contentType,
-          });
-          continue;
-        }
-
-        if (!response.ok) {
-          const upstreamError =
-            parsedBody?.error || parsedBody?.details || "Ecosystem rejected SSO validation";
-
-          return jsonResponse(
-            {
-              error: upstreamError,
-              details: `Validation rejected by ecosystem at ${url}`,
-              stage: "ecosystem_validation",
-              ecosystem_status: response.status,
-              ecosystem_url: url,
-            },
-            response.status === 401 ? 401 : 502
-          );
-        }
-
-        if (!parsedBody) {
-          return jsonResponse(
-            {
-              error: "Invalid validation response",
-              details: `Endpoint ${url} respondeu JSON inválido`,
-              stage: "ecosystem_validation",
-              ecosystem_url: url,
-            },
-            502
-          );
-        }
-
-        if (!parsedBody.email) {
-          return jsonResponse(
-            {
-              error: "Missing email in SSO validation response",
-              details: `Endpoint ${url} não retornou email`,
-              stage: "ecosystem_validation",
-              ecosystem_url: url,
-            },
-            502
-          );
-        }
-
-        ecosystemData = parsedBody;
-        selectedEndpoint = url;
-        break;
-      } catch (endpointError) {
-        const message = endpointError instanceof Error ? endpointError.message : String(endpointError);
-        attempts.push({ url, error: message });
-        console.error("[validate-sso-token] Ecosystem endpoint request failed", { url, message });
       }
-    }
 
-    if (!ecosystemData || !selectedEndpoint) {
+      if (!response.ok) {
+        return jsonResponse(
+          {
+            error: parsedBody?.error || "Ecosystem rejected SSO validation",
+            details: parsedBody?.details || `HTTP ${response.status}`,
+            stage: "ecosystem_validation",
+            ecosystem_status: response.status,
+            ecosystem_url: ECOSYSTEM_VALIDATE_URL,
+          },
+          response.status === 401 ? 401 : 502
+        );
+      }
+
+      if (!parsedBody?.email) {
+        return jsonResponse(
+          {
+            error: "Missing email in SSO validation response",
+            details: JSON.stringify(parsedBody),
+            stage: "ecosystem_validation",
+          },
+          502
+        );
+      }
+
+      ecosystemData = parsedBody;
+    } catch (endpointError) {
+      const message = endpointError instanceof Error ? endpointError.message : String(endpointError);
+      console.error("[validate-sso-token] Ecosystem call failed", message);
       return jsonResponse(
         {
-          error: "Nenhum endpoint de validação SSO retornou JSON válido",
-          details: "O ecossistema retornou HTML ou resposta inválida para todas as tentativas",
+          error: "Falha ao conectar com o ecossistema",
+          details: message,
           stage: "ecosystem_validation",
-          attempts,
+          ecosystem_url: ECOSYSTEM_VALIDATE_URL,
         },
         502
       );
@@ -239,7 +188,7 @@ Deno.serve(async (req) => {
 
     console.log("[validate-sso-token] Ecosystem validation succeeded", {
       email: ecosystemData.email,
-      endpoint: selectedEndpoint,
+      endpoint: ECOSYSTEM_VALIDATE_URL,
     });
 
     const supabaseAdmin = createClient(
@@ -339,7 +288,7 @@ Deno.serve(async (req) => {
       subscription_status: ecosystemData.subscription_status || "active",
       verification_type: "magiclink",
       stage: "session_ready",
-      ecosystem_url: selectedEndpoint,
+      ecosystem_url: ECOSYSTEM_VALIDATE_URL,
     });
   } catch (err) {
     console.error("[validate-sso-token] Internal error", err);
