@@ -141,7 +141,8 @@ export const useSSOAuth = () => {
 
       console.log("[SSO] Session created successfully for:", authData.user?.email);
 
-      const nextSubscriptionStatus = payload.subscription_status || "active";
+      // Sync subscription status from edge function response
+      const nextSubscriptionStatus = (payload.subscription_status || "active") as SubscriptionStatus;
       setSubscriptionStatus(nextSubscriptionStatus);
       localStorage.setItem("fitpulse_sub_status", nextSubscriptionStatus);
 
