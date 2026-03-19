@@ -32,15 +32,11 @@ const parseJson = (raw: string): EcosystemValidationData | null => {
   }
 };
 
-const maskToken = (t: string) => `${t.slice(0, 6)}...${t.slice(-4)}`;
+const maskToken = (t: string) =>
+  t.length > 10 ? `${t.slice(0, 6)}...${t.slice(-4)}` : "***";
 
 /**
  * Maps the ecosystem's `access_type` (pt-BR) to FitPulse subscription status.
- *
- *  vitalício → lifetime
- *  pago      → active
- *  trial     → trial
- *  (fallback)→ value from subscription_status field, or "active"
  */
 const mapAccessType = (data: EcosystemValidationData): string => {
   const raw = (data.access_type || "").trim().toLowerCase();
@@ -59,16 +55,15 @@ const mapAccessType = (data: EcosystemValidationData): string => {
   };
 
   if (map[raw]) return map[raw];
-
-  // Fallback: use subscription_status if ecosystem sent it
   if (data.subscription_status) return data.subscription_status;
-
   return "active";
 };
 
 const ECOSYSTEM_VALIDATE_URL =
   Deno.env.get("ECOSYSTEM_SSO_VALIDATE_URL")?.trim() ||
   "https://rjhigmcbfbtyfbrvgeth.supabase.co/functions/v1/validate-sso-token";
+
+const ECOSYSTEM_ANON_KEY = Deno.env.get("ECOSYSTEM_ANON_KEY")?.trim() || "";
 
 // ─── main handler ───────────────────────────────────────────────────
 
@@ -86,13 +81,17 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Invalid request body", stage: "request_validation" }, 400);
     }
 
-    const sso_token = body.sso_token;
+    // Decode token in case it was URL-encoded in the redirect
+    const rawToken = body.sso_token || "";
+    const sso_token = decodeURIComponent(rawToken);
     const app_key = body.app_key || body.sso_app;
 
     console.log("[validate-sso-token] Request received", {
       app_key,
       hasToken: !!sso_token,
       tokenPreview: sso_token ? maskToken(sso_token) : null,
+      tokenLength: sso_token.length,
+      wasUrlEncoded: rawToken !== sso_token,
     });
 
     if (!sso_token || !app_key) {
@@ -107,10 +106,31 @@ Deno.serve(async (req) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
 
+      // Build headers — include ecosystem anon key if available
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      };
+      if (ECOSYSTEM_ANON_KEY) {
+        headers["apikey"] = ECOSYSTEM_ANON_KEY;
+        headers["Authorization"] = `Bearer ${ECOSYSTEM_ANON_KEY}`;
+      }
+
+      // Send all common field names so the ecosystem can pick whichever it expects
+      const requestBody = {
+        token: sso_token,
+        sso_token: sso_token,
+        app_key: app_key,
+        sso_app: app_key,
+      };
+
+      console.log("[validate-sso-token] Ecosystem request body keys:", Object.keys(requestBody));
+      console.log("[validate-sso-token] Ecosystem request has apikey header:", !!headers["apikey"]);
+
       const ecoRes = await fetch(ECOSYSTEM_VALIDATE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ token: sso_token, sso_token, app_key, sso_app: app_key }),
+        headers,
+        body: JSON.stringify(requestBody),
         signal: controller.signal,
       });
 
@@ -122,7 +142,8 @@ Deno.serve(async (req) => {
       console.log("[validate-sso-token] Ecosystem response", {
         status: ecoRes.status,
         contentType,
-        preview: rawBody.slice(0, 200),
+        bodyLength: rawBody.length,
+        preview: rawBody.slice(0, 300),
       });
 
       if (!contentType.includes("application/json") && !contentType.includes("+json")) {
@@ -136,6 +157,7 @@ Deno.serve(async (req) => {
       const parsed = parseJson(rawBody);
 
       if (!ecoRes.ok) {
+        console.error("[validate-sso-token] Ecosystem rejected:", ecoRes.status, rawBody);
         return jsonResponse({
           error: parsed?.error || "Ecosystem rejected SSO validation",
           details: parsed?.details || `HTTP ${ecoRes.status}`,
@@ -162,7 +184,7 @@ Deno.serve(async (req) => {
       }, 502);
     }
 
-    // 3. Resolve subscription status from access_type mapping
+    // 3. Resolve subscription status
     const subscriptionStatus = mapAccessType(ecosystemData);
 
     console.log("[validate-sso-token] Ecosystem OK", {
@@ -244,7 +266,6 @@ Deno.serve(async (req) => {
             .eq("id", existingSub.id);
         }
       } else {
-        // Create subscription record if none exists
         await supabaseAdmin.from("user_subscriptions").insert({
           user_id: user.id,
           status: subscriptionStatus,
