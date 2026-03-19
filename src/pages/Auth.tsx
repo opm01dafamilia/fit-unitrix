@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { redirectToEcosystem } from "@/hooks/useSSOAuth";
 import { Flame, Loader2 } from "lucide-react";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 const Auth = () => {
   useEffect(() => {
