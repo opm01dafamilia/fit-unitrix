@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();
