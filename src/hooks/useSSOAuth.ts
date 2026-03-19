@@ -119,8 +119,6 @@ export const useSSOAuth = () => {
         status: response.status,
         ok: response.ok,
         stage: payload?.stage,
-        ecosystemStatus: payload?.ecosystem_status,
-        ecosystemUrl: payload?.ecosystem_url,
       });
 
       if (!response.ok) {
