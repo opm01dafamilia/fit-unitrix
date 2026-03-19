@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User, Save, Loader2 } from "lucide-react";
+import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import MeusArquivos from "@/components/MeusArquivos";
 
 const Perfil = () => {
   const { profile, refreshProfile } = useAuth();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   const [saving, setSaving] = useState(false);
   const [nome, setNome] = useState("");
   const [idade, setIdade] = useState("");
@@ -78,6 +80,8 @@ const Perfil = () => {
   };
 
   return (
+    <>
+    <GateModal />
     <div className="space-y-7 animate-slide-up">
       <div>
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Meu Perfil</h1>
@@ -180,7 +184,7 @@ const Perfil = () => {
             <Input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="Ex: Brasil" className="bg-secondary/50 border-border/50" />
           </div>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={() => guardAction(handleSave)} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
           {saving ? "Salvando..." : "Salvar Alterações"}
         </Button>
@@ -189,6 +193,7 @@ const Perfil = () => {
       {/* Meus Arquivos - PDFs */}
       <MeusArquivos />
     </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
+import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 import PdfUploadFlow from "@/components/PdfUploadFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
@@ -45,6 +46,7 @@ type WorkoutSession = {
 const Treino = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
   const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "pdf-upload" | "execution">("dashboard");
   const [executionKey, setExecutionKey] = useState(0);
@@ -917,6 +919,8 @@ const Treino = () => {
 
   // ==================== DASHBOARD VIEW ====================
   return (
+    <>
+    <GateModal />
     <div className="space-y-5 animate-slide-up">
       {/* Premium Header */}
       <div className="flex items-center justify-between">
@@ -924,7 +928,7 @@ const Treino = () => {
           <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
           <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
         </div>
-        <Button onClick={() => setView("chooser")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+        <Button onClick={() => guardAction(() => setView("chooser"))} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
           <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
         </Button>
       </div>
@@ -938,7 +942,7 @@ const Treino = () => {
           </div>
           <h3 className="font-display font-bold text-2xl mb-2">Crie seu primeiro plano</h3>
           <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
-          <button onClick={() => setView("chooser")} className="btn-premium flex items-center justify-center gap-2">
+          <button onClick={() => guardAction(() => setView("chooser"))} className="btn-premium flex items-center justify-center gap-2">
             <Zap className="w-5 h-5" /> Criar Plano de Treino
           </button>
         </div>
@@ -1868,7 +1872,7 @@ const Treino = () => {
         />
       )}
     </div>
-    
+    </>
   );
 };
 

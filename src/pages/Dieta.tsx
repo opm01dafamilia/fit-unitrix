@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3, AlertTriangle } from "lucide-react";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 import PdfUploadFlow from "@/components/PdfUploadFlow";
@@ -597,6 +598,7 @@ function buildMetaDescription(sp: any): string | null {
 
 const Dieta = () => {
   const { user, profile } = useAuth();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   const [dietSource, setDietSource] = useState<"chooser" | "ia" | "pdf" | null>(null);
   const [objetivo, setObjetivo] = useState("");
   const [peso, setPeso] = useState("");
@@ -977,6 +979,8 @@ const Dieta = () => {
   }, [dietStreak, streakMilestones]);
 
   return (
+    <>
+    <GateModal />
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
       <div>
@@ -1052,7 +1056,7 @@ const Dieta = () => {
         {/* New Plan button when plans exist */}
         {savedPlans.length > 0 && !displayPlan && (
           <div className="flex justify-center mb-2">
-            <Button onClick={() => setDietSource("chooser")} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+            <Button onClick={() => guardAction(() => setDietSource("chooser"))} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
               <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
             </Button>
           </div>
@@ -1303,7 +1307,7 @@ const Dieta = () => {
         </div>
 
         {/* Generate Button */}
-        <Button onClick={handleGenerate} disabled={generating} size="lg" className="w-full sm:w-auto">
+        <Button onClick={() => guardAction(handleGenerate)} disabled={generating} size="lg" className="w-full sm:w-auto">
           {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
           {generating ? "Calculando..." : `Gerar Plano — ${periodo === "hoje" ? "Hoje" : periodo === "semana" ? "Semana" : "Mês"}`}
         </Button>
@@ -1474,7 +1478,7 @@ const Dieta = () => {
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
           <p className="text-muted-foreground text-sm mb-5">Crie seu plano alimentar personalizado.</p>
-          <button onClick={() => setDietSource("chooser")} className="btn-premium flex items-center justify-center gap-2 mx-auto">
+          <button onClick={() => guardAction(() => setDietSource("chooser"))} className="btn-premium flex items-center justify-center gap-2 mx-auto">
             <Zap className="w-5 h-5" /> Criar Plano Alimentar
           </button>
         </div>
@@ -1511,7 +1515,7 @@ const Dieta = () => {
         currentGoal={currentGoal}
       />
     </div>
-    
+    </>
   );
 };
 
