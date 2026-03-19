@@ -12,6 +12,7 @@ import MeusArquivos from "@/components/MeusArquivos";
 
 const Perfil = () => {
   const { profile, refreshProfile } = useAuth();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   const [saving, setSaving] = useState(false);
   const [nome, setNome] = useState("");
   const [idade, setIdade] = useState("");
