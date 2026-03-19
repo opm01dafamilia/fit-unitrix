@@ -8,7 +8,7 @@ interface BillingBannerProps {
 }
 
 const BillingBanner = ({ status }: BillingBannerProps) => {
-  if (status === "active" || status === "trial") return null;
+  if (status === "active" || status === "trial" || status === "lifetime") return null;
 
   const config = {
     pending: {
