@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Flame, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();
@@ -51,7 +52,7 @@ const InviteLanding = () => {
               Você foi convidado para o FitPulse! 🎉<br />
               Acesse pelo ecossistema para começar.
             </p>
-            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} className="w-full h-12 text-sm font-medium">
+            <Button onClick={() => window.location.href = ECOSYSTEM_URL} className="w-full h-12 text-sm font-medium">
               Acessar pelo Ecossistema
             </Button>
           </>
@@ -60,7 +61,7 @@ const InviteLanding = () => {
             <p className="text-muted-foreground text-sm mb-6">
               Link de convite inválido ou expirado.
             </p>
-            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} variant="outline" className="w-full">
+            <Button onClick={() => window.location.href = ECOSYSTEM_URL} variant="outline" className="w-full">
               Ir para o Ecossistema
             </Button>
           </>

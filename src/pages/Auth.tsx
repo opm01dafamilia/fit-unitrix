@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { redirectToEcosystem } from "@/hooks/useSSOAuth";
 import { Flame, Loader2 } from "lucide-react";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 const Auth = () => {
   useEffect(() => {
@@ -29,7 +30,7 @@ const Auth = () => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-xs text-muted-foreground mt-4">
           Acesse o FitPulse pelo{" "}
-          <a href="https://eco-platform-hub.lovable.app" className="text-primary hover:underline font-medium">
+          <a href={ECOSYSTEM_URL} className="text-primary hover:underline font-medium">
             Platform Hub
           </a>
         </p>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 type Invite = {
   id: string;
@@ -71,7 +72,7 @@ const Convites = () => {
       });
     }
 
-    const link = `https://eco-platform-hub.lovable.app/invite/${inviteCode}`;
+    const link = `${ECOSYSTEM_URL}/invite/${inviteCode}`;
     await navigator.clipboard.writeText(link);
     toast.success("Link copiado! Compartilhe com seus amigos 🎉");
     setGenerating(false);
@@ -89,7 +90,7 @@ const Convites = () => {
       fetchInvites();
     }
 
-    const link = `https://eco-platform-hub.lovable.app/invite/${inviteCode}`;
+    const link = `${ECOSYSTEM_URL}/invite/${inviteCode}`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -140,7 +141,7 @@ const Convites = () => {
 
         <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/50 border border-border/50 mb-4">
           <code className="flex-1 text-xs text-foreground truncate">
-            https://eco-platform-hub.lovable.app/invite/{inviteCode}
+            {ECOSYSTEM_URL}/invite/{inviteCode}
           </code>
         </div>
 
