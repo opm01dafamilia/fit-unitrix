@@ -42,22 +42,9 @@ const isJsonContentType = (contentType: string) =>
 
 const maskToken = (token: string) => `${token.slice(0, 6)}...${token.slice(-4)}`;
 
-const buildValidationUrls = () => {
-  const ecosystemBaseUrl =
-    Deno.env.get("ECOSYSTEM_URL")?.trim() || "https://eco-platform-hub.lovable.app";
-  const customValidationUrl = Deno.env.get("ECOSYSTEM_SSO_VALIDATE_URL")?.trim();
-
-  return Array.from(
-    new Set(
-      [
-        customValidationUrl,
-        `${ecosystemBaseUrl}/api/validate-sso`,
-        `${ecosystemBaseUrl}/api/sso/validate`,
-        `${ecosystemBaseUrl}/api/validate-sso-token`,
-      ].filter(Boolean)
-    )
-  ) as string[];
-};
+const ECOSYSTEM_VALIDATE_URL =
+  Deno.env.get("ECOSYSTEM_SSO_VALIDATE_URL")?.trim() ||
+  "https://rjhigmcbfbtyfbrvgeth.supabase.co/functions/v1/validate-sso-token";
 
 const callValidationEndpoint = async (
   url: string,
