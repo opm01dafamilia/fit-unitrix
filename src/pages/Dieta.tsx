@@ -979,6 +979,8 @@ const Dieta = () => {
   }, [dietStreak, streakMilestones]);
 
   return (
+    <>
+    <GateModal />
     <div className="space-y-6 animate-slide-up">
       {/* Header */}
       <div>
