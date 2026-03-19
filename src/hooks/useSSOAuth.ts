@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ECOSYSTEM_URL, APP_KEY, SSO_TIMEOUT_MS } from "@/lib/env";
+import { ECOSYSTEM_URL, APP_KEY, SSO_TIMEOUT_MS, SSO_VALIDATE_URL } from "@/lib/env";
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired" | "lifetime";
 
