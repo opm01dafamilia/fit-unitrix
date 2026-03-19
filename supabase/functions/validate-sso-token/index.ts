@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
 
     console.log("[validate-sso-token] Ecosystem validation succeeded", {
       email: ecosystemData.email,
-      endpoint: selectedEndpoint,
+      endpoint: ECOSYSTEM_VALIDATE_URL,
     });
 
     const supabaseAdmin = createClient(
