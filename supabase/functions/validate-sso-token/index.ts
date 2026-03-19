@@ -295,7 +295,7 @@ Deno.serve(async (req) => {
       subscription_status: ecosystemData.subscription_status || "active",
       verification_type: "magiclink",
       stage: "session_ready",
-      ecosystem_url: selectedEndpoint,
+      ecosystem_url: ECOSYSTEM_VALIDATE_URL,
     });
   } catch (err) {
     console.error("[validate-sso-token] Internal error", err);
