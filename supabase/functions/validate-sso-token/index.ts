@@ -15,13 +15,6 @@ type EcosystemValidationData = {
   details?: string;
 };
 
-type ValidationAttempt = {
-  url: string;
-  status?: number;
-  contentType?: string;
-  error?: string;
-  preview?: string;
-};
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
