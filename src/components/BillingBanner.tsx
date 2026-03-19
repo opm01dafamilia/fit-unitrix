@@ -35,21 +35,23 @@ const BillingBanner = ({ status }: BillingBannerProps) => {
   if (!c) return null;
 
   return (
-    <div className={`mx-4 mt-4 p-3.5 rounded-xl border ${c.bg} flex items-center gap-3`}>
-      <AlertTriangle className={`w-5 h-5 shrink-0 ${c.text}`} />
-      <div className="flex-1 min-w-0">
-        <p className={`text-xs font-medium ${c.text}`}>
-          {c.icon} {c.message}
-        </p>
+    <div className="sticky top-0 z-40 lg:top-0 w-full">
+      <div className={`px-4 py-3 border-b ${c.bg} flex items-center gap-3`}>
+        <AlertTriangle className={`w-5 h-5 shrink-0 ${c.text}`} />
+        <div className="flex-1 min-w-0">
+          <p className={`text-xs font-medium ${c.text}`}>
+            {c.icon} {c.message}
+          </p>
+        </div>
+        <a
+          href={`${ECOSYSTEM_URL}/billing`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
+        >
+          Regularizar <ExternalLink className="w-3 h-3" />
+        </a>
       </div>
-      <a
-        href={`${ECOSYSTEM_URL}/billing`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
-      >
-        Resolver <ExternalLink className="w-3 h-3" />
-      </a>
     </div>
   );
 };
