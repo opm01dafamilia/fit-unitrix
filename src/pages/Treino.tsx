@@ -919,6 +919,8 @@ const Treino = () => {
 
   // ==================== DASHBOARD VIEW ====================
   return (
+    <>
+    <GateModal />
     <div className="space-y-5 animate-slide-up">
       {/* Premium Header */}
       <div className="flex items-center justify-between">
