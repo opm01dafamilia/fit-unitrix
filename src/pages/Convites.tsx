@@ -141,7 +141,7 @@ const Convites = () => {
 
         <div className="flex items-center gap-2 p-3 rounded-xl bg-secondary/50 border border-border/50 mb-4">
           <code className="flex-1 text-xs text-foreground truncate">
-            https://eco-platform-hub.lovable.app/invite/{inviteCode}
+            {ECOSYSTEM_URL}/invite/{inviteCode}
           </code>
         </div>
 

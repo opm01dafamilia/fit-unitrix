@@ -61,7 +61,7 @@ const InviteLanding = () => {
             <p className="text-muted-foreground text-sm mb-6">
               Link de convite inválido ou expirado.
             </p>
-            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} variant="outline" className="w-full">
+            <Button onClick={() => window.location.href = ECOSYSTEM_URL} variant="outline" className="w-full">
               Ir para o Ecossistema
             </Button>
           </>

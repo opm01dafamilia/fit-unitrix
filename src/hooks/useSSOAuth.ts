@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
-const APP_KEY = "fitpulse";
-const SSO_TIMEOUT_MS = 15000;
+import { ECOSYSTEM_URL, APP_KEY, SSO_TIMEOUT_MS } from "@/lib/env";
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired" | "lifetime";
 

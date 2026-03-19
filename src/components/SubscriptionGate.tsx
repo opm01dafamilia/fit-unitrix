@@ -11,7 +11,7 @@ import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { toast } from "@/components/ui/sonner";
 import { useState, useCallback } from "react";
 
-const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
+import { ECOSYSTEM_URL } from "@/lib/env";
 
 /**
  * Hook that returns a guard function.
