@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const isPremiumBlocked = subscriptionStatus === "pending" || subscriptionStatus === "canceled" || subscriptionStatus === "expired";
+  // "lifetime" is treated as full access, same as "active"
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase

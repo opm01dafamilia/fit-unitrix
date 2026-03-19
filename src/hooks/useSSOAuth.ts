@@ -5,7 +5,7 @@ const ECOSYSTEM_URL = "https://eco-platform-hub.lovable.app";
 const APP_KEY = "fitpulse";
 const SSO_TIMEOUT_MS = 15000;
 
-export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired";
+export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired" | "lifetime";
 
 type ValidationPayload = {
   token_hash?: string;
