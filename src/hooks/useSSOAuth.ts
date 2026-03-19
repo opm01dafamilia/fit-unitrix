@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ECOSYSTEM_URL, APP_KEY, SSO_TIMEOUT_MS } from "@/lib/env";
+import { ECOSYSTEM_URL, APP_KEY, SSO_TIMEOUT_MS, SSO_VALIDATE_URL } from "@/lib/env";
 
 export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired" | "lifetime";
 
@@ -95,15 +95,13 @@ export const useSSOAuth = () => {
     const timeoutId = window.setTimeout(() => controller.abort(), SSO_TIMEOUT_MS);
 
     try {
-      console.log("[SSO] Starting validation with app_key:", appKey);
+      console.log("[SSO] Starting validation at:", SSO_VALIDATE_URL, "with app_key:", appKey);
 
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const response = await fetch(`https://${projectId}.supabase.co/functions/v1/validate-sso-token`, {
+      const response = await fetch(SSO_VALIDATE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ sso_token: ssoToken, app_key: appKey }),
         signal: controller.signal,
