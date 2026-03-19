@@ -21,3 +21,8 @@ export const APP_KEY: string =
 /** SSO validation timeout in ms */
 export const SSO_TIMEOUT_MS: number =
   Number(import.meta.env.VITE_SSO_TIMEOUT_MS) || 15000;
+
+/** Full URL of the SSO validation edge function */
+export const SSO_VALIDATE_URL: string =
+  import.meta.env.VITE_SSO_VALIDATE_URL ||
+  "https://rjhigmcbfbtyfbrvgeth.supabase.co/functions/v1/validate-sso-token";
