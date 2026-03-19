@@ -216,7 +216,10 @@ const OnboardingRoute = () => {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) {
+    redirectToEcosystem();
+    return null;
+  }
   if (profile?.onboarding_completed) return <Navigate to="/" replace />;
 
   return (
