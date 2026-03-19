@@ -34,9 +34,7 @@ const MinhaLiga = lazy(() => import("./pages/MinhaLiga"));
 const EvolucaoTreino = lazy(() => import("./pages/EvolucaoTreino"));
 const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
-const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GIF preloading removed from app start - now lazy-loaded per page
@@ -206,24 +204,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, profile, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (user) {
-    if (profile && !profile.onboarding_completed) return <Navigate to="/onboarding" replace />;
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
 
 const OnboardingRoute = () => {
   const { user, profile, loading } = useAuth();
@@ -236,7 +216,10 @@ const OnboardingRoute = () => {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) {
+    redirectToEcosystem();
+    return null;
+  }
   if (profile?.onboarding_completed) return <Navigate to="/" replace />;
 
   return (
@@ -255,8 +238,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/auth" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Auth /></Suspense></PublicRoute>} />
-            <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
             <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
             <Route path="/onboarding" element={<OnboardingRoute />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
