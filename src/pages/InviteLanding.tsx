@@ -52,7 +52,7 @@ const InviteLanding = () => {
               Você foi convidado para o FitPulse! 🎉<br />
               Acesse pelo ecossistema para começar.
             </p>
-            <Button onClick={() => window.location.href = "https://eco-platform-hub.lovable.app"} className="w-full h-12 text-sm font-medium">
+            <Button onClick={() => window.location.href = ECOSYSTEM_URL} className="w-full h-12 text-sm font-medium">
               Acessar pelo Ecossistema
             </Button>
           </>
