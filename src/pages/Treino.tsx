@@ -45,6 +45,7 @@ type WorkoutSession = {
 const Treino = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
   const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "pdf-upload" | "execution">("dashboard");
   const [executionKey, setExecutionKey] = useState(0);
