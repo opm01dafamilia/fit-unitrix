@@ -155,34 +155,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // SSO finished but failed — show error with retry options
+  // SSO finished but failed — show error with auto-redirect countdown
   if (!user && hasParams && ssoFinished) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h1 className="text-base font-semibold text-foreground">Não foi possível concluir o SSO</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {ssoError || "Não conseguimos validar seu acesso automático agora."}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-            >
-              Tentar novamente
-            </button>
-            <button
-              type="button"
-              onClick={redirectToEcosystem}
-              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Voltar ao ecossistema
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <SSOErrorScreen ssoError={ssoError} />;
   }
 
   // No user and no SSO params — show redirecting state (effect above handles the redirect)
