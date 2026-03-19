@@ -26,7 +26,8 @@ const clearSSOParamsFromUrl = () => {
   url.searchParams.delete("sso_token");
   url.searchParams.delete("app_key");
   url.searchParams.delete("sso_app");
-  window.history.replaceState({}, "", url.pathname + url.search);
+  const cleanUrl = url.pathname + (url.search === "?" ? "" : url.search);
+  window.history.replaceState({}, "", cleanUrl);
 };
 
 const parseValidationPayload = (raw: string): ValidationPayload | null => {
