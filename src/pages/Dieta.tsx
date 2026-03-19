@@ -598,6 +598,7 @@ function buildMetaDescription(sp: any): string | null {
 
 const Dieta = () => {
   const { user, profile } = useAuth();
+  const { guardAction, GateModal } = useSubscriptionGuard();
   const [dietSource, setDietSource] = useState<"chooser" | "ia" | "pdf" | null>(null);
   const [objetivo, setObjetivo] = useState("");
   const [peso, setPeso] = useState("");
