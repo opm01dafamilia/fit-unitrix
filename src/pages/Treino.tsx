@@ -4,6 +4,7 @@ import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 import PdfUploadFlow from "@/components/PdfUploadFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
+import CardioSession from "@/components/CardioSession";
 import FocusMode from "@/components/FocusMode";
 import PdfViewer from "@/components/PdfViewer";
 import { Button } from "@/components/ui/button";
