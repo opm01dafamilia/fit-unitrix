@@ -921,26 +921,37 @@ const Treino = () => {
   return (
     <>
     <GateModal />
-    <div className="space-y-5 animate-slide-up w-full">
+    <div className="space-y-6 animate-slide-up w-full">
       {/* Premium Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
-          <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
+      <div className="relative overflow-hidden rounded-2xl p-5 sm:p-6" style={{ background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--card) / 0.7))' }}>
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, hsl(var(--primary)), transparent 50%)' }} />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-1">FitPulse</p>
+            <h1 className="text-3xl lg:text-4xl font-display font-black tracking-tight leading-none">Treino</h1>
+            <p className="text-muted-foreground text-sm mt-1.5">Sua jornada fitness começa aqui</p>
+          </div>
+          <Button
+            onClick={() => guardAction(() => setView("chooser"))}
+            className="h-12 w-full sm:w-auto px-6 rounded-2xl font-bold text-sm shadow-xl active:scale-[0.97] transition-all border-0"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
+              boxShadow: '0 8px 32px -8px hsl(var(--primary) / 0.35)',
+            }}
+          >
+            <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
+          </Button>
         </div>
-        <Button onClick={() => guardAction(() => setView("chooser"))} className="h-11 w-full sm:w-auto px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
-          <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
-        </Button>
       </div>
 
       {loadingPlans || loadingSessions ? (
         <TreinoDashboardSkeleton />
       ) : !activePlan ? (
-        <div className="hero-card p-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-5 shadow-xl">
+        <div className="rounded-2xl border border-border/30 p-10 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5 shadow-xl border border-primary/10" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
             <Dumbbell className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="font-display font-bold text-2xl mb-2">Crie seu primeiro plano</h3>
+          <h3 className="font-display font-black text-2xl mb-2">Crie seu primeiro plano</h3>
           <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
           <button onClick={() => guardAction(() => setView("chooser"))} className="btn-premium flex items-center justify-center gap-2">
             <Zap className="w-5 h-5" /> Criar Plano de Treino
@@ -1419,70 +1430,68 @@ const Treino = () => {
           )}
 
           {/* Streak + Stats Row — Premium */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="hero-card">
-              <div className="relative z-10 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Flame className="w-5 h-5 text-primary" />
-                  </div>
-                </div>
-                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{streak}</p>
-                <p className="text-xs text-muted-foreground mt-1.5 font-medium">
-                  {streak > 0 ? "Dias em sequência 🔥" : "Treine hoje!"}
-                </p>
-              </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Flame className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{streak}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">
+                {streak > 0 ? "Sequência" : "Comece!"}
+              </p>
             </div>
-            <div className="hero-card">
-              <div className="relative z-10 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Trophy className="w-5 h-5 text-primary" />
-                  </div>
-                </div>
-                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{totalCompleted}</p>
-                <p className="text-xs text-muted-foreground mt-1.5 font-medium">Treinos concluídos</p>
-              </div>
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Trophy className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{totalCompleted}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Treinos</p>
+            </div>
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Dumbbell className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{avgExercises}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Média/Sessão</p>
             </div>
           </div>
 
           {/* Weekly Consistency — Premium */}
-          <div className="hero-card">
-            <div className="relative z-10 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Target className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-display font-bold">Consistência Semanal</p>
-                    <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
-                  </div>
+          <div className="rounded-2xl border border-border/30 p-5 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/10" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.04))' }}>
+                  <Target className="w-5 h-5 text-primary" />
                 </div>
-                <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
-                  {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
-                </span>
+                <div>
+                  <p className="text-sm font-display font-bold">Consistência Semanal</p>
+                  <p className="text-[10px] text-muted-foreground">Meta semanal de treinos</p>
+                </div>
               </div>
-              <div className="h-3 bg-muted/60 rounded-full overflow-hidden mb-2">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.3)]" 
-                  style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
-                />
-              </div>
-              <p className={`text-xs font-medium ${consistencyFeedback.color}`}>
-                {consistencyFeedback.text}
-              </p>
+              <span className={`text-lg font-display font-black ${consistencyFeedback.color}`}>
+                {weeklyConsistency.done}/{weeklyConsistency.target}
+              </span>
             </div>
+            <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden mb-2.5">
+              <div 
+                className="h-full rounded-full transition-all duration-700 ease-out" 
+                style={{ 
+                  width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%`,
+                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))',
+                  boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
+                }} 
+              />
+            </div>
+            <p className={`text-xs font-semibold ${consistencyFeedback.color}`}>
+              {consistencyFeedback.emoji} {consistencyFeedback.text}
+            </p>
           </div>
 
 
           {/* ===== PREMIUM PLAN DAYS CARDS ===== */}
           {activePlanData && (
             <div>
-              <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <h3 className="font-display font-bold text-xs mb-4 text-muted-foreground uppercase tracking-[0.15em] flex items-center gap-2">
                 <Dumbbell className="w-4 h-4 text-primary" /> Dias do Plano
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 {activePlanData.map((day: any, i: number) => {
                   const isTodays = i === todayDayIndex;
                   const isCompleted = sessions.some(s =>
@@ -1494,87 +1503,90 @@ const Treino = () => {
                   return (
                     <div
                       key={i}
-                      className={`relative overflow-hidden transition-all duration-300 group rounded-xl ${
+                      className={`relative overflow-hidden rounded-2xl transition-all duration-300 active:scale-[0.98] ${
                         isTodays
-                          ? "border-2 border-primary/30 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.2)]"
+                          ? "border-2 border-primary/30"
                           : isCompleted
-                          ? "border-2 border-green-500/25"
-                          : "border border-border/50"
+                          ? "border border-green-500/25"
+                          : "border border-border/30"
                       }`}
                       style={{
                         background: isTodays
-                          ? 'linear-gradient(145deg, hsl(225 16% 13% / 0.98), hsl(225 16% 9% / 0.98))'
-                          : 'linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95))',
+                          ? 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.8))'
+                          : 'linear-gradient(145deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.5))',
                         boxShadow: isTodays
-                          ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
-                          : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
-                        opacity: !isTodays && !isCompleted ? 0.6 : 1,
+                          ? '0 4px 24px -4px hsl(var(--primary) / 0.12)'
+                          : '0 2px 8px -2px hsl(var(--background) / 0.4)',
+                        opacity: !isTodays && !isCompleted ? 0.65 : 1,
                         cursor: canStart ? 'pointer' : 'default',
                       }}
                       onClick={() => canStart && startWorkout(activePlan, i)}
                     >
                       {isTodays && (
-                        <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
-                             style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
+                        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-[0.06] pointer-events-none -translate-y-10 translate-x-10"
+                             style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 70%)' }} />
                       )}
                       <div className="relative z-10 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
-                              isTodays ? "border-primary/20 shadow-primary/10" : "border-border/30"
-                            }`}>
-                              <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center border shrink-0 ${
+                            isTodays ? "border-primary/20 shadow-lg" : "border-border/20"
+                          }`}>
+                            <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-display font-bold text-foreground">{day.dia}</p>
+                              {getIntensityBadge(day.intensidade)}
+                              {isTodays && !todayCompleted && (
+                                <span className="text-[8px] uppercase tracking-[0.15em] text-primary font-black px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Hoje</span>
+                              )}
+                              {isCompleted && (
+                                <span className="text-[8px] uppercase tracking-[0.15em] text-green-400 font-black px-2 py-0.5 rounded-md bg-green-500/10 border border-green-500/15 flex items-center gap-0.5">
+                                  <Check className="w-2.5 h-2.5" /> Feito
+                                </span>
+                              )}
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-foreground">{day.dia}</p>
-                                {getIntensityBadge(day.intensidade)}
-                                {isTodays && !todayCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Hoje</span>
-                                )}
-                                {isCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
-                                    <Check className="w-2.5 h-2.5" /> Feito
-                                  </span>
-                                )}
-                                {!isTodays && !isCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-0.5 rounded-md bg-muted/50 border border-border/30">
-                                    Apenas visualizar
-                                  </span>
-                                )}
+                            <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1.5">
+                              {day.grupo}
+                              {(() => {
+                                const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
+                                const rl = getGroupRecoveryLevel(day.grupo, sessionData);
+                                if (rl === "recovered") return <span className="text-[8px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/10">🟢</span>;
+                                if (rl === "attention") return <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/10">🟡</span>;
+                                return <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/10">🔴</span>;
+                              })()}
+                            </p>
+                          </div>
+                          {/* Right side: quick stats + action */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="text-right hidden sm:block">
+                              <p className="text-xs font-display font-bold text-foreground">{day.exercicios.length}</p>
+                              <p className="text-[8px] text-muted-foreground">exerc.</p>
+                            </div>
+                            {canStart ? (
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/20" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
+                                <Play className="w-4 h-4 text-primary" />
                               </div>
-                              <p className="text-xs text-foreground/70 font-medium mt-0.5 flex items-center gap-1.5">
-                                {day.grupo}
-                                {(() => {
-                                  const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
-                                  const rl = getGroupRecoveryLevel(day.grupo, sessionData);
-                                  if (rl === "recovered") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/15">🟢</span>;
-                                  if (rl === "attention") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/15">🟡</span>;
-                                  return <span className="text-[8px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/15">🔴</span>;
-                                })()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 text-[11px] text-foreground/60 font-medium">
-                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
-                              <Dumbbell className="w-3 h-3 text-primary/70" /> {day.exercicios.length} exercícios
-                            </span>
-                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
-                              <Clock className="w-3 h-3 text-primary/70" /> ~{day.exercicios.length * 5}min
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
-                              <Eye className="w-3.5 h-3.5 mr-1" /> Ver
-                            </Button>
-                            {canStart && (
-                              <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-primary">
-                                <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                            ) : (
+                              <Button variant="ghost" size="sm" className="h-10 w-10 rounded-xl p-0 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
+                                <Eye className="w-4 h-4" />
                               </Button>
                             )}
                           </div>
+                        </div>
+                        {/* Bottom row: exercise count + time */}
+                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium">
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
+                            <Dumbbell className="w-3 h-3 text-primary/60" /> {day.exercicios.length} exercícios
+                          </span>
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
+                            <Clock className="w-3 h-3 text-primary/60" /> ~{day.exercicios.length * 5}min
+                          </span>
+                          {!isTodays && !isCompleted && (
+                            <span className="ml-auto text-[9px] text-muted-foreground/60 font-medium">
+                              Apenas visualizar
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1603,82 +1615,69 @@ const Treino = () => {
             const unlocked = achievements.filter(a => a.unlocked).length;
             const nextAchievement = achievements.find(a => !a.unlocked);
             return (
-              <div className="glass-card p-4 lg:p-5 cursor-pointer hover:bg-secondary/20 transition-colors" onClick={() => navigate("/conquistas")}>
+              <div className="rounded-2xl border border-border/30 p-4 cursor-pointer hover:border-primary/20 transition-all active:scale-[0.98]" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }} onClick={() => navigate("/conquistas")}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
-                      <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(45 93% 47% / 0.12), hsl(45 93% 47% / 0.04))' }}>
+                      <Trophy className="w-4 h-4 text-amber-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold">Conquistas</p>
+                      <p className="text-sm font-display font-bold">Conquistas</p>
                       <p className="text-[10px] text-muted-foreground">{unlocked}/{achievements.length} desbloqueadas</p>
                     </div>
                   </div>
-                  <span className="text-xs text-primary font-medium">Ver todas →</span>
+                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider">Ver →</span>
                 </div>
                 {nextAchievement && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40">
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
                     <span className="text-lg">{nextAchievement.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium">{nextAchievement.title}</p>
-                      <div className="h-1 bg-muted rounded-full overflow-hidden mt-1">
-                        <div className="h-full bg-primary/50 rounded-full" style={{ width: `${nextAchievement.progress}%` }} />
+                      <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden mt-1.5">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${nextAchievement.progress}%`, background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.5))' }} />
                       </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{nextAchievement.progress}%</span>
+                    <span className="text-[10px] font-bold text-primary">{nextAchievement.progress}%</span>
                   </div>
                 )}
               </div>
             );
           })()}
 
-          {/* Avg exercises + Weekly Evolution */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="glass-card p-4 lg:p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
-                  <TrendingUp className="w-4.5 h-4.5 text-primary" />
+          {/* Weekly Evolution */}
+          {weeklyEvolution && (
+            <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(var(--chart-2) / 0.12), hsl(var(--chart-2) / 0.04))' }}>
+                  <BarChart3 className="w-4 h-4 text-chart-2" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium">Média por sessão</p>
-                  <p className="text-xs text-muted-foreground">{avgExercises} exercícios</p>
+                <p className="text-sm font-display font-bold">Evolução Semanal</p>
+              </div>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
+                  <span className="text-xs font-bold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
+                </div>
+                {weeklyEvolution.avgWeightIncrease > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
+                    <span className="text-xs font-bold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Consistência</span>
+                  <span className="text-xs font-bold text-foreground">{weeklyEvolution.consistency}%</span>
+                </div>
+                <div className="h-2 bg-muted/40 rounded-full overflow-hidden mt-1">
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%`, background: 'linear-gradient(90deg, hsl(var(--chart-2)), hsl(var(--chart-2) / 0.5))' }} />
                 </div>
               </div>
             </div>
-            {weeklyEvolution && (
-              <div className="glass-card p-4 lg:p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/5 flex items-center justify-center">
-                    <BarChart3 className="w-4.5 h-4.5 text-chart-2" />
-                  </div>
-                  <p className="text-sm font-medium">Evolução Semanal</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
-                    <span className="text-xs font-semibold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
-                  </div>
-                  {weeklyEvolution.avgWeightIncrease > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
-                      <span className="text-xs font-semibold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Consistência</span>
-                    <span className="text-xs font-semibold">{weeklyEvolution.consistency}%</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                    <div className="h-full bg-chart-2 rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%` }} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Evolution Timeline */}
           {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
-            <div className="glass-card p-4 lg:p-5">
+            <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
                   <Activity className="w-4.5 h-4.5 text-primary" />
@@ -1718,7 +1717,7 @@ const Treino = () => {
           )}
 
           {/* Calendar */}
-          <div className="glass-card p-5 lg:p-6">
+          <div className="rounded-2xl border border-border/30 p-5" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-primary" /> Calendário de Treinos
