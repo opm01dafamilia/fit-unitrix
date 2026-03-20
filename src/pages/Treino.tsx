@@ -633,7 +633,7 @@ const Treino = () => {
       <PlanSourceChoice
         type="treino"
         onChooseAI={() => setView("generator")}
-        onChoosePDF={() => setView("pdf-upload")}
+        onChoosePDF={() => {}}
         onChooseManual={() => setView("manual-guided")}
         onBack={() => setView("dashboard")}
       />
