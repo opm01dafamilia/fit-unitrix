@@ -4,6 +4,7 @@ import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 import PdfUploadFlow from "@/components/PdfUploadFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
+import CardioSession from "@/components/CardioSession";
 import FocusMode from "@/components/FocusMode";
 import PdfViewer from "@/components/PdfViewer";
 import { Button } from "@/components/ui/button";
@@ -48,8 +49,10 @@ const Treino = () => {
   const navigate = useNavigate();
   const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
-  const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "pdf-upload" | "execution">("dashboard");
+  const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "pdf-upload" | "execution" | "pre-cardio">("dashboard");
   const [executionKey, setExecutionKey] = useState(0);
+  // Pre-cardio state — store pending plan/day to start after cardio finishes
+  const [pendingCardio, setPendingCardio] = useState<{ plan: any; dayIndex: number } | null>(null);
   // Generator state
   const [objetivo, setObjetivo] = useState("");
   const [nivel, setNivel] = useState("");
@@ -552,6 +555,28 @@ const Treino = () => {
       setView("dashboard");
     } catch { toast.error("Erro ao salvar sessão"); }
   };
+
+  // ==================== PRE-CARDIO VIEW ====================
+  if (view === "pre-cardio" && pendingCardio) {
+    return (
+      <CardioSession
+        onFinish={() => {
+          toast.success("🔥 Cardio concluído! Iniciando treino...", { duration: 3000 });
+          const { plan, dayIndex } = pendingCardio;
+          setPendingCardio(null);
+          setExecutingPlan(plan);
+          setExecutingDayIndex(dayIndex);
+          setCompletedExercises(new Set());
+          setExecutionKey(k => k + 1);
+          setView("execution");
+        }}
+        onBack={() => {
+          setPendingCardio(null);
+          setView("dashboard");
+        }}
+      />
+    );
+  }
 
   // ==================== EXECUTION VIEW ====================
   if (view === "execution" && executingPlan) {
@@ -1574,14 +1599,27 @@ const Treino = () => {
                             )}
                           </div>
                         </div>
-                        {/* Bottom row: exercise count + time */}
-                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium">
+                        {/* Bottom row: exercise count + time + cardio option */}
+                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium flex-wrap">
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
                             <Dumbbell className="w-3 h-3 text-primary/60" /> {day.exercicios.length} exercícios
                           </span>
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
                             <Clock className="w-3 h-3 text-primary/60" /> ~{day.exercicios.length * 5}min
                           </span>
+                          {canStart && (
+                            <button
+                              className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-lg border border-chart-3/20 text-chart-3 text-[10px] font-semibold hover:bg-chart-3/10 transition-all"
+                              style={{ background: "hsl(var(--chart-3) / 0.06)" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPendingCardio({ plan: activePlan, dayIndex: i });
+                                setView("pre-cardio");
+                              }}
+                            >
+                              <Flame className="w-3 h-3" /> Cardio primeiro
+                            </button>
+                          )}
                           {!isTodays && !isCompleted && (
                             <span className="ml-auto text-[9px] text-muted-foreground/60 font-medium">
                               Apenas visualizar
@@ -1865,12 +1903,25 @@ const Treino = () => {
               {/* Bottom */}
               <div className="px-4 pb-4 pt-1 space-y-2">
                 {canStartThis ? (
-                  <Button
-                    onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, focusIdx); } }}
-                    className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
-                  >
-                    <Play className="w-4 h-4 mr-2" /> Iniciar Treino
-                  </Button>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setFocusDay(null);
+                        setPendingCardio({ plan: activePlan, dayIndex: focusIdx });
+                        setView("pre-cardio");
+                      }}
+                      className="w-full h-10 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold border border-chart-3/20 text-chart-3 hover:bg-chart-3/10 transition-all"
+                      style={{ background: "hsl(var(--chart-3) / 0.06)" }}
+                    >
+                      <Flame className="w-4 h-4" /> Fazer Cardio Primeiro
+                    </button>
+                    <Button
+                      onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, focusIdx); } }}
+                      className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
+                    >
+                      <Play className="w-4 h-4 mr-2" /> Iniciar Treino
+                    </Button>
+                  </div>
                 ) : (
                   <div className="w-full h-10 flex items-center justify-center text-xs text-muted-foreground font-medium rounded-lg bg-muted/30 border border-border/30">
                     🔒 Disponível apenas no dia correspondente
