@@ -767,7 +767,7 @@ function isAuxiliaryExercise(nome: string): boolean {
 }
 
 function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
-  const MAX_EXERCISES = 5;
+  const MAX_EXERCISES = 6;
   return plan.map(day => {
     const g = day.grupo.toLowerCase();
     if (g.includes("mobilidade") || g.includes("recuperacao")) return day;
