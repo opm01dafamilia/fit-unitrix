@@ -85,7 +85,7 @@ const AppLayout = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
@@ -171,7 +171,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen pb-20 lg:pb-0">
+      <main className="flex-1 min-w-0 pb-20 lg:pb-0 overflow-y-auto">
         <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-background/80 backdrop-blur-2xl border-b border-border/30 lg:hidden safe-area-header">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
