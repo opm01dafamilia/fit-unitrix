@@ -40,6 +40,7 @@ const secondaryNavItems = [
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut, subscriptionStatus } = useAuth();
+  const { isPersonal } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
