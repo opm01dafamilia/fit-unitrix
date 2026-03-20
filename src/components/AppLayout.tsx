@@ -171,7 +171,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex flex-1 flex-col min-w-0 min-h-screen overflow-y-auto overflow-x-hidden overscroll-y-auto app-scroll-area">
+      <main className="flex flex-1 flex-col min-w-0 min-h-screen overflow-x-hidden overscroll-y-auto app-scroll-area">
         <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-background/80 backdrop-blur-2xl border-b border-border/30 lg:hidden safe-area-header">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
