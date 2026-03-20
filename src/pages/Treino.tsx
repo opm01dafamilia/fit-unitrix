@@ -1599,14 +1599,27 @@ const Treino = () => {
                             )}
                           </div>
                         </div>
-                        {/* Bottom row: exercise count + time */}
-                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium">
+                        {/* Bottom row: exercise count + time + cardio option */}
+                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium flex-wrap">
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
                             <Dumbbell className="w-3 h-3 text-primary/60" /> {day.exercicios.length} exercícios
                           </span>
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
                             <Clock className="w-3 h-3 text-primary/60" /> ~{day.exercicios.length * 5}min
                           </span>
+                          {canStart && (
+                            <button
+                              className="ml-auto flex items-center gap-1 px-2.5 py-1 rounded-lg border border-chart-3/20 text-chart-3 text-[10px] font-semibold hover:bg-chart-3/10 transition-all"
+                              style={{ background: "hsl(var(--chart-3) / 0.06)" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPendingCardio({ plan: activePlan, dayIndex: i });
+                                setView("pre-cardio");
+                              }}
+                            >
+                              <Flame className="w-3 h-3" /> Cardio primeiro
+                            </button>
+                          )}
                           {!isTodays && !isCompleted && (
                             <span className="ml-auto text-[9px] text-muted-foreground/60 font-medium">
                               Apenas visualizar
