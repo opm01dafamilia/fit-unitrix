@@ -645,8 +645,13 @@ const Treino = () => {
     return (
       <ManualWorkoutFlow
         onBack={() => setView("chooser")}
-        onComplete={() => {
-          loadPlans();
+        onComplete={async () => {
+          if (user) {
+            invalidateCache(CACHE_KEYS.workoutPlans(user.id));
+            const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+            setSavedPlans(data || []);
+            writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
+          }
           setView("dashboard");
         }}
       />
