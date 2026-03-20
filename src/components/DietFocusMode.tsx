@@ -143,12 +143,13 @@ const DietFocusMode = ({
   const hiddenCount = meal.itens.length - maxVisibleItems;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {/* Blurred dark overlay */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-200">
+      {/* Blurred dark overlay — blocks interaction */}
       <div
-        className="absolute inset-0 backdrop-blur-md"
-        style={{ background: "hsl(225 18% 4% / 0.88)" }}
+        className="absolute inset-0 backdrop-blur-xl"
+        style={{ background: "hsl(225 18% 4% / 0.92)" }}
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Full-screen container — no scroll */}
