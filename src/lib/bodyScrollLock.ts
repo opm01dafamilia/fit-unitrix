@@ -2,7 +2,7 @@ const LOCK_COUNT_ATTR = "data-scroll-lock-count";
 const PREV_OVERFLOW_ATTR = "data-prev-overflow";
 const PREV_TOUCH_ATTR = "data-prev-touch-action";
 
-function getLockCount(body: HTMLBodyElement): number {
+function getLockCount(body: HTMLElement): number {
   return Number(body.getAttribute(LOCK_COUNT_ATTR) || "0");
 }
 
