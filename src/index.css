@@ -195,7 +195,7 @@
   .app-scroll-area {
     min-height: 0;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
   }
 
   .mobile-content-safe {
