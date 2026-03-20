@@ -219,7 +219,7 @@ const PerfilFitness = () => {
   if (loading) return <PerfilFitnessSkeleton />;
 
   return (
-    <div className="space-y-5 animate-slide-up">
+    <div className="space-y-5 animate-slide-up w-full">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
@@ -330,7 +330,7 @@ const PerfilFitness = () => {
       <FitnessProgressBar totalXP={totalXP} />
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="glass-card p-3 flex flex-col items-center">
           <Star className="w-4 h-4 text-chart-3 mb-1" />
           <p className="font-display font-bold text-base">{totalXP}</p>
@@ -456,7 +456,7 @@ const PerfilFitness = () => {
           <TrendingUp className="w-4 h-4 text-chart-2" />
           <h3 className="text-sm font-bold">Evolução Corporal</h3>
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <div className="p-2.5 rounded-lg bg-secondary/40 text-center">
             <p className="text-[9px] text-muted-foreground mb-0.5">Peso Inicial</p>
             <p className="text-sm font-display font-bold">{initialWeight ? `${initialWeight} kg` : "—"}</p>
@@ -506,7 +506,7 @@ const PerfilFitness = () => {
             Ver todas →
           </button>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="p-3 rounded-lg bg-secondary/40 text-center">
             <p className="text-lg font-display font-bold">{unlockedCount}</p>
             <p className="text-[9px] text-muted-foreground">Desbloqueadas</p>

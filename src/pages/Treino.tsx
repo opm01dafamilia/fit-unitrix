@@ -630,7 +630,7 @@ const Treino = () => {
     const showDisplay = (showPlan && generatedPlan.length > 0) || viewingSaved;
 
     return (
-      <div className="space-y-7 animate-slide-up">
+      <div className="space-y-7 animate-slide-up w-full">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => { setView("dashboard"); setShowPlan(false); setViewingSaved(null); }}>
             <ArrowLeft className="w-5 h-5" />
@@ -921,14 +921,14 @@ const Treino = () => {
   return (
     <>
     <GateModal />
-    <div className="space-y-5 animate-slide-up">
+    <div className="space-y-5 animate-slide-up w-full">
       {/* Premium Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
           <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
         </div>
-        <Button onClick={() => guardAction(() => setView("chooser"))} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+        <Button onClick={() => guardAction(() => setView("chooser"))} className="h-11 w-full sm:w-auto px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
           <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
         </Button>
       </div>
