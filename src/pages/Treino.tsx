@@ -1430,60 +1430,58 @@ const Treino = () => {
           )}
 
           {/* Streak + Stats Row — Premium */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="hero-card">
-              <div className="relative z-10 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Flame className="w-5 h-5 text-primary" />
-                  </div>
-                </div>
-                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{streak}</p>
-                <p className="text-xs text-muted-foreground mt-1.5 font-medium">
-                  {streak > 0 ? "Dias em sequência 🔥" : "Treine hoje!"}
-                </p>
-              </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Flame className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{streak}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">
+                {streak > 0 ? "Sequência" : "Comece!"}
+              </p>
             </div>
-            <div className="hero-card">
-              <div className="relative z-10 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Trophy className="w-5 h-5 text-primary" />
-                  </div>
-                </div>
-                <p className="metric-giant" style={{ fontSize: '2.5rem' }}>{totalCompleted}</p>
-                <p className="text-xs text-muted-foreground mt-1.5 font-medium">Treinos concluídos</p>
-              </div>
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Trophy className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{totalCompleted}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Treinos</p>
+            </div>
+            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
+              <Dumbbell className="w-5 h-5 text-primary mb-2" />
+              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{avgExercises}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Média/Sessão</p>
             </div>
           </div>
 
           {/* Weekly Consistency — Premium */}
-          <div className="hero-card">
-            <div className="relative z-10 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center border border-primary/10">
-                    <Target className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-display font-bold">Consistência Semanal</p>
-                    <p className="text-[10px] text-muted-foreground">Treinos esta semana</p>
-                  </div>
+          <div className="rounded-2xl border border-border/30 p-5 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/10" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.04))' }}>
+                  <Target className="w-5 h-5 text-primary" />
                 </div>
-                <span className={`text-sm font-bold ${consistencyFeedback.color}`}>
-                  {consistencyFeedback.emoji} {weeklyConsistency.done}/{weeklyConsistency.target}
-                </span>
+                <div>
+                  <p className="text-sm font-display font-bold">Consistência Semanal</p>
+                  <p className="text-[10px] text-muted-foreground">Meta semanal de treinos</p>
+                </div>
               </div>
-              <div className="h-3 bg-muted/60 rounded-full overflow-hidden mb-2">
-                <div 
-                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_hsl(var(--primary)/0.3)]" 
-                  style={{ width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%` }} 
-                />
-              </div>
-              <p className={`text-xs font-medium ${consistencyFeedback.color}`}>
-                {consistencyFeedback.text}
-              </p>
+              <span className={`text-lg font-display font-black ${consistencyFeedback.color}`}>
+                {weeklyConsistency.done}/{weeklyConsistency.target}
+              </span>
             </div>
+            <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden mb-2.5">
+              <div 
+                className="h-full rounded-full transition-all duration-700 ease-out" 
+                style={{ 
+                  width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%`,
+                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))',
+                  boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
+                }} 
+              />
+            </div>
+            <p className={`text-xs font-semibold ${consistencyFeedback.color}`}>
+              {consistencyFeedback.emoji} {consistencyFeedback.text}
+            </p>
           </div>
 
 
