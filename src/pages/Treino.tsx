@@ -658,16 +658,6 @@ const Treino = () => {
     );
   }
 
-  // ==================== PDF UPLOAD VIEW ====================
-  if (view === "pdf-upload") {
-    return (
-      <PdfUploadFlow
-        type="treino"
-        onBack={() => setView("chooser")}
-        onComplete={() => setView("dashboard")}
-      />
-    );
-  }
 
   // ==================== GENERATOR VIEW ====================
   if (view === "generator") {
