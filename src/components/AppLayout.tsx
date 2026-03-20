@@ -85,7 +85,7 @@ const AppLayout = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
