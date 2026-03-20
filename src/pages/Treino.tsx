@@ -1488,10 +1488,10 @@ const Treino = () => {
           {/* ===== PREMIUM PLAN DAYS CARDS ===== */}
           {activePlanData && (
             <div>
-              <h3 className="font-display font-semibold text-sm mb-4 text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <h3 className="font-display font-bold text-xs mb-4 text-muted-foreground uppercase tracking-[0.15em] flex items-center gap-2">
                 <Dumbbell className="w-4 h-4 text-primary" /> Dias do Plano
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 {activePlanData.map((day: any, i: number) => {
                   const isTodays = i === todayDayIndex;
                   const isCompleted = sessions.some(s =>
@@ -1503,87 +1503,90 @@ const Treino = () => {
                   return (
                     <div
                       key={i}
-                      className={`relative overflow-hidden transition-all duration-300 group rounded-xl ${
+                      className={`relative overflow-hidden rounded-2xl transition-all duration-300 active:scale-[0.98] ${
                         isTodays
-                          ? "border-2 border-primary/30 shadow-[0_0_24px_-6px_hsl(var(--primary)/0.2)]"
+                          ? "border-2 border-primary/30"
                           : isCompleted
-                          ? "border-2 border-green-500/25"
-                          : "border border-border/50"
+                          ? "border border-green-500/25"
+                          : "border border-border/30"
                       }`}
                       style={{
                         background: isTodays
-                          ? 'linear-gradient(145deg, hsl(225 16% 13% / 0.98), hsl(225 16% 9% / 0.98))'
-                          : 'linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95))',
+                          ? 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.8))'
+                          : 'linear-gradient(145deg, hsl(var(--card) / 0.8), hsl(var(--card) / 0.5))',
                         boxShadow: isTodays
-                          ? '0 4px 24px -4px hsl(152 69% 46% / 0.12), 0 0 0 1px hsl(152 69% 46% / 0.08)'
-                          : '0 4px 16px -4px hsl(225 18% 3% / 0.4)',
-                        opacity: !isTodays && !isCompleted ? 0.6 : 1,
+                          ? '0 4px 24px -4px hsl(var(--primary) / 0.12)'
+                          : '0 2px 8px -2px hsl(var(--background) / 0.4)',
+                        opacity: !isTodays && !isCompleted ? 0.65 : 1,
                         cursor: canStart ? 'pointer' : 'default',
                       }}
                       onClick={() => canStart && startWorkout(activePlan, i)}
                     >
                       {isTodays && (
-                        <div className="absolute top-0 right-0 w-28 h-28 rounded-full opacity-[0.08] pointer-events-none -translate-y-8 translate-x-8"
-                             style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
+                        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-[0.06] pointer-events-none -translate-y-10 translate-x-10"
+                             style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 70%)' }} />
                       )}
                       <div className="relative z-10 p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center shadow-lg border ${
-                              isTodays ? "border-primary/20 shadow-primary/10" : "border-border/30"
-                            }`}>
-                              <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(day.grupo)} flex items-center justify-center border shrink-0 ${
+                            isTodays ? "border-primary/20 shadow-lg" : "border-border/20"
+                          }`}>
+                            <span className="text-xl">{getMuscleIcon(day.grupo)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-display font-bold text-foreground">{day.dia}</p>
+                              {getIntensityBadge(day.intensidade)}
+                              {isTodays && !todayCompleted && (
+                                <span className="text-[8px] uppercase tracking-[0.15em] text-primary font-black px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Hoje</span>
+                              )}
+                              {isCompleted && (
+                                <span className="text-[8px] uppercase tracking-[0.15em] text-green-400 font-black px-2 py-0.5 rounded-md bg-green-500/10 border border-green-500/15 flex items-center gap-0.5">
+                                  <Check className="w-2.5 h-2.5" /> Feito
+                                </span>
+                              )}
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-foreground">{day.dia}</p>
-                                {getIntensityBadge(day.intensidade)}
-                                {isTodays && !todayCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/15 border border-primary/20">Hoje</span>
-                                )}
-                                {isCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-green-400 font-bold px-2 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 flex items-center gap-0.5">
-                                    <Check className="w-2.5 h-2.5" /> Feito
-                                  </span>
-                                )}
-                                {!isTodays && !isCompleted && (
-                                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold px-2 py-0.5 rounded-md bg-muted/50 border border-border/30">
-                                    Apenas visualizar
-                                  </span>
-                                )}
+                            <p className="text-xs text-muted-foreground font-medium mt-0.5 flex items-center gap-1.5">
+                              {day.grupo}
+                              {(() => {
+                                const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
+                                const rl = getGroupRecoveryLevel(day.grupo, sessionData);
+                                if (rl === "recovered") return <span className="text-[8px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/10">🟢</span>;
+                                if (rl === "attention") return <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/10">🟡</span>;
+                                return <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/10">🔴</span>;
+                              })()}
+                            </p>
+                          </div>
+                          {/* Right side: quick stats + action */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="text-right hidden sm:block">
+                              <p className="text-xs font-display font-bold text-foreground">{day.exercicios.length}</p>
+                              <p className="text-[8px] text-muted-foreground">exerc.</p>
+                            </div>
+                            {canStart ? (
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/20" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
+                                <Play className="w-4 h-4 text-primary" />
                               </div>
-                              <p className="text-xs text-foreground/70 font-medium mt-0.5 flex items-center gap-1.5">
-                                {day.grupo}
-                                {(() => {
-                                  const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
-                                  const rl = getGroupRecoveryLevel(day.grupo, sessionData);
-                                  if (rl === "recovered") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/15">🟢</span>;
-                                  if (rl === "attention") return <span className="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/15">🟡</span>;
-                                  return <span className="text-[8px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/15">🔴</span>;
-                                })()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 text-[11px] text-foreground/60 font-medium">
-                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
-                              <Dumbbell className="w-3 h-3 text-primary/70" /> {day.exercicios.length} exercícios
-                            </span>
-                            <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/60 border border-border/30">
-                              <Clock className="w-3 h-3 text-primary/70" /> ~{day.exercicios.length * 5}min
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="sm" className="text-xs text-foreground/60 hover:text-foreground h-8 px-2" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
-                              <Eye className="w-3.5 h-3.5 mr-1" /> Ver
-                            </Button>
-                            {canStart && (
-                              <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-primary">
-                                <Play className="w-3.5 h-3.5 mr-1" /> Treinar
+                            ) : (
+                              <Button variant="ghost" size="sm" className="h-10 w-10 rounded-xl p-0 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
+                                <Eye className="w-4 h-4" />
                               </Button>
                             )}
                           </div>
+                        </div>
+                        {/* Bottom row: exercise count + time */}
+                        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium">
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
+                            <Dumbbell className="w-3 h-3 text-primary/60" /> {day.exercicios.length} exercícios
+                          </span>
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
+                            <Clock className="w-3 h-3 text-primary/60" /> ~{day.exercicios.length * 5}min
+                          </span>
+                          {!isTodays && !isCompleted && (
+                            <span className="ml-auto text-[9px] text-muted-foreground/60 font-medium">
+                              Apenas visualizar
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
