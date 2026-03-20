@@ -1890,12 +1890,25 @@ const Treino = () => {
               {/* Bottom */}
               <div className="px-4 pb-4 pt-1 space-y-2">
                 {canStartThis ? (
-                  <Button
-                    onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, focusIdx); } }}
-                    className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
-                  >
-                    <Play className="w-4 h-4 mr-2" /> Iniciar Treino
-                  </Button>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        setFocusDay(null);
+                        setPendingCardio({ plan: activePlan, dayIndex: focusIdx });
+                        setView("pre-cardio");
+                      }}
+                      className="w-full h-10 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold border border-chart-3/20 text-chart-3 hover:bg-chart-3/10 transition-all"
+                      style={{ background: "hsl(var(--chart-3) / 0.06)" }}
+                    >
+                      <Flame className="w-4 h-4" /> Fazer Cardio Primeiro
+                    </button>
+                    <Button
+                      onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, focusIdx); } }}
+                      className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
+                    >
+                      <Play className="w-4 h-4 mr-2" /> Iniciar Treino
+                    </Button>
+                  </div>
                 ) : (
                   <div className="w-full h-10 flex items-center justify-center text-xs text-muted-foreground font-medium rounded-lg bg-muted/30 border border-border/30">
                     🔒 Disponível apenas no dia correspondente
