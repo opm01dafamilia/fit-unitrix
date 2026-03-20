@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/bodyScrollLock";
 
 interface FocusModeProps {
   open: boolean;
@@ -9,12 +10,10 @@ interface FocusModeProps {
 
 const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
+    if (!open) return;
+
+    lockBodyScroll();
+    return () => unlockBodyScroll();
   }, [open]);
 
   useEffect(() => {

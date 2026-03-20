@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Share2, Camera, Check, X as XIcon, ChevronLeft, ChevronRight, Download, Flame, Target } from "lucide-react";
 import { type MealPlan } from "@/lib/dietGenerator";
 import { toast } from "@/components/ui/sonner";
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/bodyScrollLock";
 
 const iconMap: Record<string, string> = {
   Coffee: "☕",
@@ -52,12 +53,14 @@ const DietFocusMode = ({
   useEffect(() => {
     if (open) {
       setCurrentIndex(initialIndex);
-      document.body.style.overflow = "hidden";
+      lockBodyScroll();
     } else {
-      document.body.style.overflow = "";
       setStoryMode(false);
     }
-    return () => { document.body.style.overflow = ""; };
+
+    return () => {
+      if (open) unlockBodyScroll();
+    };
   }, [open, initialIndex]);
 
   useEffect(() => {
