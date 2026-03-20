@@ -126,7 +126,7 @@ const MealStatusButtons = ({ status, onSetStatus }: { status: MealStatus; onSetS
     );
   }
   return (
-    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+    <div className="flex flex-wrap items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={() => onSetStatus("done")}
         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-chart-2/8 border border-chart-2/15 text-chart-2/70 text-[11px] font-medium transition-all hover:bg-chart-2/15 hover:text-chart-2 hover:border-chart-2/25"
@@ -157,7 +157,7 @@ const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPla
 
   return (
     <div className={`glass-card p-4 lg:p-5 cursor-pointer transition-all ${borderClass}`} onClick={onFocus}>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="mb-4 flex flex-wrap items-start gap-3 sm:flex-nowrap sm:items-center">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
           status === "done"
             ? "bg-gradient-to-br from-chart-2/20 to-chart-2/5"
@@ -177,9 +177,9 @@ const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPla
           <p className="font-semibold text-sm">{meal.refeicao}</p>
           <p className="text-[11px] text-muted-foreground">{meal.horario}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex w-full items-center justify-between gap-3 sm:ml-0 sm:w-auto sm:justify-end">
           {onSetStatus && <MealStatusButtons status={status || null} onSetStatus={onSetStatus} />}
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <p className="text-sm font-semibold text-chart-3">{mealCal}</p>
             <p className="text-[10px] text-muted-foreground">kcal</p>
           </div>
@@ -981,7 +981,7 @@ const Dieta = () => {
   return (
     <>
     <GateModal />
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6 animate-slide-up w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Dieta Inteligente</h1>
@@ -1324,16 +1324,16 @@ const Dieta = () => {
             {savedPlans.map((sp) => {
               const metaDesc = buildMetaDescription(sp);
               return (
-                <div key={sp.id} className={`flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all ${viewingSaved?.id === sp.id ? "bg-primary/8 border border-primary/20" : "bg-secondary/40 hover:bg-secondary/60 border border-transparent"}`}
+                <div key={sp.id} className={`flex items-center justify-between gap-2 p-3.5 rounded-xl cursor-pointer transition-all ${viewingSaved?.id === sp.id ? "bg-primary/8 border border-primary/20" : "bg-secondary/40 hover:bg-secondary/60 border border-transparent"}`}
                   onClick={() => handleViewSaved(sp)}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-chart-3/10 flex items-center justify-center">
                       <UtensilsCrossed className="w-4 h-4 text-chart-3" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium capitalize">{sp.objective} — {sp.weight}kg</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium capitalize">{sp.objective} — {sp.weight}kg</p>
                       {metaDesc ? (
-                        <p className="text-[11px] text-primary/80 font-medium">{metaDesc}</p>
+                        <p className="truncate text-[11px] text-primary/80 font-medium">{metaDesc}</p>
                       ) : null}
                       <p className="text-[11px] text-muted-foreground">{new Date(sp.created_at).toLocaleDateString("pt-BR")}</p>
                     </div>
