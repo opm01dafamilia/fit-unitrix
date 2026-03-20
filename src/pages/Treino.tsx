@@ -634,7 +634,21 @@ const Treino = () => {
         type="treino"
         onChooseAI={() => setView("generator")}
         onChoosePDF={() => setView("pdf-upload")}
+        onChooseManual={() => setView("manual-guided")}
         onBack={() => setView("dashboard")}
+      />
+    );
+  }
+
+  // ==================== MANUAL GUIDED VIEW ====================
+  if (view === "manual-guided") {
+    return (
+      <ManualWorkoutFlow
+        onBack={() => setView("chooser")}
+        onComplete={() => {
+          loadPlans();
+          setView("dashboard");
+        }}
       />
     );
   }
