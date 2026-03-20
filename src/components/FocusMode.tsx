@@ -29,11 +29,11 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-200">
-      {/* Dark overlay */}
+      {/* Blurred dark overlay */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 backdrop-blur-md"
         style={{
-          background: "linear-gradient(145deg, hsl(225 18% 4% / 0.97), hsl(225 16% 6% / 0.97))",
+          background: "hsl(225 18% 4% / 0.85)",
         }}
         onClick={onClose}
       />
@@ -49,14 +49,14 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
           height: "100dvh",
           maxHeight: "100dvh",
           overflow: "hidden",
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
         }}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 sm:right-0 z-20 w-9 h-9 rounded-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all print:hidden"
+          className="absolute top-3 right-3 sm:right-0 z-20 w-9 h-9 rounded-full bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
           style={{ top: "calc(env(safe-area-inset-top, 12px) + 12px)" }}
         >
           <X className="w-4 h-4" />
