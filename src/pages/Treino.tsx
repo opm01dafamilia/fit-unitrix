@@ -1717,7 +1717,7 @@ const Treino = () => {
           )}
 
           {/* Calendar */}
-          <div className="glass-card p-5 lg:p-6">
+          <div className="rounded-2xl border border-border/30 p-5" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-primary" /> Calendário de Treinos
