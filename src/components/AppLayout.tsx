@@ -4,13 +4,14 @@ import {
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
   History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
-  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
 import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
@@ -39,6 +40,7 @@ const secondaryNavItems = [
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { profile, signOut, subscriptionStatus } = useAuth();
+  const { isPersonal } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
@@ -125,6 +127,14 @@ const AppLayout = () => {
         <nav className="flex-1 px-4 py-5 space-y-0.5 overflow-y-auto scrollbar-hide">
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
           {coreNavItems.map(renderNavLink)}
+
+          {/* Personal Mode — role-based */}
+          {isPersonal && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Personal</p>
+              {renderNavLink({ to: "/personal", icon: ClipboardList, label: "Meus Alunos" })}
+            </>
+          )}
 
           {/* Pinned Modular Items */}
           {pinnedNavItems.length > 0 && (

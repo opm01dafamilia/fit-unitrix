@@ -36,6 +36,7 @@ const EvolucaoTreino = lazy(() => import("./pages/EvolucaoTreino"));
 const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Personal = lazy(() => import("./pages/Personal"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GIF preloading removed from app start - now lazy-loaded per page
@@ -291,6 +292,7 @@ const App = () => (
                 <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
                 <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
                 <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
+                <Route path="/personal" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Personal /></Suspense></ErrorBoundary>} />
               </Route>
               <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
             </Routes>

@@ -461,6 +461,80 @@ export type Database = {
         }
         Relationships: []
       }
+      trainer_students: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          student_email: string | null
+          student_name: string
+          student_user_id: string | null
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          student_email?: string | null
+          student_name: string
+          student_user_id?: string | null
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          student_email?: string | null
+          student_name?: string
+          student_user_id?: string | null
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trainer_workout_plans: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          plan_data: Json
+          student_id: string
+          title: string
+          trainer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan_data?: Json
+          student_id: string
+          title?: string
+          trainer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan_data?: Json
+          student_id?: string
+          title?: string
+          trainer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainer_workout_plans_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "trainer_students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_challenge_progress: {
         Row: {
           challenge_id: string
@@ -669,6 +743,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_season_progress: {
         Row: {
           created_at: string
@@ -864,10 +959,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "personal" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -994,6 +1095,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "personal", "user"],
+    },
   },
 } as const
