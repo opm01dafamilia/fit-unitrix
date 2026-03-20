@@ -921,26 +921,37 @@ const Treino = () => {
   return (
     <>
     <GateModal />
-    <div className="space-y-5 animate-slide-up w-full">
+    <div className="space-y-6 animate-slide-up w-full">
       {/* Premium Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-display font-bold tracking-tight">Treino</h1>
-          <p className="text-muted-foreground text-sm mt-1">Sua jornada fitness começa aqui</p>
+      <div className="relative overflow-hidden rounded-2xl p-5 sm:p-6" style={{ background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--card) / 0.7))' }}>
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, hsl(var(--primary)), transparent 50%)' }} />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-1">FitPulse</p>
+            <h1 className="text-3xl lg:text-4xl font-display font-black tracking-tight leading-none">Treino</h1>
+            <p className="text-muted-foreground text-sm mt-1.5">Sua jornada fitness começa aqui</p>
+          </div>
+          <Button
+            onClick={() => guardAction(() => setView("chooser"))}
+            className="h-12 w-full sm:w-auto px-6 rounded-2xl font-bold text-sm shadow-xl active:scale-[0.97] transition-all border-0"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
+              boxShadow: '0 8px 32px -8px hsl(var(--primary) / 0.35)',
+            }}
+          >
+            <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
+          </Button>
         </div>
-        <Button onClick={() => guardAction(() => setView("chooser"))} className="h-11 w-full sm:w-auto px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
-          <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
-        </Button>
       </div>
 
       {loadingPlans || loadingSessions ? (
         <TreinoDashboardSkeleton />
       ) : !activePlan ? (
-        <div className="hero-card p-10 flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-5 shadow-xl">
+        <div className="rounded-2xl border border-border/30 p-10 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5 shadow-xl border border-primary/10" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
             <Dumbbell className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="font-display font-bold text-2xl mb-2">Crie seu primeiro plano</h3>
+          <h3 className="font-display font-black text-2xl mb-2">Crie seu primeiro plano</h3>
           <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
           <button onClick={() => guardAction(() => setView("chooser"))} className="btn-premium flex items-center justify-center gap-2">
             <Zap className="w-5 h-5" /> Criar Plano de Treino
