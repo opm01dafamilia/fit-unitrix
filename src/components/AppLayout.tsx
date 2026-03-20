@@ -85,7 +85,7 @@ const AppLayout = () => {
   );
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen min-h-screen w-full bg-background overflow-hidden">
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
@@ -171,7 +171,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 min-h-0 overflow-y-auto overscroll-y-contain">
+      <main className="flex-1 min-w-0 min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain app-scroll-area">
         <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-background/80 backdrop-blur-2xl border-b border-border/30 lg:hidden safe-area-header">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
@@ -188,7 +188,7 @@ const AppLayout = () => {
           </div>
         </header>
         <BillingBanner status={subscriptionStatus} />
-        <div className="p-4 lg:p-8 pb-28 lg:pb-8 max-w-7xl mx-auto page-enter">
+        <div className="p-4 lg:p-8 pb-[calc(env(safe-area-inset-bottom,0px)+6.75rem)] lg:pb-8 max-w-7xl mx-auto page-enter min-h-full">
           <Outlet />
         </div>
       </main>
