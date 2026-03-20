@@ -1677,7 +1677,7 @@ const Treino = () => {
 
           {/* Evolution Timeline */}
           {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
-            <div className="glass-card p-4 lg:p-5">
+            <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
                   <Activity className="w-4.5 h-4.5 text-primary" />
