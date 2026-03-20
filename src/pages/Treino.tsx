@@ -3,6 +3,7 @@ import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, F
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 import PdfUploadFlow from "@/components/PdfUploadFlow";
+import ManualWorkoutFlow from "@/components/ManualWorkoutFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
 import FocusMode from "@/components/FocusMode";
