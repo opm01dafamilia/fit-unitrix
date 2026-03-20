@@ -492,11 +492,61 @@ function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Ex
   return { ...exercise, descanso: restMap[intensity]?.[exercise.descanso] || exercise.descanso };
 }
 
-function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
-  // Capped at 2 per group to keep total at 4-5 per workout
-  const base = 2;
+// Primary muscle groups that should get 3-4 exercises when they're the main focus
+const PRIMARY_MUSCLE_GROUPS = new Set(["quadriceps", "costas", "posterior", "gluteos", "peito", "ombros", "pernas"]);
+// Secondary/auxiliary groups that complement the primary
+const SECONDARY_MUSCLE_GROUPS = new Set(["panturrilha", "biceps", "triceps", "abdomen"]);
+
+function getMaxExercisesForGroup(
+  group: string,
+  allGroupsInDay: string[],
+  intensity: DayIntensity,
+  level: Level
+): number {
   if (intensity === "leve") return 1;
-  return base;
+
+  const primaryGroups = allGroupsInDay.filter(g => PRIMARY_MUSCLE_GROUPS.has(g));
+  const secondaryGroups = allGroupsInDay.filter(g => SECONDARY_MUSCLE_GROUPS.has(g));
+  const isPrimary = PRIMARY_MUSCLE_GROUPS.has(group);
+
+  // Special rules per user request:
+  // Quadríceps day: 3-4 quad + 2 panturrilha
+  // Costas day: 3-4 costas + 2-3 braço
+  // Posterior day: 3-4 posterior + 2-3 glúteo
+  // Glúteo solo: 3-4 glúteo
+
+  if (isPrimary) {
+    // If this is the only primary group (or paired with another primary like posterior+gluteos)
+    if (primaryGroups.length === 1) {
+      return level === "iniciante" ? 3 : 4;
+    }
+    // Two primary groups together (e.g. posterior + gluteos)
+    if (primaryGroups.length === 2) {
+      // The first primary gets more, the second gets complementary count
+      const idx = primaryGroups.indexOf(group);
+      if (idx === 0) return level === "iniciante" ? 3 : 4;
+      return level === "iniciante" ? 2 : 3;
+    }
+    // 3+ primary groups in one day (rare, e.g. full body days)
+    return 2;
+  }
+
+  // Secondary groups (panturrilha, biceps, triceps, abdomen)
+  if (group === "panturrilha") return 2;
+  if (group === "biceps" || group === "triceps") {
+    // When paired with costas or peito, give 2-3
+    return level === "iniciante" ? 2 : Math.min(3, (exerciseDB[group]?.[level] || []).length);
+  }
+  if (group === "abdomen") return level === "iniciante" ? 1 : 2;
+
+  // Fallback: HIIT, cardio, mobility etc
+  return 2;
+}
+
+// Legacy compatibility wrapper
+function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
+  if (intensity === "leve") return 1;
+  return 2;
 }
 
 export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
@@ -717,7 +767,7 @@ function isAuxiliaryExercise(nome: string): boolean {
 }
 
 function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
-  const MAX_EXERCISES = 5;
+  const MAX_EXERCISES = 6;
   return plan.map(day => {
     const g = day.grupo.toLowerCase();
     if (g.includes("mobilidade") || g.includes("recuperacao")) return day;
@@ -767,10 +817,10 @@ export function generateWorkoutPlan(
       const grupo = entry.groups.map(g => groupLabels[g] || g).join(" + ");
       const exercicios: Exercise[] = [];
       const volumeMultiplier = entry.intensity === "leve" ? 0.5 : entry.intensity === "moderado" ? 0.75 : 1;
-      const maxPerGroup = getMaxExercisesPerGroup(entry.intensity, level);
 
       entry.groups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+        const maxPerGroup = getMaxExercisesForGroup(group, entry.groups, entry.intensity, level);
         const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
         selected.forEach(ex => {
           const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
@@ -813,10 +863,10 @@ export function generateWorkoutPlan(
       const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
       const exercicios: Exercise[] = [];
       const dayIntensity = intensities[i] || "pesado";
-      const maxPerGroup = getMaxExercisesPerGroup(dayIntensity, level);
 
       muscleGroups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+        const maxPerGroup = getMaxExercisesForGroup(group, muscleGroups, dayIntensity, level);
         const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
         selected.forEach(ex => {
           const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
