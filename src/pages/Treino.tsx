@@ -1615,29 +1615,29 @@ const Treino = () => {
             const unlocked = achievements.filter(a => a.unlocked).length;
             const nextAchievement = achievements.find(a => !a.unlocked);
             return (
-              <div className="glass-card p-4 lg:p-5 cursor-pointer hover:bg-secondary/20 transition-colors" onClick={() => navigate("/conquistas")}>
+              <div className="rounded-2xl border border-border/30 p-4 cursor-pointer hover:border-primary/20 transition-all active:scale-[0.98]" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }} onClick={() => navigate("/conquistas")}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/15 to-amber-500/5 flex items-center justify-center">
-                      <Trophy className="w-4.5 h-4.5 text-amber-400" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(45 93% 47% / 0.12), hsl(45 93% 47% / 0.04))' }}>
+                      <Trophy className="w-4 h-4 text-amber-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold">Conquistas</p>
+                      <p className="text-sm font-display font-bold">Conquistas</p>
                       <p className="text-[10px] text-muted-foreground">{unlocked}/{achievements.length} desbloqueadas</p>
                     </div>
                   </div>
-                  <span className="text-xs text-primary font-medium">Ver todas →</span>
+                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider">Ver →</span>
                 </div>
                 {nextAchievement && (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40">
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
                     <span className="text-lg">{nextAchievement.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium">{nextAchievement.title}</p>
-                      <div className="h-1 bg-muted rounded-full overflow-hidden mt-1">
-                        <div className="h-full bg-primary/50 rounded-full" style={{ width: `${nextAchievement.progress}%` }} />
+                      <div className="h-1.5 bg-muted/40 rounded-full overflow-hidden mt-1.5">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${nextAchievement.progress}%`, background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.5))' }} />
                       </div>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{nextAchievement.progress}%</span>
+                    <span className="text-[10px] font-bold text-primary">{nextAchievement.progress}%</span>
                   </div>
                 )}
               </div>
