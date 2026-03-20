@@ -144,7 +144,6 @@
   }
 
   html {
-    height: 100%;
     min-height: 100%;
     min-height: -webkit-fill-available;
   }
@@ -161,7 +160,6 @@
     overflow-x: hidden;
     min-height: 100vh;
     min-height: 100dvh;
-    height: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -197,7 +195,7 @@
   .app-scroll-area {
     min-height: 0;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
   }
 
   .mobile-content-safe {
