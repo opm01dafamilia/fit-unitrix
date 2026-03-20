@@ -863,7 +863,6 @@ export function generateWorkoutPlan(
       const grupo = muscleGroups.map(g => groupLabels[g] || g).join(" + ");
       const exercicios: Exercise[] = [];
       const dayIntensity = intensities[i] || "pesado";
-      const maxPerGroup = getMaxExercisesPerGroup(dayIntensity, level);
 
       muscleGroups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
