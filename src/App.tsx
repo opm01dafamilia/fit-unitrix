@@ -257,45 +257,46 @@ const OnboardingRoute = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <OfflineBanner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
-            <Route path="/onboarding" element={<OnboardingRoute />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense></ErrorBoundary>} />
-              <Route path="/treino" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Treino /></Suspense></ErrorBoundary>} />
-              <Route path="/dieta" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dieta /></Suspense></ErrorBoundary>} />
-              <Route path="/acompanhamento" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Acompanhamento /></Suspense></ErrorBoundary>} />
-              <Route path="/metas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Metas /></Suspense></ErrorBoundary>} />
-              <Route path="/historico" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Historico /></Suspense></ErrorBoundary>} />
-              <Route path="/conquistas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Conquistas /></Suspense></ErrorBoundary>} />
-              <Route path="/biblioteca" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Biblioteca /></Suspense></ErrorBoundary>} />
-              <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
-              <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
-              <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
-              <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
-              <Route path="/temporadas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Temporadas /></Suspense></ErrorBoundary>} />
-              <Route path="/minha-liga" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><MinhaLiga /></Suspense></ErrorBoundary>} />
-              <Route path="/evolucao" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoTreino /></Suspense></ErrorBoundary>} />
-              <Route path="/evolucao-alimentar" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoAlimentar /></Suspense></ErrorBoundary>} />
-              <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
-              <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
-              <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
-              <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
-              <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
-              <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
-            </Route>
-            <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
-          </Routes>
-          
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <OfflineBanner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
+              <Route path="/onboarding" element={<OnboardingRoute />} />
+              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route path="/" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense></ErrorBoundary>} />
+                <Route path="/treino" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Treino /></Suspense></ErrorBoundary>} />
+                <Route path="/dieta" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dieta /></Suspense></ErrorBoundary>} />
+                <Route path="/acompanhamento" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Acompanhamento /></Suspense></ErrorBoundary>} />
+                <Route path="/metas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Metas /></Suspense></ErrorBoundary>} />
+                <Route path="/historico" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Historico /></Suspense></ErrorBoundary>} />
+                <Route path="/conquistas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Conquistas /></Suspense></ErrorBoundary>} />
+                <Route path="/biblioteca" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Biblioteca /></Suspense></ErrorBoundary>} />
+                <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
+                <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
+                <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
+                <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
+                <Route path="/temporadas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Temporadas /></Suspense></ErrorBoundary>} />
+                <Route path="/minha-liga" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><MinhaLiga /></Suspense></ErrorBoundary>} />
+                <Route path="/evolucao" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoTreino /></Suspense></ErrorBoundary>} />
+                <Route path="/evolucao-alimentar" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoAlimentar /></Suspense></ErrorBoundary>} />
+                <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
+                <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
+                <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
+                <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
+                <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
+                <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
+              </Route>
+              <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
