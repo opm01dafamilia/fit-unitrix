@@ -8,7 +8,60 @@
   :root {
     --background: 225 18% 6%;
     --foreground: 210 20% 96%;
+  }
 
+  .light, [data-theme="light"] {
+    --background: 0 0% 97%;
+    --foreground: 225 18% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 18% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 18% 10%;
+
+    --primary: 152 69% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 225 10% 92%;
+    --secondary-foreground: 225 14% 30%;
+
+    --muted: 225 10% 90%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 152 69% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 225 12% 85%;
+    --input: 225 12% 85%;
+    --ring: 152 69% 40%;
+
+    --radius: 0.875rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 225 14% 30%;
+    --sidebar-primary: 152 69% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 10% 94%;
+    --sidebar-accent-foreground: 225 18% 10%;
+    --sidebar-border: 225 12% 88%;
+    --sidebar-ring: 152 69% 40%;
+
+    --chart-1: 152 69% 40%;
+    --chart-2: 199 89% 42%;
+    --chart-3: 45 93% 42%;
+    --chart-4: 280 65% 50%;
+    --chart-5: 0 72% 51%;
+
+    --shadow-card: 0 4px 24px -4px hsl(225 18% 80% / 0.3);
+    --shadow-card-hover: 0 8px 32px -4px hsl(225 18% 80% / 0.4);
+    --shadow-hero: 0 12px 48px -8px hsl(225 18% 80% / 0.3);
+  }
+
+  :root {
     --card: 225 16% 9%;
     --card-foreground: 210 20% 96%;
 
