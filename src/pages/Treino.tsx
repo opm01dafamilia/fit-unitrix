@@ -556,6 +556,28 @@ const Treino = () => {
     } catch { toast.error("Erro ao salvar sessão"); }
   };
 
+  // ==================== PRE-CARDIO VIEW ====================
+  if (view === "pre-cardio" && pendingCardio) {
+    return (
+      <CardioSession
+        onFinish={() => {
+          toast.success("🔥 Cardio concluído! Iniciando treino...", { duration: 3000 });
+          const { plan, dayIndex } = pendingCardio;
+          setPendingCardio(null);
+          setExecutingPlan(plan);
+          setExecutingDayIndex(dayIndex);
+          setCompletedExercises(new Set());
+          setExecutionKey(k => k + 1);
+          setView("execution");
+        }}
+        onBack={() => {
+          setPendingCardio(null);
+          setView("dashboard");
+        }}
+      />
+    );
+  }
+
   // ==================== EXECUTION VIEW ====================
   if (view === "execution" && executingPlan) {
     return (
