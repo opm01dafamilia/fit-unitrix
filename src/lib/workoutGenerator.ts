@@ -821,6 +821,7 @@ export function generateWorkoutPlan(
 
       entry.groups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+        const maxPerGroup = getMaxExercisesForGroup(group, entry.groups, entry.intensity, level);
         const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
         selected.forEach(ex => {
           const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
