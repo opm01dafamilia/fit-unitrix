@@ -145,7 +145,7 @@ const MealStatusButtons = ({ status, onSetStatus }: { status: MealStatus; onSetS
   );
 };
 
-const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPlan; index: number; onFocus?: () => void; status?: MealStatus; onSetStatus?: (s: MealStatus) => void }) => {
+const MealCard = ({ meal, index, status, onSetStatus }: { meal: MealPlan; index: number; status?: MealStatus; onSetStatus?: (s: MealStatus) => void }) => {
   const MealIcon = iconMap[meal.iconName] || Coffee;
   const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
 
