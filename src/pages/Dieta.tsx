@@ -250,7 +250,7 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMe
                 key={i}
                 meal={meal}
                 index={i}
-                onFocus={() => onMealFocus?.(meal)}
+                
                 status={mealStatuses?.[key] || null}
                 onSetStatus={(s) => onSetMealStatus?.(key, s)}
               />
