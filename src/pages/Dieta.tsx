@@ -1476,7 +1476,7 @@ const Dieta = () => {
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
           <p className="text-muted-foreground text-sm mb-5">Crie seu plano alimentar personalizado.</p>
-          <button onClick={() => guardAction(() => setDietSource("chooser"))} className="btn-premium flex items-center justify-center gap-2 mx-auto">
+          <button onClick={() => guardAction(() => setDietSource("ia"))} className="btn-premium flex items-center justify-center gap-2 mx-auto">
             <Zap className="w-5 h-5" /> Criar Plano Alimentar
           </button>
         </div>
