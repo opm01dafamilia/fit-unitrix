@@ -1471,7 +1471,7 @@ const Dieta = () => {
       )}
 
       {/* Empty state */}
-      {!loadingPlans && savedPlans.length === 0 && !displayPlan && dietSource !== "chooser" && (
+      {!loadingPlans && savedPlans.length === 0 && !displayPlan && dietSource !== "ia" && (
         <div className="empty-state">
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
