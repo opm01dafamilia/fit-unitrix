@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
 import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
-import PlanSourceChoice from "@/components/PlanSourceChoice";
 
-import ManualWorkoutFlow from "@/components/ManualWorkoutFlow";
+
+
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
 
@@ -50,7 +50,7 @@ const Treino = () => {
   const navigate = useNavigate();
   const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
-  const [view, setView] = useState<"dashboard" | "chooser" | "generator" | "manual-guided" | "execution" | "pre-cardio">("dashboard");
+  const [view, setView] = useState<"dashboard" | "generator" | "execution" | "pre-cardio">("dashboard");
   const [executionKey, setExecutionKey] = useState(0);
   // Pre-cardio state — store pending plan/day to start after cardio finishes
   const [pendingCardio, setPendingCardio] = useState<{ plan: any; dayIndex: number } | null>(null);
@@ -616,36 +616,6 @@ const Treino = () => {
     );
   }
 
-  // ==================== CHOOSER VIEW ====================
-  if (view === "chooser") {
-    return (
-      <PlanSourceChoice
-        type="treino"
-        onChooseAI={() => setView("generator")}
-        onChoosePDF={() => {}}
-        onChooseManual={() => setView("manual-guided")}
-        onBack={() => setView("dashboard")}
-      />
-    );
-  }
-
-  // ==================== MANUAL GUIDED VIEW ====================
-  if (view === "manual-guided") {
-    return (
-      <ManualWorkoutFlow
-        onBack={() => setView("chooser")}
-        onComplete={async () => {
-          if (user) {
-            invalidateCache(CACHE_KEYS.workoutPlans(user.id));
-            const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-            setSavedPlans(data || []);
-            writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
-          }
-          setView("dashboard");
-        }}
-      />
-    );
-  }
 
 
   // ==================== GENERATOR VIEW ====================
@@ -956,7 +926,7 @@ const Treino = () => {
             <p className="text-muted-foreground text-sm mt-1.5">Sua jornada fitness começa aqui</p>
           </div>
           <Button
-            onClick={() => guardAction(() => setView("chooser"))}
+            onClick={() => guardAction(() => setView("generator"))}
             className="h-12 w-full sm:w-auto px-6 rounded-2xl font-bold text-sm shadow-xl active:scale-[0.97] transition-all border-0"
             style={{
               background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
@@ -977,7 +947,7 @@ const Treino = () => {
           </div>
           <h3 className="font-display font-black text-2xl mb-2">Crie seu primeiro plano</h3>
           <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
-          <button onClick={() => guardAction(() => setView("chooser"))} className="btn-premium flex items-center justify-center gap-2">
+          <button onClick={() => guardAction(() => setView("generator"))} className="btn-premium flex items-center justify-center gap-2">
             <Zap className="w-5 h-5" /> Criar Plano de Treino
           </button>
         </div>
