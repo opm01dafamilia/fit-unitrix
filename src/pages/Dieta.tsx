@@ -621,7 +621,7 @@ const Dieta = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [focusMealIndex, setFocusMealIndex] = useState<number | null>(null);
+  
   const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
   
   // Streak & gamification state
