@@ -1598,14 +1598,10 @@ const Treino = () => {
                               <p className="text-xs font-display font-bold text-foreground">{day.exercicios.length}</p>
                               <p className="text-[8px] text-muted-foreground">exerc.</p>
                             </div>
-                            {canStart ? (
+                            {canStart && (
                               <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/20" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
                                 <Play className="w-4 h-4 text-primary" />
                               </div>
-                            ) : (
-                              <Button variant="ghost" size="sm" className="h-10 w-10 rounded-xl p-0 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
-                                <Eye className="w-4 h-4" />
-                              </Button>
                             )}
                           </div>
                         </div>
