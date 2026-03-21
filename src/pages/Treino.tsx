@@ -93,8 +93,6 @@ const Treino = () => {
   const [fatigueSummary, setFatigueSummary] = useState<WeeklyFatigueSummary | null>(null);
   const [recoverySummary, setRecoverySummary] = useState<RecoverySummary | null>(null);
   const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
-  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
-  const [treinoPdfs, setTreinoPdfs] = useState<any[]>([]);
 
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
