@@ -1349,24 +1349,6 @@ const Treino = () => {
                   </div>
                 )}
 
-                {/* Ver treino em PDF */}
-                {treinoPdfs.length > 0 && (
-                  <div className="mt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5 w-full"
-                      onClick={async () => {
-                        const pdf = treinoPdfs[0];
-                        const { data } = await supabase.storage.from("user-pdfs").createSignedUrl(pdf.file_path, 3600);
-                        if (data?.signedUrl) setViewingPdf({ url: data.signedUrl, name: pdf.file_name });
-                        else toast.error("Erro ao abrir PDF");
-                      }}
-                    >
-                      <FileText className="w-3.5 h-3.5 mr-1.5 text-primary" /> Ver treino em PDF
-                    </Button>
-                  </div>
-                )}
 
                 {todayCompleted && (
                   <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5 justify-center">
