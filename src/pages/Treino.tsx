@@ -616,36 +616,6 @@ const Treino = () => {
     );
   }
 
-  // ==================== CHOOSER VIEW ====================
-  if (view === "chooser") {
-    return (
-      <PlanSourceChoice
-        type="treino"
-        onChooseAI={() => setView("generator")}
-        onChoosePDF={() => {}}
-        onChooseManual={() => setView("manual-guided")}
-        onBack={() => setView("dashboard")}
-      />
-    );
-  }
-
-  // ==================== MANUAL GUIDED VIEW ====================
-  if (view === "manual-guided") {
-    return (
-      <ManualWorkoutFlow
-        onBack={() => setView("chooser")}
-        onComplete={async () => {
-          if (user) {
-            invalidateCache(CACHE_KEYS.workoutPlans(user.id));
-            const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-            setSavedPlans(data || []);
-            writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
-          }
-          setView("dashboard");
-        }}
-      />
-    );
-  }
 
 
   // ==================== GENERATOR VIEW ====================
