@@ -152,13 +152,15 @@ const DietFocusMode = ({
         aria-hidden="true"
       />
 
-      {/* Full-screen container — no scroll */}
+      {/* Full-screen container — scroll enabled for small screens */}
       <div
-        className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 flex flex-col items-center justify-center"
+        className="relative z-10 w-full max-w-[400px] mx-auto px-4 sm:px-0 flex flex-col items-center justify-start"
         style={{
           height: "100dvh",
           maxHeight: "100dvh",
-          overflow: "hidden",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehaviorY: "contain",
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
         }}
@@ -193,7 +195,7 @@ const DietFocusMode = ({
         {/* Card */}
         <div
           ref={cardRef}
-          className={`w-full overflow-hidden rounded-2xl ${
+          className={`w-full overflow-x-hidden rounded-2xl ${
             slideDirection === "left" ? "animate-in slide-in-from-right-4 duration-300" :
             slideDirection === "right" ? "animate-in slide-in-from-left-4 duration-300" : "animate-in zoom-in-95 duration-300"
           }`}
@@ -202,6 +204,8 @@ const DietFocusMode = ({
             border: "1px solid hsl(225 12% 16% / 0.6)",
             boxShadow: "0 25px 80px -20px hsl(152 69% 46% / 0.08), 0 0 60px -15px hsl(225 18% 3% / 0.8)",
             maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 56px)",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {storyMode ? (
