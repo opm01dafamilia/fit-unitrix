@@ -947,7 +947,7 @@ const Treino = () => {
           </div>
           <h3 className="font-display font-black text-2xl mb-2">Crie seu primeiro plano</h3>
           <p className="text-muted-foreground text-sm mb-8 max-w-xs">Nosso gerador inteligente monta um treino personalizado para seu objetivo e nível.</p>
-          <button onClick={() => guardAction(() => setView("chooser"))} className="btn-premium flex items-center justify-center gap-2">
+          <button onClick={() => guardAction(() => setView("generator"))} className="btn-premium flex items-center justify-center gap-2">
             <Zap className="w-5 h-5" /> Criar Plano de Treino
           </button>
         </div>
