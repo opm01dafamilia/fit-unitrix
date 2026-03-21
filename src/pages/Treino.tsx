@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 
 import ManualWorkoutFlow from "@/components/ManualWorkoutFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
-import FocusMode from "@/components/FocusMode";
+
 import PdfViewer from "@/components/PdfViewer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -85,7 +85,7 @@ const Treino = () => {
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | null>(null);
   // Weekly evolution
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
-  const [focusDay, setFocusDay] = useState<any | null>(null);
+  
   const [cycleStatus, setCycleStatus] = useState<CycleStatus | null>(null);
   const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
   const [comebackStatus, setComebackStatus] = useState<ComebackStatus | null>(null);
@@ -1598,14 +1598,10 @@ const Treino = () => {
                               <p className="text-xs font-display font-bold text-foreground">{day.exercicios.length}</p>
                               <p className="text-[8px] text-muted-foreground">exerc.</p>
                             </div>
-                            {canStart ? (
+                            {canStart && (
                               <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/20" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))' }}>
                                 <Play className="w-4 h-4 text-primary" />
                               </div>
-                            ) : (
-                              <Button variant="ghost" size="sm" className="h-10 w-10 rounded-xl p-0 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setFocusDay(day); }}>
-                                <Eye className="w-4 h-4" />
-                              </Button>
                             )}
                           </div>
                         </div>
@@ -1834,118 +1830,6 @@ const Treino = () => {
         </>
       )}
 
-      {/* Focus Mode for Workout Day — Print-ready modal */}
-      <FocusMode open={!!focusDay} onClose={() => setFocusDay(null)}>
-        {focusDay && (() => {
-          const maxExercises = Math.min(focusDay.exercicios.length, 8);
-          const visibleExercises = focusDay.exercicios
-            .filter((ex: any) => !ex.nome?.toLowerCase().includes("aquecimento"))
-            .slice(0, maxExercises);
-          const hiddenCount = focusDay.exercicios.length - visibleExercises.length;
-          const totalTime = focusDay.exercicios.length * 5;
-          const focusIdx = activePlanData ? activePlanData.findIndex((d: any) => d.dia === focusDay.dia) : -1;
-          const canStartThis = focusIdx >= 0 && canStartDay(focusIdx);
-
-          return (
-            <div
-              className="rounded-2xl overflow-hidden border border-border/30"
-              style={{
-                background: "linear-gradient(145deg, hsl(225 16% 10%), hsl(225 16% 6%))",
-                boxShadow: "0 25px 80px -20px hsl(152 69% 46% / 0.08), 0 0 60px -15px hsl(225 18% 3% / 0.8)",
-                maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 56px)",
-              }}
-            >
-              {/* Header */}
-              <div className="relative px-5 pt-5 pb-3">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent rounded-t-2xl" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full blur-3xl opacity-15" style={{ background: "hsl(152 69% 46%)" }} />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] uppercase tracking-[0.15em] text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">FitPulse</span>
-                    {focusDay.intensidade && (() => {
-                      const cfg: Record<string, { icon: string; label: string; cls: string }> = {
-                        pesado: { icon: "🔥", label: "Pesado", cls: "text-orange-400 bg-orange-500/15 border-orange-500/20" },
-                        moderado: { icon: "⚡", label: "Moderado", cls: "text-amber-400 bg-amber-500/15 border-amber-500/20" },
-                        leve: { icon: "🌿", label: "Leve", cls: "text-emerald-400 bg-emerald-500/15 border-emerald-500/20" },
-                      };
-                      const c = cfg[focusDay.intensidade] || cfg.moderado;
-                      return <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border ${c.cls}`}>{c.icon} {c.label}</span>;
-                    })()}
-                  </div>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(focusDay.grupo)} flex items-center justify-center border border-primary/10 shadow-lg shrink-0`}>
-                      <span className="text-xl">{getMuscleIcon(focusDay.grupo)}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="font-display font-bold text-lg text-foreground leading-tight">{focusDay.dia}</h2>
-                      <p className="text-xs text-muted-foreground truncate">{focusDay.grupo}</p>
-                    </div>
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="text-center">
-                        <p className="text-sm font-display font-bold text-primary">{focusDay.exercicios.length}</p>
-                        <p className="text-[8px] text-muted-foreground leading-none">exerc.</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-display font-bold text-chart-2">~{totalTime}'</p>
-                        <p className="text-[8px] text-muted-foreground leading-none">min</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Exercise list — compact, no scroll */}
-              <div className="px-4 pb-2 space-y-1.5">
-                {visibleExercises.map((ex: any, j: number) => (
-                  <div key={j} className="flex items-center gap-2.5 py-2 px-3 rounded-lg border border-border/15" style={{ background: "hsl(225 14% 11% / 0.5)" }}>
-                    <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-primary">{j + 1}</span>
-                    </div>
-                    <p className="text-[13px] font-medium text-foreground flex-1 min-w-0 truncate">{ex.nome}</p>
-                    <span className="text-[11px] text-primary/80 font-medium shrink-0">{ex.series}×{ex.reps}</span>
-                  </div>
-                ))}
-                {hiddenCount > 0 && (
-                  <p className="text-[10px] text-muted-foreground text-center py-1">+{hiddenCount} exercício(s)</p>
-                )}
-              </div>
-
-              {/* Bottom */}
-              <div className="px-4 pb-4 pt-1 space-y-2">
-                {canStartThis ? (
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => {
-                        setFocusDay(null);
-                        setPendingCardio({ plan: activePlan, dayIndex: focusIdx });
-                        setView("pre-cardio");
-                      }}
-                      className="w-full h-10 flex items-center justify-center gap-2 rounded-xl text-xs font-semibold border border-chart-3/20 text-chart-3 hover:bg-chart-3/10 transition-all"
-                      style={{ background: "hsl(var(--chart-3) / 0.06)" }}
-                    >
-                      <Flame className="w-4 h-4" /> Fazer Cardio Primeiro
-                    </button>
-                    <Button
-                      onClick={() => { setFocusDay(null); if (activePlan && activePlanData) { startWorkout(activePlan, focusIdx); } }}
-                      className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
-                    >
-                      <Play className="w-4 h-4 mr-2" /> Iniciar Treino
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="w-full h-10 flex items-center justify-center text-xs text-muted-foreground font-medium rounded-lg bg-muted/30 border border-border/30">
-                    🔒 Disponível apenas no dia correspondente
-                  </div>
-                )}
-                <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-secondary/15 border border-border/10">
-                  <span className="text-[9px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
-                  <span className="text-[9px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </FocusMode>
 
       {/* PDF Viewer */}
       {viewingPdf && (

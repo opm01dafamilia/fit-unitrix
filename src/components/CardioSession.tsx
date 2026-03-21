@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Play, Pause, Square, Clock, Flame, MapPin, Zap, Trophy, Camera, ArrowLeft, Plus, Minus, Timer } from "lucide-react";
+import { Play, Pause, Square, Clock, Flame, MapPin, Zap, Trophy, ArrowLeft, Plus, Minus, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import cardioTreadmill from "@/assets/cardio-treadmill.png";
@@ -345,18 +345,6 @@ export default function CardioSession({ onFinish, onBack }: CardioSessionProps) 
           </div>
 
           <div className="flex flex-col gap-3 w-full">
-            <Button variant="outline" className="w-full h-12 rounded-2xl text-base" onClick={() => {
-              const el = document.getElementById("cardio-completion");
-              if (el) {
-                el.classList.add("ring-2", "ring-primary/30");
-                setTimeout(() => el.classList.remove("ring-2", "ring-primary/30"), 2000);
-              }
-              // Trigger native screenshot hint
-              try { if (navigator.vibrate) navigator.vibrate(100); } catch {}
-              // Note: actual screenshot requires native API, we provide visual cue
-            }}>
-              <Camera className="w-5 h-5 mr-2" /> Tirar Print do Cardio
-            </Button>
             <Button className="btn-premium w-full" onClick={onFinish}>
               <Trophy className="w-5 h-5 mr-2" /> Finalizar
             </Button>

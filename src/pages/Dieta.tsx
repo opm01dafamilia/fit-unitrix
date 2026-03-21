@@ -18,7 +18,7 @@ import { getDietMotivationalMessage, getDietFailMessage } from "@/lib/achievemen
 import { registerMicroVictory } from "@/lib/microVictoriesEngine";
 import { DietaSkeleton } from "@/components/skeletons/SkeletonPremium";
 import { Skeleton } from "@/components/ui/skeleton";
-import DietFocusMode from "@/components/DietFocusMode";
+
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { format, subDays } from "date-fns";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart } from "recharts";
@@ -145,7 +145,7 @@ const MealStatusButtons = ({ status, onSetStatus }: { status: MealStatus; onSetS
   );
 };
 
-const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPlan; index: number; onFocus?: () => void; status?: MealStatus; onSetStatus?: (s: MealStatus) => void }) => {
+const MealCard = ({ meal, index, status, onSetStatus }: { meal: MealPlan; index: number; status?: MealStatus; onSetStatus?: (s: MealStatus) => void }) => {
   const MealIcon = iconMap[meal.iconName] || Coffee;
   const mealCal = meal.itens.reduce((a, item) => a + item.cal, 0);
 
@@ -156,7 +156,7 @@ const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPla
       : "hover:border-primary/15";
 
   return (
-    <div className={`glass-card p-4 lg:p-5 cursor-pointer transition-all ${borderClass}`} onClick={onFocus}>
+    <div className={`glass-card p-4 lg:p-5 transition-all ${borderClass}`}>
       <div className="mb-4 flex flex-wrap items-start gap-3 sm:flex-nowrap sm:items-center">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
           status === "done"
@@ -215,7 +215,7 @@ const MealCard = ({ meal, index, onFocus, status, onSetStatus }: { meal: MealPla
   );
 };
 
-const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void; mealStatuses?: Record<string, MealStatus>; onSetMealStatus?: (key: string, s: MealStatus) => void }) => {
+const DayAccordion = ({ dayPlan, defaultOpen, mealStatuses, onSetMealStatus }: { dayPlan: DayPlan; defaultOpen?: boolean; mealStatuses?: Record<string, MealStatus>; onSetMealStatus?: (key: string, s: MealStatus) => void }) => {
   const [open, setOpen] = useState(defaultOpen || false);
   const dayCal = dayPlan.refeicoes.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0);
   const doneCount = dayPlan.refeicoes.filter((_, i) => mealStatuses?.[`${dayPlan.dia}-${i}`] === "done").length;
@@ -250,7 +250,7 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMe
                 key={i}
                 meal={meal}
                 index={i}
-                onFocus={() => onMealFocus?.(meal)}
+                
                 status={mealStatuses?.[key] || null}
                 onSetStatus={(s) => onSetMealStatus?.(key, s)}
               />
@@ -263,10 +263,9 @@ const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMe
 };
 
 // Weekly block accordion with calorie target header
-const WeekBlockAccordion = ({ block, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: {
+const WeekBlockAccordion = ({ block, defaultOpen, mealStatuses, onSetMealStatus }: {
   block: WeekBlock;
   defaultOpen?: boolean;
-  onMealFocus?: (meal: MealPlan) => void;
   mealStatuses?: Record<string, MealStatus>;
   onSetMealStatus?: (key: string, s: MealStatus) => void;
 }) => {
@@ -303,7 +302,7 @@ const WeekBlockAccordion = ({ block, defaultOpen, onMealFocus, mealStatuses, onS
               key={i}
               dayPlan={dayPlan}
               defaultOpen={i === 0}
-              onMealFocus={onMealFocus}
+              
               mealStatuses={mealStatuses}
               onSetMealStatus={onSetMealStatus}
             />
@@ -621,7 +620,7 @@ const Dieta = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [focusMealIndex, setFocusMealIndex] = useState<number | null>(null);
+  
   const [mealStatuses, setMealStatuses] = useState<Record<string, MealStatus>>({});
   
   // Streak & gamification state
@@ -1432,7 +1431,6 @@ const Dieta = () => {
                   key={i}
                   block={block}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
@@ -1448,7 +1446,7 @@ const Dieta = () => {
                   key={i}
                   dayPlan={dayPlan}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
+                  
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
@@ -1462,7 +1460,7 @@ const Dieta = () => {
                   key={i}
                   meal={meal}
                   index={i}
-                  onFocus={() => setFocusMealIndex(i)}
+                  
                   status={mealStatuses[`today-${i}`] || null}
                   onSetStatus={(s) => setMealStatus(`today-${i}`, s)}
                 />
@@ -1503,17 +1501,6 @@ const Dieta = () => {
         />
       )}
 
-      {/* Focus Mode for Meals */}
-      <DietFocusMode
-        open={focusMealIndex !== null}
-        onClose={() => setFocusMealIndex(null)}
-        meals={displayPlan || []}
-        initialIndex={focusMealIndex ?? 0}
-        mealStatuses={mealStatuses}
-        onSetMealStatus={(idx, s) => setMealStatus(`today-${idx}`, s)}
-        userName={profile?.full_name || undefined}
-        currentGoal={currentGoal}
-      />
     </div>
     </>
   );
