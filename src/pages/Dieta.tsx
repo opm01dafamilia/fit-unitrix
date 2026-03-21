@@ -1055,7 +1055,7 @@ const Dieta = () => {
         {/* New Plan button when plans exist */}
         {savedPlans.length > 0 && !displayPlan && (
           <div className="flex justify-center mb-2">
-            <Button onClick={() => guardAction(() => setDietSource("chooser"))} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
+            <Button onClick={() => guardAction(() => setDietSource("ia"))} className="h-11 px-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 font-semibold">
               <Zap className="w-4 h-4 mr-1.5" /> Novo Plano
             </Button>
           </div>
