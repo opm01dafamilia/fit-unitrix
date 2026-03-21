@@ -1432,7 +1432,6 @@ const Dieta = () => {
                   key={i}
                   block={block}
                   defaultOpen={i === 0}
-                  onMealFocus={(meal) => { const idx = (displayPlan || []).findIndex(m => m === meal); setFocusMealIndex(idx >= 0 ? idx : 0); }}
                   mealStatuses={mealStatuses}
                   onSetMealStatus={setMealStatus}
                 />
