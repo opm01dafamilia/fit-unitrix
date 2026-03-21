@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, Eye, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw, FileText } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
 
