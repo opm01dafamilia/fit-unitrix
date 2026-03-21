@@ -156,7 +156,7 @@ const MealCard = ({ meal, index, status, onSetStatus }: { meal: MealPlan; index:
       : "hover:border-primary/15";
 
   return (
-    <div className={`glass-card p-4 lg:p-5 cursor-pointer transition-all ${borderClass}`} onClick={onFocus}>
+    <div className={`glass-card p-4 lg:p-5 transition-all ${borderClass}`}>
       <div className="mb-4 flex flex-wrap items-start gap-3 sm:flex-nowrap sm:items-center">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
           status === "done"
