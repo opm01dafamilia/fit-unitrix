@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Users, Plus, Dumbbell, TrendingUp, ArrowLeft, Trash2, Eye,
   Loader2, Search, UserPlus, ClipboardList, ChevronDown, ChevronUp,
-  Save, X, GripVertical
+  Save, X, ArrowUp, ArrowDown, Clock, MessageSquare, Pencil
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,9 @@ type ManualExercise = {
   series: string;
   reps: string;
   descanso: string;
-  desc: string;
+  carga: string;
+  obs: string;
+  ordem: number;
 };
 
 type ManualDay = {
@@ -48,9 +50,19 @@ type ManualDay = {
   exercicios: ManualExercise[];
 };
 
-type View = "list" | "add-student" | "student-detail" | "create-workout" | "view-workout";
+type View = "list" | "add-student" | "student-detail" | "create-workout" | "view-workout" | "edit-exercise";
 
 const dayOptions = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+const muscleGroups = [
+  "Peito", "Costas", "Ombros", "Bíceps", "Tríceps", "Pernas", "Glúteos",
+  "Abdômen", "Panturrilha", "Antebraço", "Peito + Tríceps", "Costas + Bíceps",
+  "Pernas + Glúteos", "Ombros + Abdômen", "Superior", "Inferior", "Full Body"
+];
+
+const defaultExercise = (): ManualExercise => ({
+  nome: "", series: "3", reps: "12", descanso: "60s", carga: "", obs: "", ordem: 0
+});
 
 const Personal = () => {
   const { user } = useAuth();
@@ -76,9 +88,13 @@ const Personal = () => {
   const [workoutTitle, setWorkoutTitle] = useState("Treino A");
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [workoutDays, setWorkoutDays] = useState<ManualDay[]>([
-    { dia: "Segunda", grupo: "", exercicios: [{ nome: "", series: "3", reps: "12", descanso: "60s", desc: "" }] }
+    { dia: "Segunda", grupo: "", exercicios: [{ ...defaultExercise(), ordem: 1 }] }
   ]);
   const [expandedDayIdx, setExpandedDayIdx] = useState<number>(0);
+
+  // Edit exercise dialog
+  const [editingExercise, setEditingExercise] = useState<{ dayIdx: number; exIdx: number } | null>(null);
+  const [editForm, setEditForm] = useState<ManualExercise>(defaultExercise());
 
   // View workout
   const [viewingPlan, setViewingPlan] = useState<TrainerPlan | null>(null);
@@ -154,14 +170,15 @@ const Personal = () => {
 
   const handleSaveWorkout = async () => {
     if (!user || !selectedStudent) return;
-    // Validate
     const hasExercises = workoutDays.some(d => d.exercicios.some(e => e.nome.trim()));
     if (!hasExercises) { toast.error("Adicione pelo menos um exercício"); return; }
 
     setSaving(true);
     const cleanDays = workoutDays.map(d => ({
       ...d,
-      exercicios: d.exercicios.filter(e => e.nome.trim()),
+      exercicios: d.exercicios
+        .filter(e => e.nome.trim())
+        .map((e, i) => ({ ...e, ordem: i + 1 })),
     })).filter(d => d.exercicios.length > 0);
 
     const { error } = await supabase.from("trainer_workout_plans" as any).insert({
@@ -186,33 +203,59 @@ const Personal = () => {
   const resetWorkoutForm = () => {
     setWorkoutTitle("Treino A");
     setWorkoutNotes("");
-    setWorkoutDays([{ dia: "Segunda", grupo: "", exercicios: [{ nome: "", series: "3", reps: "12", descanso: "60s", desc: "" }] }]);
+    setWorkoutDays([{ dia: "Segunda", grupo: "", exercicios: [{ ...defaultExercise(), ordem: 1 }] }]);
     setExpandedDayIdx(0);
   };
 
   // Exercise helpers
   const addExercise = (dayIdx: number) => {
     const updated = [...workoutDays];
-    updated[dayIdx].exercicios.push({ nome: "", series: "3", reps: "12", descanso: "60s", desc: "" });
+    const nextOrdem = updated[dayIdx].exercicios.length + 1;
+    updated[dayIdx].exercicios.push({ ...defaultExercise(), ordem: nextOrdem });
     setWorkoutDays(updated);
   };
 
   const removeExercise = (dayIdx: number, exIdx: number) => {
     const updated = [...workoutDays];
     updated[dayIdx].exercicios.splice(exIdx, 1);
+    updated[dayIdx].exercicios.forEach((e, i) => e.ordem = i + 1);
     setWorkoutDays(updated);
   };
 
-  const updateExercise = (dayIdx: number, exIdx: number, field: keyof ManualExercise, value: string) => {
+  const updateExercise = (dayIdx: number, exIdx: number, field: keyof ManualExercise, value: string | number) => {
     const updated = [...workoutDays];
-    updated[dayIdx].exercicios[exIdx][field] = value;
+    (updated[dayIdx].exercicios[exIdx] as any)[field] = value;
     setWorkoutDays(updated);
+  };
+
+  const moveExercise = (dayIdx: number, exIdx: number, direction: "up" | "down") => {
+    const updated = [...workoutDays];
+    const exercises = updated[dayIdx].exercicios;
+    const newIdx = direction === "up" ? exIdx - 1 : exIdx + 1;
+    if (newIdx < 0 || newIdx >= exercises.length) return;
+    [exercises[exIdx], exercises[newIdx]] = [exercises[newIdx], exercises[exIdx]];
+    exercises.forEach((e, i) => e.ordem = i + 1);
+    setWorkoutDays(updated);
+  };
+
+  const openEditExercise = (dayIdx: number, exIdx: number) => {
+    setEditForm({ ...workoutDays[dayIdx].exercicios[exIdx] });
+    setEditingExercise({ dayIdx, exIdx });
+  };
+
+  const saveEditExercise = () => {
+    if (!editingExercise) return;
+    const updated = [...workoutDays];
+    updated[editingExercise.dayIdx].exercicios[editingExercise.exIdx] = { ...editForm };
+    setWorkoutDays(updated);
+    setEditingExercise(null);
+    toast.success("Exercício atualizado");
   };
 
   const addDay = () => {
     const usedDays = workoutDays.map(d => d.dia);
     const nextDay = dayOptions.find(d => !usedDays.includes(d)) || `Dia ${workoutDays.length + 1}`;
-    setWorkoutDays([...workoutDays, { dia: nextDay, grupo: "", exercicios: [{ nome: "", series: "3", reps: "12", descanso: "60s", desc: "" }] }]);
+    setWorkoutDays([...workoutDays, { dia: nextDay, grupo: "", exercicios: [{ ...defaultExercise(), ordem: 1 }] }]);
     setExpandedDayIdx(workoutDays.length);
   };
 
@@ -281,14 +324,31 @@ const Personal = () => {
               </div>
               <div className="p-3 space-y-2">
                 {day.exercicios.map((ex, j) => (
-                  <div key={j} className="flex items-center gap-3 py-2 px-3 rounded-xl bg-secondary/30 border border-border/15">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-primary">{j + 1}</span>
+                  <div key={j} className="py-3 px-3 rounded-xl bg-secondary/30 border border-border/15 space-y-1.5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-primary">{j + 1}</span>
+                      </div>
+                      <p className="text-sm font-semibold truncate flex-1">{ex.nome}</p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{ex.nome}</p>
-                      <p className="text-[10px] text-muted-foreground">{ex.series}x{ex.reps} • Descanso: {ex.descanso}</p>
+                    <div className="flex flex-wrap gap-2 ml-11">
+                      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 rounded-md px-2 py-0.5">
+                        <Dumbbell className="w-2.5 h-2.5" /> {ex.series}x{ex.reps}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 rounded-md px-2 py-0.5">
+                        <Clock className="w-2.5 h-2.5" /> {ex.descanso}
+                      </span>
+                      {ex.carga && (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 rounded-md px-2 py-0.5">
+                          <Dumbbell className="w-2.5 h-2.5" /> {ex.carga}
+                        </span>
+                      )}
                     </div>
+                    {ex.obs && (
+                      <p className="text-[10px] text-muted-foreground ml-11 italic flex items-start gap-1">
+                        <MessageSquare className="w-2.5 h-2.5 mt-0.5 shrink-0" /> {ex.obs}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -301,8 +361,10 @@ const Personal = () => {
 
   // ============ VIEW: CREATE WORKOUT ============
   if (view === "create-workout" && selectedStudent) {
+    const totalExercises = workoutDays.reduce((acc, d) => acc + d.exercicios.filter(e => e.nome.trim()).length, 0);
+
     return (
-      <div className="space-y-6 animate-slide-up">
+      <div className="space-y-6 animate-slide-up pb-24">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => setView("student-detail")}>
             <ArrowLeft className="w-5 h-5" />
@@ -313,6 +375,19 @@ const Personal = () => {
           </div>
         </div>
 
+        {/* Stats bar */}
+        <div className="flex items-center gap-3 rounded-xl border border-border/30 bg-secondary/20 p-3">
+          <div className="flex-1 text-center">
+            <p className="text-lg font-display font-black text-primary">{workoutDays.length}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Dias</p>
+          </div>
+          <div className="w-px h-8 bg-border/30" />
+          <div className="flex-1 text-center">
+            <p className="text-lg font-display font-black text-primary">{totalExercises}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Exercícios</p>
+          </div>
+        </div>
+
         {/* Workout meta */}
         <div className="space-y-3">
           <div>
@@ -320,15 +395,15 @@ const Personal = () => {
             <Input value={workoutTitle} onChange={e => setWorkoutTitle(e.target.value)} placeholder="Ex: Treino A - Superior" className="bg-secondary/50 border-border/50" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Observações (opcional)</Label>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Observações gerais (opcional)</Label>
             <Textarea value={workoutNotes} onChange={e => setWorkoutNotes(e.target.value)} placeholder="Notas sobre o treino..." className="bg-secondary/50 border-border/50 min-h-[60px]" />
           </div>
         </div>
 
         {/* Days */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {workoutDays.map((day, dayIdx) => (
-            <div key={dayIdx} className="rounded-2xl border border-border/30 overflow-hidden" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))" }}>
+            <div key={dayIdx} className="rounded-2xl border border-border/30 overflow-hidden shadow-sm" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))" }}>
               {/* Day header */}
               <button
                 onClick={() => setExpandedDayIdx(expandedDayIdx === dayIdx ? -1 : dayIdx)}
@@ -355,7 +430,7 @@ const Personal = () => {
 
               {/* Day content */}
               {expandedDayIdx === dayIdx && (
-                <div className="px-4 pb-4 space-y-3 border-t border-border/20 pt-3">
+                <div className="px-4 pb-4 space-y-4 border-t border-border/20 pt-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-[10px] text-muted-foreground mb-1 block">Dia da semana</Label>
@@ -368,40 +443,93 @@ const Personal = () => {
                     </div>
                     <div>
                       <Label className="text-[10px] text-muted-foreground mb-1 block">Grupo muscular</Label>
-                      <Input value={day.grupo} onChange={e => { const u = [...workoutDays]; u[dayIdx].grupo = e.target.value; setWorkoutDays(u); }} placeholder="Ex: Peito + Tríceps" className="bg-secondary/50 border-border/50 h-9 text-xs" />
+                      <Select value={day.grupo} onValueChange={v => { const u = [...workoutDays]; u[dayIdx].grupo = v; setWorkoutDays(u); }}>
+                        <SelectTrigger className="bg-secondary/50 border-border/50 h-9 text-xs"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          {muscleGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
                   {/* Exercises */}
                   <div className="space-y-2">
                     {day.exercicios.map((ex, exIdx) => (
-                      <div key={exIdx} className="rounded-xl border border-border/20 p-3 bg-secondary/20 space-y-2">
+                      <div key={exIdx} className="rounded-xl border border-border/20 p-3 bg-secondary/20 space-y-2.5">
+                        {/* Exercise header row */}
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                             <span className="text-[10px] font-bold text-primary">{exIdx + 1}</span>
                           </div>
-                          <Input value={ex.nome} onChange={e => updateExercise(dayIdx, exIdx, "nome", e.target.value)} placeholder="Nome do exercício" className="bg-secondary/40 border-border/30 h-8 text-xs flex-1" />
-                          {day.exercicios.length > 1 && (
-                            <button onClick={() => removeExercise(dayIdx, exIdx)} className="w-7 h-7 rounded-md flex items-center justify-center text-destructive/50 hover:text-destructive hover:bg-destructive/10 transition-all shrink-0">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <Input
+                            value={ex.nome}
+                            onChange={e => updateExercise(dayIdx, exIdx, "nome", e.target.value)}
+                            placeholder="Nome do exercício"
+                            className="bg-secondary/40 border-border/30 h-9 text-xs flex-1"
+                          />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
+
+                        {/* Config grid */}
+                        <div className="grid grid-cols-4 gap-2">
                           <div>
                             <Label className="text-[9px] text-muted-foreground mb-0.5 block">Séries</Label>
-                            <Input value={ex.series} onChange={e => updateExercise(dayIdx, exIdx, "series", e.target.value)} className="bg-secondary/40 border-border/30 h-7 text-xs text-center" />
+                            <Input value={ex.series} onChange={e => updateExercise(dayIdx, exIdx, "series", e.target.value)} className="bg-secondary/40 border-border/30 h-8 text-xs text-center" />
                           </div>
                           <div>
                             <Label className="text-[9px] text-muted-foreground mb-0.5 block">Reps</Label>
-                            <Input value={ex.reps} onChange={e => updateExercise(dayIdx, exIdx, "reps", e.target.value)} className="bg-secondary/40 border-border/30 h-7 text-xs text-center" />
+                            <Input value={ex.reps} onChange={e => updateExercise(dayIdx, exIdx, "reps", e.target.value)} className="bg-secondary/40 border-border/30 h-8 text-xs text-center" />
                           </div>
                           <div>
                             <Label className="text-[9px] text-muted-foreground mb-0.5 block">Descanso</Label>
-                            <Input value={ex.descanso} onChange={e => updateExercise(dayIdx, exIdx, "descanso", e.target.value)} className="bg-secondary/40 border-border/30 h-7 text-xs text-center" />
+                            <Input value={ex.descanso} onChange={e => updateExercise(dayIdx, exIdx, "descanso", e.target.value)} className="bg-secondary/40 border-border/30 h-8 text-xs text-center" />
+                          </div>
+                          <div>
+                            <Label className="text-[9px] text-muted-foreground mb-0.5 block">Carga</Label>
+                            <Input value={ex.carga} onChange={e => updateExercise(dayIdx, exIdx, "carga", e.target.value)} placeholder="kg" className="bg-secondary/40 border-border/30 h-8 text-xs text-center" />
                           </div>
                         </div>
-                        <Input value={ex.desc} onChange={e => updateExercise(dayIdx, exIdx, "desc", e.target.value)} placeholder="Observação (opcional)" className="bg-secondary/40 border-border/30 h-7 text-[10px]" />
+
+                        {/* Obs */}
+                        <Input
+                          value={ex.obs}
+                          onChange={e => updateExercise(dayIdx, exIdx, "obs", e.target.value)}
+                          placeholder="Observação do exercício (opcional)"
+                          className="bg-secondary/40 border-border/30 h-8 text-[10px]"
+                        />
+
+                        {/* Actions row */}
+                        <div className="flex items-center justify-between pt-1 border-t border-border/10">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => moveExercise(dayIdx, exIdx, "up")}
+                              disabled={exIdx === 0}
+                              className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => moveExercise(dayIdx, exIdx, "down")}
+                              disabled={exIdx === day.exercicios.length - 1}
+                              className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => openEditExercise(dayIdx, exIdx)}
+                              className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          {day.exercicios.length > 1 && (
+                            <button
+                              onClick={() => removeExercise(dayIdx, exIdx)}
+                              className="w-7 h-7 rounded-md flex items-center justify-center text-destructive/50 hover:text-destructive hover:bg-destructive/10 transition-all"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -419,11 +547,60 @@ const Personal = () => {
           </Button>
         </div>
 
-        {/* Save */}
-        <Button onClick={handleSaveWorkout} disabled={saving} className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20 gap-2">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          Salvar Treino
-        </Button>
+        {/* Floating save button */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-lg z-40">
+          <Button
+            onClick={handleSaveWorkout}
+            disabled={saving}
+            className="w-full h-14 text-sm font-semibold bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-2xl shadow-primary/30 gap-2 rounded-2xl"
+          >
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+            Salvar Treino ({totalExercises} exercício{totalExercises !== 1 ? "s" : ""})
+          </Button>
+        </div>
+
+        {/* Edit exercise dialog */}
+        <Dialog open={!!editingExercise} onOpenChange={(o) => { if (!o) setEditingExercise(null); }}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Editar Exercício</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Nome</Label>
+                <Input value={editForm.nome} onChange={e => setEditForm({ ...editForm, nome: e.target.value })} className="bg-secondary/50 border-border/50" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Séries</Label>
+                  <Input value={editForm.series} onChange={e => setEditForm({ ...editForm, series: e.target.value })} className="bg-secondary/50 border-border/50" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Repetições</Label>
+                  <Input value={editForm.reps} onChange={e => setEditForm({ ...editForm, reps: e.target.value })} className="bg-secondary/50 border-border/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Descanso</Label>
+                  <Input value={editForm.descanso} onChange={e => setEditForm({ ...editForm, descanso: e.target.value })} className="bg-secondary/50 border-border/50" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Carga sugerida</Label>
+                  <Input value={editForm.carga} onChange={e => setEditForm({ ...editForm, carga: e.target.value })} placeholder="Ex: 20kg" className="bg-secondary/50 border-border/50" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Observação</Label>
+                <Textarea value={editForm.obs} onChange={e => setEditForm({ ...editForm, obs: e.target.value })} placeholder="Dicas, técnica, atenção..." className="bg-secondary/50 border-border/50 min-h-[60px]" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setEditingExercise(null)}>Cancelar</Button>
+              <Button onClick={saveEditExercise} className="gap-1.5"><Save className="w-4 h-4" /> Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -491,7 +668,7 @@ const Personal = () => {
             <div className="space-y-2">
               {studentPlans.map(plan => {
                 const days = (plan.plan_data || []) as ManualDay[];
-                const totalExercises = days.reduce((acc, d) => acc + d.exercicios.length, 0);
+                const totalEx = days.reduce((acc, d) => acc + d.exercicios.length, 0);
                 return (
                   <div key={plan.id} className="flex items-center gap-3 rounded-xl border border-border/30 p-3 bg-secondary/20 hover:bg-secondary/30 transition-all">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -499,7 +676,7 @@ const Personal = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{plan.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{days.length} dia(s) • {totalExercises} exercício(s)</p>
+                      <p className="text-[10px] text-muted-foreground">{days.length} dia(s) • {totalEx} exercício(s)</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button onClick={() => { setViewingPlan(plan); setView("view-workout"); }} className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
@@ -572,7 +749,6 @@ const Personal = () => {
   // ============ VIEW: STUDENT LIST ============
   return (
     <div className="space-y-6 animate-slide-up">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-bold tracking-tight">Modo Personal</h1>
@@ -583,7 +759,6 @@ const Personal = () => {
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-border/30 p-4" style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))" }}>
           <Users className="w-5 h-5 text-primary mb-2" />
@@ -597,7 +772,6 @@ const Personal = () => {
         </div>
       </div>
 
-      {/* Search */}
       {students.length > 3 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -605,7 +779,6 @@ const Personal = () => {
         </div>
       )}
 
-      {/* Student list */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : filteredStudents.length === 0 ? (
@@ -640,7 +813,6 @@ const Personal = () => {
         </div>
       )}
 
-      {/* Delete dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
