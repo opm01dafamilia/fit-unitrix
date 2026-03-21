@@ -263,10 +263,9 @@ const DayAccordion = ({ dayPlan, defaultOpen, mealStatuses, onSetMealStatus }: {
 };
 
 // Weekly block accordion with calorie target header
-const WeekBlockAccordion = ({ block, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: {
+const WeekBlockAccordion = ({ block, defaultOpen, mealStatuses, onSetMealStatus }: {
   block: WeekBlock;
   defaultOpen?: boolean;
-  onMealFocus?: (meal: MealPlan) => void;
   mealStatuses?: Record<string, MealStatus>;
   onSetMealStatus?: (key: string, s: MealStatus) => void;
 }) => {
