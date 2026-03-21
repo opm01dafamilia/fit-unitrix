@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Play, Pause, Square, Clock, Flame, MapPin, Zap, Trophy, Camera, ArrowLeft, Plus, Minus, Timer } from "lucide-react";
+import { Play, Pause, Square, Clock, Flame, MapPin, Zap, Trophy, ArrowLeft, Plus, Minus, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import cardioTreadmill from "@/assets/cardio-treadmill.png";
