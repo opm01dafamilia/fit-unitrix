@@ -130,15 +130,6 @@ const Treino = () => {
       setLoadingPlans(false);
       setLoadingSessions(false);
 
-      // Fetch treino PDFs
-      const { data: pdfData } = await supabase
-        .from("user_files")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("file_type", "treino")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (pdfData) setTreinoPdfs(pdfData);
     };
     fetchAll();
   }, [user]);
