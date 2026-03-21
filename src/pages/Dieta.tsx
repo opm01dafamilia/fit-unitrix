@@ -1492,14 +1492,6 @@ const Dieta = () => {
         />
       )}
 
-      {/* PDF Upload */}
-      {dietSource === "pdf" && (
-        <PdfUploadFlow
-          type="dieta"
-          onBack={() => setDietSource("chooser")}
-          onComplete={() => setDietSource(null)}
-        />
-      )}
 
     </div>
     </>

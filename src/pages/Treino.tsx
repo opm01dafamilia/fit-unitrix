@@ -1802,14 +1802,6 @@ const Treino = () => {
       )}
 
 
-      {/* PDF Viewer */}
-      {viewingPdf && (
-        <PdfViewer
-          url={viewingPdf.url}
-          fileName={viewingPdf.name}
-          onClose={() => setViewingPdf(null)}
-        />
-      )}
     </div>
     </>
   );

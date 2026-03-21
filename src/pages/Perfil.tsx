@@ -190,8 +190,6 @@ const Perfil = () => {
         </Button>
       </div>
 
-      {/* Meus Arquivos - PDFs */}
-      <MeusArquivos />
     </div>
     </>
   );
