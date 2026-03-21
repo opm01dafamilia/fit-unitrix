@@ -85,7 +85,7 @@ const Treino = () => {
   const [selectedCalendarDay, setSelectedCalendarDay] = useState<Date | null>(null);
   // Weekly evolution
   const [weeklyEvolution, setWeeklyEvolution] = useState<WeeklyEvolution | null>(null);
-  const [focusDay, setFocusDay] = useState<any | null>(null);
+  
   const [cycleStatus, setCycleStatus] = useState<CycleStatus | null>(null);
   const [evolutionTimeline, setEvolutionTimeline] = useState<EvolutionEntry[]>([]);
   const [comebackStatus, setComebackStatus] = useState<ComebackStatus | null>(null);
