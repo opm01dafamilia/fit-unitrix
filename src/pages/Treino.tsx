@@ -926,7 +926,7 @@ const Treino = () => {
             <p className="text-muted-foreground text-sm mt-1.5">Sua jornada fitness começa aqui</p>
           </div>
           <Button
-            onClick={() => guardAction(() => setView("chooser"))}
+            onClick={() => guardAction(() => setView("generator"))}
             className="h-12 w-full sm:w-auto px-6 rounded-2xl font-bold text-sm shadow-xl active:scale-[0.97] transition-all border-0"
             style={{
               background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
