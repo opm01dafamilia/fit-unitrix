@@ -7,7 +7,7 @@ import ManualWorkoutFlow from "@/components/ManualWorkoutFlow";
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
 
-import PdfViewer from "@/components/PdfViewer";
+
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
