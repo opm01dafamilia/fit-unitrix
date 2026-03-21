@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
@@ -12,6 +12,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 import { useUserRole } from "@/hooks/useUserRole";
+import { resetBodyScrollLock } from "@/lib/bodyScrollLock";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
@@ -39,10 +40,15 @@ const secondaryNavItems = [
 
 const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
   const { profile, signOut, subscriptionStatus } = useAuth();
   const { isPersonal } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
+
+  useEffect(() => {
+    resetBodyScrollLock();
+  }, [location.pathname]);
 
   useEffect(() => {
     const prefs = getMenuPreferences();
@@ -181,7 +187,7 @@ const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex flex-1 flex-col min-w-0 min-h-screen overflow-x-hidden overscroll-y-auto app-scroll-area">
+      <main className="flex flex-1 flex-col min-w-0 min-h-[100dvh] overflow-x-hidden overflow-y-auto overscroll-y-auto app-scroll-area">
         <header className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-background/80 backdrop-blur-2xl border-b border-border/30 lg:hidden safe-area-header">
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
@@ -198,7 +204,7 @@ const AppLayout = () => {
           </div>
         </header>
         <BillingBanner status={subscriptionStatus} />
-        <div className="p-4 lg:p-8 mobile-content-safe lg:pb-8 max-w-7xl mx-auto page-enter min-h-full w-full">
+        <div className="p-4 lg:p-8 mobile-content-safe lg:pb-8 max-w-7xl mx-auto page-enter min-h-0 w-full">
           <Outlet />
         </div>
       </main>
