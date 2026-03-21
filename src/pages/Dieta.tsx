@@ -215,7 +215,7 @@ const MealCard = ({ meal, index, status, onSetStatus }: { meal: MealPlan; index:
   );
 };
 
-const DayAccordion = ({ dayPlan, defaultOpen, onMealFocus, mealStatuses, onSetMealStatus }: { dayPlan: DayPlan; defaultOpen?: boolean; onMealFocus?: (meal: MealPlan) => void; mealStatuses?: Record<string, MealStatus>; onSetMealStatus?: (key: string, s: MealStatus) => void }) => {
+const DayAccordion = ({ dayPlan, defaultOpen, mealStatuses, onSetMealStatus }: { dayPlan: DayPlan; defaultOpen?: boolean; mealStatuses?: Record<string, MealStatus>; onSetMealStatus?: (key: string, s: MealStatus) => void }) => {
   const [open, setOpen] = useState(defaultOpen || false);
   const dayCal = dayPlan.refeicoes.reduce((acc, m) => acc + m.itens.reduce((a, i) => a + i.cal, 0), 0);
   const doneCount = dayPlan.refeicoes.filter((_, i) => mealStatuses?.[`${dayPlan.dia}-${i}`] === "done").length;
