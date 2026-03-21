@@ -518,7 +518,7 @@ const Personal = () => {
                               onClick={() => openEditExercise(dayIdx, exIdx)}
                               className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <Pencil className="w-3.5 h-3.5" />
                             </button>
                           </div>
                           {day.exercicios.length > 1 && (
