@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Users, Plus, Dumbbell, TrendingUp, ArrowLeft, Trash2, Eye,
   Loader2, Search, UserPlus, ClipboardList, ChevronDown, ChevronUp,
-  Save, X, ArrowUp, ArrowDown, Weight, Clock, MessageSquare
+  Save, X, ArrowUp, ArrowDown, Clock, MessageSquare, Pencil
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
