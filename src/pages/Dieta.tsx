@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import { UtensilsCrossed, Zap, Coffee, Sun, Moon, Apple, Trash2, Loader2, Target, Calendar, CalendarDays, CalendarRange, ChevronDown, ChevronRight, Clock, Check, X as XIcon, TrendingUp, TrendingDown, Scale, Flame, Trophy, BarChart3, AlertTriangle } from "lucide-react";
 import PlanSourceChoice from "@/components/PlanSourceChoice";
-import PdfUploadFlow from "@/components/PdfUploadFlow";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -598,7 +598,7 @@ function buildMetaDescription(sp: any): string | null {
 const Dieta = () => {
   const { user, profile } = useAuth();
   const { guardAction, GateModal } = useSubscriptionGuard();
-  const [dietSource, setDietSource] = useState<"chooser" | "ia" | "pdf" | null>(null);
+  const [dietSource, setDietSource] = useState<"chooser" | "ia" | null>(null);
   const [objetivo, setObjetivo] = useState("");
   const [peso, setPeso] = useState("");
   const [altura, setAltura] = useState("");
@@ -1050,7 +1050,7 @@ const Dieta = () => {
       )}
 
       {/* Form - only show when source is "ia" or when plans already exist */}
-      {dietSource !== "chooser" && dietSource !== "pdf" && (
+      {dietSource !== "chooser" && (
       <div className="glass-card p-5 lg:p-7 space-y-6">
         {/* New Plan button when plans exist */}
         {savedPlans.length > 0 && !displayPlan && (
@@ -1471,7 +1471,7 @@ const Dieta = () => {
       )}
 
       {/* Empty state */}
-      {!loadingPlans && savedPlans.length === 0 && !displayPlan && dietSource !== "chooser" && dietSource !== "pdf" && (
+      {!loadingPlans && savedPlans.length === 0 && !displayPlan && dietSource !== "chooser" && (
         <div className="empty-state">
           <UtensilsCrossed className="w-10 h-10 text-chart-3 mx-auto mb-3 opacity-60" />
           <h3 className="font-display font-semibold mb-1">Nenhum plano alimentar</h3>
@@ -1487,19 +1487,11 @@ const Dieta = () => {
         <PlanSourceChoice
           type="dieta"
           onChooseAI={() => setDietSource("ia")}
-          onChoosePDF={() => setDietSource("pdf")}
+          onChoosePDF={() => {}}
           onBack={() => setDietSource(null)}
         />
       )}
 
-      {/* PDF Upload */}
-      {dietSource === "pdf" && (
-        <PdfUploadFlow
-          type="dieta"
-          onBack={() => setDietSource("chooser")}
-          onComplete={() => setDietSource(null)}
-        />
-      )}
 
     </div>
     </>
