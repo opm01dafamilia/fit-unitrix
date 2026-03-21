@@ -134,13 +134,9 @@ const AppLayout = () => {
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
           {coreNavItems.map(renderNavLink)}
 
-          {/* Personal Mode — role-based */}
-          {isPersonal && (
-            <>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Personal</p>
-              {renderNavLink({ to: "/personal", icon: ClipboardList, label: "Meus Alunos" })}
-            </>
-          )}
+          {/* Personal Mode — visible for all during testing */}
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Personal</p>
+          {renderNavLink({ to: "/personal", icon: ClipboardList, label: "Personal" })}
 
           {/* Pinned Modular Items */}
           {pinnedNavItems.length > 0 && (
