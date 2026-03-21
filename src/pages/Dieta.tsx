@@ -1050,7 +1050,7 @@ const Dieta = () => {
       )}
 
       {/* Form - only show when source is "ia" or when plans already exist */}
-      {dietSource !== "chooser" && dietSource !== "pdf" && (
+      {dietSource !== "chooser" && (
       <div className="glass-card p-5 lg:p-7 space-y-6">
         {/* New Plan button when plans exist */}
         {savedPlans.length > 0 && !displayPlan && (
