@@ -1487,7 +1487,7 @@ const Dieta = () => {
         <PlanSourceChoice
           type="dieta"
           onChooseAI={() => setDietSource("ia")}
-          onChoosePDF={() => setDietSource("pdf")}
+          onChoosePDF={() => {}}
           onBack={() => setDietSource(null)}
         />
       )}
