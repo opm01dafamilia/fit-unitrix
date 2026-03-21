@@ -340,7 +340,7 @@ const Personal = () => {
                       </span>
                       {ex.carga && (
                         <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/50 rounded-md px-2 py-0.5">
-                          <Weight className="w-2.5 h-2.5" /> {ex.carga}
+                          <Dumbbell className="w-2.5 h-2.5" /> {ex.carga}
                         </span>
                       )}
                     </div>
