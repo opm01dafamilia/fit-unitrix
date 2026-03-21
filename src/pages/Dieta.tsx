@@ -302,7 +302,7 @@ const WeekBlockAccordion = ({ block, defaultOpen, mealStatuses, onSetMealStatus 
               key={i}
               dayPlan={dayPlan}
               defaultOpen={i === 0}
-              onMealFocus={onMealFocus}
+              
               mealStatuses={mealStatuses}
               onSetMealStatus={onSetMealStatus}
             />
