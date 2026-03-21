@@ -1461,7 +1461,7 @@ const Dieta = () => {
                   key={i}
                   meal={meal}
                   index={i}
-                  onFocus={() => setFocusMealIndex(i)}
+                  
                   status={mealStatuses[`today-${i}`] || null}
                   onSetStatus={(s) => setMealStatus(`today-${i}`, s)}
                 />
