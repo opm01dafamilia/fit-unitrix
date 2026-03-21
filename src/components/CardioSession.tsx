@@ -345,18 +345,6 @@ export default function CardioSession({ onFinish, onBack }: CardioSessionProps) 
           </div>
 
           <div className="flex flex-col gap-3 w-full">
-            <Button variant="outline" className="w-full h-12 rounded-2xl text-base" onClick={() => {
-              const el = document.getElementById("cardio-completion");
-              if (el) {
-                el.classList.add("ring-2", "ring-primary/30");
-                setTimeout(() => el.classList.remove("ring-2", "ring-primary/30"), 2000);
-              }
-              // Trigger native screenshot hint
-              try { if (navigator.vibrate) navigator.vibrate(100); } catch {}
-              // Note: actual screenshot requires native API, we provide visual cue
-            }}>
-              <Camera className="w-5 h-5 mr-2" /> Tirar Print do Cardio
-            </Button>
             <Button className="btn-premium w-full" onClick={onFinish}>
               <Trophy className="w-5 h-5 mr-2" /> Finalizar
             </Button>
