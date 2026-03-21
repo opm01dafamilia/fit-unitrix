@@ -42,10 +42,12 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           height: "100dvh",
           maxHeight: "100dvh",
-          overflow: "hidden",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehaviorY: "contain",
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 10px)",
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)",
         }}
@@ -61,10 +63,11 @@ const FocusMode = ({ open, onClose, children }: FocusModeProps) => {
         </button>
 
         <div
-          className="w-full"
+          className="w-full scrollbar-hide"
           style={{
             maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px)",
-            overflow: "hidden",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {children}
