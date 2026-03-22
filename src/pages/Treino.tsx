@@ -101,6 +101,9 @@ const Treino = () => {
   const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
   const [activeSection, setActiveSection] = useState<"retomada" | "volume" | "adaptacao" | "evolucao" | null>(null);
   const [planEvolution, setPlanEvolution] = useState<PlanEvolutionStatus | null>(null);
+  const [personalMode, setPersonalMode] = useState(false);
+  const [showPersonalModal, setShowPersonalModal] = useState(false);
+  const [autoRenewing, setAutoRenewing] = useState(false);
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
     startLazyPreload();
