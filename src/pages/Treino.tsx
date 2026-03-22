@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, ChevronRight, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 
 
 
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
+import StretchingSession from "@/components/StretchingSession";
 
 
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,8 @@ const Treino = () => {
   const navigate = useNavigate();
   const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
-  const [view, setView] = useState<"dashboard" | "generator" | "execution" | "pre-cardio">("dashboard");
+  const [view, setView] = useState<"dashboard" | "generator" | "execution" | "pre-cardio" | "stretching">("dashboard");
+  const [stretchingGroup, setStretchingGroup] = useState("");
   const [executionKey, setExecutionKey] = useState(0);
   // Pre-cardio state — store pending plan/day to start after cardio finishes
   const [pendingCardio, setPendingCardio] = useState<{ plan: any; dayIndex: number } | null>(null);
@@ -545,6 +547,17 @@ const Treino = () => {
       setView("dashboard");
     } catch { toast.error("Erro ao salvar sessão"); }
   };
+
+  // ==================== STRETCHING VIEW ====================
+  if (view === "stretching") {
+    return (
+      <StretchingSession
+        muscleGroup={stretchingGroup || "pernas"}
+        onBack={() => setView("dashboard")}
+        onFinish={() => setView("dashboard")}
+      />
+    );
+  }
 
   // ==================== PRE-CARDIO VIEW ====================
   if (view === "pre-cardio" && pendingCardio) {
@@ -1334,6 +1347,25 @@ const Treino = () => {
                   </div>
                 )}
 
+                {/* Alongamento */}
+                {!todayCompleted && nextWorkout && (
+                  <button
+                    onClick={() => {
+                      setStretchingGroup(nextWorkout.grupo || "pernas");
+                      setView("stretching");
+                    }}
+                    className="mt-3 w-full flex items-center gap-3 p-3.5 rounded-2xl border border-green-500/20 bg-gradient-to-r from-green-500/5 to-emerald-500/5 hover:from-green-500/10 hover:to-emerald-500/10 transition-all active:scale-[0.98]"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                      <span className="text-lg">🧘</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <span className="text-sm font-bold text-foreground">Iniciar Alongamento</span>
+                      <p className="text-[10px] text-muted-foreground">Prepare seus músculos com alongamentos guiados</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                  </button>
+                )}
 
                 {todayCompleted && (
                   <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5 justify-center">
