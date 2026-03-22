@@ -548,6 +548,17 @@ const Treino = () => {
     } catch { toast.error("Erro ao salvar sessão"); }
   };
 
+  // ==================== STRETCHING VIEW ====================
+  if (view === "stretching") {
+    return (
+      <StretchingSession
+        muscleGroup={stretchingGroup || "pernas"}
+        onBack={() => setView("dashboard")}
+        onFinish={() => setView("dashboard")}
+      />
+    );
+  }
+
   // ==================== PRE-CARDIO VIEW ====================
   if (view === "pre-cardio" && pendingCardio) {
     return (
