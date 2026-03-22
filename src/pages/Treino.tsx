@@ -1531,7 +1531,7 @@ const Treino = () => {
               )}
 
               {/* No fatigue state */}
-              {(!fatigueSummary || fatigueSummary.fatigued.length === 0) && (!recoverySummary || recoverySummary.suggestions.length === 0) && !cycleStatus && (
+              {(!fatigueSummary || fatigueSummary.fatigued.length === 0) && (!recoverySummary || !recoverySummary.showAlert) && !cycleStatus && (
                 <div className="rounded-2xl border border-border/30 p-8 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
                   <div className="w-14 h-14 rounded-2xl bg-chart-2/10 flex items-center justify-center mb-3">
                     <Activity className="w-7 h-7 text-chart-2" />
