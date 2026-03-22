@@ -784,14 +784,61 @@ function enrichMaleExercises(plan: WorkoutDay[], gender: UserGender, level: Leve
   });
 }
 
-// Auxiliary exercises ordering + cap at 4-5
+// Auxiliary exercises ordering + cap at max 8
 function isAuxiliaryExercise(nome: string): boolean {
   const n = nome.toLowerCase();
   return ["panturrilha","rosca","bíceps","biceps","tríceps","triceps","prancha","abdominal","crunch","elevação de pernas","dragon flag"].some(k => n.includes(k));
 }
 
+// Validate muscle group coherence — remove exercises that don't belong
+function validateMuscleGroupCoherence(plan: WorkoutDay[]): WorkoutDay[] {
+  // Map exercise names to their muscle group
+  const exerciseToGroup: Record<string, string> = {};
+  for (const [group, levels] of Object.entries(exerciseDB)) {
+    for (const exercises of Object.values(levels)) {
+      for (const ex of exercises) {
+        exerciseToGroup[ex.nome] = group;
+      }
+    }
+  }
+
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao") || g.includes("hiit") || g.includes("cardio")) return day;
+
+    // Determine which muscle groups this day is supposed to train
+    const dayGroups = new Set<string>();
+    for (const [key, label] of Object.entries(groupLabels)) {
+      if (g.includes(label.toLowerCase()) || g.includes(key)) {
+        dayGroups.add(key);
+      }
+    }
+
+    // Also add valid pairings for all day groups
+    const validGroups = new Set(dayGroups);
+    for (const dg of dayGroups) {
+      const pairings = VALID_PAIRINGS[dg];
+      if (pairings) pairings.forEach(p => validGroups.add(p));
+    }
+    // Always allow hiit, cardio, mobilidade, recuperacao, abdomen
+    validGroups.add("hiit");
+    validGroups.add("cardio");
+    validGroups.add("mobilidade");
+    validGroups.add("recuperacao");
+    validGroups.add("abdomen");
+
+    const filtered = day.exercicios.filter(ex => {
+      const exGroup = exerciseToGroup[ex.nome];
+      if (!exGroup) return true; // unknown exercise, keep
+      return validGroups.has(exGroup) || dayGroups.has(exGroup);
+    });
+
+    return { ...day, exercicios: filtered.length > 0 ? filtered : day.exercicios };
+  });
+}
+
 function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
-  const MAX_EXERCISES = 6;
+  const MAX_EXERCISES = 8;
   return plan.map(day => {
     const g = day.grupo.toLowerCase();
     if (g.includes("mobilidade") || g.includes("recuperacao")) return day;
