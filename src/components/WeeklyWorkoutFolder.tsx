@@ -332,7 +332,7 @@ const WeeklyWorkoutFolder = ({
                       {day.grupo}
                       {recoveryLevel === "recovered" && <span className="text-[8px] px-1 py-0.5 rounded bg-primary/10 text-primary border border-primary/10">🟢</span>}
                       {recoveryLevel === "attention" && <span className="text-[8px] px-1 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/10">🟡</span>}
-                      {recoveryLevel === "fatigued" && <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/10">🔴</span>}
+                      {recoveryLevel === "overload" && <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive border border-destructive/10">🔴</span>}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
