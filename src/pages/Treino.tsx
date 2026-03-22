@@ -1017,6 +1017,64 @@ const Treino = () => {
             ))}
           </div>
         )}
+
+        {/* Personal Mode Confirmation Modal */}
+        <Dialog open={showPersonalModal} onOpenChange={setShowPersonalModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <DialogTitle className="text-center text-lg font-display">Modo Personal Fit-Pulse</DialogTitle>
+              <DialogDescription className="text-center text-sm leading-relaxed mt-2">
+                O modo Personal Fit-Pulse cria automaticamente seus treinos semanais com base no seu desempenho. A cada semana, o sistema ajusta seus treinos para melhorar seus resultados.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-2">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <RefreshCw className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Renovação automática</p>
+                  <p className="text-[11px] text-muted-foreground">Novo treino gerado todo domingo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <TrendingUp className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Evolução contínua</p>
+                  <p className="text-[11px] text-muted-foreground">Baseado no seu desempenho e consistência</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <Target className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Personalizado para você</p>
+                  <p className="text-[11px] text-muted-foreground">Segue suas preferências e objetivo</p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPersonalModal(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  setPersonalMode(true);
+                  setShowPersonalModal(false);
+                  toast.success("Modo Personal ativado! Gere seu primeiro treino para começar. ✨");
+                }}
+                className="flex-1 gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Confirmar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
