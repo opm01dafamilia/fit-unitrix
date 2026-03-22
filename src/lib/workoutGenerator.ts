@@ -964,7 +964,9 @@ export function generateWorkoutPlan(
   plan = enrichFemaleExercises(plan, gender, level);
   plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
-  // NEW: reorder auxiliary exercises to end + cap at 4-5 exercises per day
+  // Validate muscle group coherence — remove misplaced exercises
+  plan = validateMuscleGroupCoherence(plan);
+  // Reorder auxiliary exercises to end + cap at 7-8 exercises per day
   plan = reorderAndCapExercises(plan);
 
   return plan;
