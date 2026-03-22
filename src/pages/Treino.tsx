@@ -33,6 +33,7 @@ import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, l
 import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
 import MuscleVolumeCard from "@/components/MuscleVolumeCard";
 import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
+import { getPlanEvolutionStatus, resetEvolutionForNewPlan, applyExerciseSwap, type PlanEvolutionStatus, type ExerciseSwapRecommendation } from "@/lib/planEvolutionEngine";
 
 type WorkoutSession = {
   id: string;
@@ -95,7 +96,7 @@ const Treino = () => {
   const [fatigueSummary, setFatigueSummary] = useState<WeeklyFatigueSummary | null>(null);
   const [recoverySummary, setRecoverySummary] = useState<RecoverySummary | null>(null);
   const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
-
+  const [planEvolution, setPlanEvolution] = useState<PlanEvolutionStatus | null>(null);
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
     startLazyPreload();
@@ -296,6 +297,16 @@ const Treino = () => {
       setEvolutionTimeline(timeline);
     };
     fetchTimeline();
+
+    // Plan Evolution Engine — professional personal trainer intelligence
+    if (activePlanData) {
+      const evolution = getPlanEvolutionStatus(
+        activePlan.created_at,
+        activePlanData.map((d: any) => ({ exercicios: d.exercicios || [], grupo: d.grupo || "" })),
+        sessions.length
+      );
+      setPlanEvolution(evolution);
+    }
   }, [activePlan, user, loadingSessions, sessions]);
 
   const nextDayIndex = useMemo(() => {
@@ -1237,6 +1248,103 @@ const Treino = () => {
 
           {/* Periodization Cycle Card */}
           {activePlan && <PeriodizationCycleCard />}
+
+          {/* Plan Evolution — Coach Intelligence Card */}
+          {planEvolution && activePlan && (
+            <div className="rounded-2xl border border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden">
+              {/* Header */}
+              <div className="p-4 border-b border-border/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
+                    {planEvolution.maturityEmoji}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold">Personal IA</h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                        {planEvolution.maturityLabel}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Plano ativo há {planEvolution.planWeeks} semana{planEvolution.planWeeks !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-primary">{planEvolution.overallProgressPct}%</div>
+                    <div className="text-[10px] text-muted-foreground">Evolução</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Coach Message */}
+              <div className="px-4 py-3 bg-primary/5 border-b border-border/10">
+                <p className="text-xs leading-relaxed">{planEvolution.coachMessage}</p>
+              </div>
+
+              {/* Evolution Recommendations */}
+              {planEvolution.evolutionRecommendations.length > 0 && (
+                <div className="p-4 space-y-2">
+                  {planEvolution.evolutionRecommendations.slice(0, 2).map((rec, idx) => (
+                    <div key={idx} className={`flex items-start gap-2.5 p-2.5 rounded-xl border ${
+                      rec.impact === "positive" ? "bg-primary/5 border-primary/15" :
+                      rec.impact === "protective" ? "bg-chart-2/5 border-chart-2/15" :
+                      "bg-secondary/40 border-border/20"
+                    }`}>
+                      <span className="text-base mt-0.5">{rec.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-semibold">{rec.title}</p>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed">{rec.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Exercise Swap Suggestions */}
+              {planEvolution.swapRecommendations.length > 0 && (
+                <div className="px-4 pb-4 space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5">
+                    <RotateCcw className="w-3 h-3" /> Variações Sugeridas
+                  </p>
+                  {planEvolution.swapRecommendations.map((swap, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <span className="text-muted-foreground line-through">{swap.originalExercise}</span>
+                          <ChevronRight className="w-3 h-3 text-primary shrink-0" />
+                          <span className="font-semibold text-primary">{swap.suggestedExercise}</span>
+                        </div>
+                        <p className="text-[9px] text-muted-foreground mt-0.5">{swap.reason}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Next Milestone */}
+              <div className="px-4 py-3 border-t border-border/10 bg-secondary/20">
+                <div className="flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5 text-primary/60" />
+                  <p className="text-[10px] text-muted-foreground">{planEvolution.nextMilestone}</p>
+                </div>
+              </div>
+
+              {/* Refresh Plan CTA */}
+              {planEvolution.shouldRefreshPlan && (
+                <div className="px-4 py-3 border-t border-border/10">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => { setView("generator"); resetEvolutionForNewPlan(); }}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                    Gerar Novo Plano para Evoluir
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Muscle Volume Card */}
           {activePlan && (
