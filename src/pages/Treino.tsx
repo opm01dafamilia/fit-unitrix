@@ -33,6 +33,7 @@ import { getRecoverySummary, generateRegenerativeWorkout, acceptRecoveryToday, l
 import PeriodizationCycleCard from "@/components/PeriodizationCycleCard";
 import MuscleVolumeCard from "@/components/MuscleVolumeCard";
 import { checkAndTransition, type PerformanceInput as PeriodPerfInput } from "@/lib/advancedPeriodizationEngine";
+import { getPlanEvolutionStatus, resetEvolutionForNewPlan, applyExerciseSwap, type PlanEvolutionStatus, type ExerciseSwapRecommendation } from "@/lib/planEvolutionEngine";
 
 type WorkoutSession = {
   id: string;
