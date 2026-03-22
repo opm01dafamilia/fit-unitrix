@@ -999,368 +999,58 @@ const Treino = () => {
             </div>
           )}
 
-          {/* Comeback Mode Banner */}
-          {comebackStatus && comebackStatus.level === "comeback" && comebackStatus.isInComebackMode && (
-            <div className="glass-card p-5 relative overflow-hidden border border-primary/20 animate-fade-in">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5" />
-              <div className="relative z-10">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center shadow-lg shrink-0">
-                    <span className="text-2xl">🔥</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold flex items-center gap-2">
-                      Modo Retomada
-                      <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Ativo</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {comebackStatus.message}
-                    </p>
-                  </div>
-                </div>
-                {/* Comeback progress */}
-                {(() => {
-                  const progress = getComebackProgress(comebackWorkouts, comebackStatus.comebackDaysRemaining + comebackWorkouts);
-                  return (
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[11px] text-muted-foreground">Progresso de retomada</span>
-                        <span className="text-[11px] font-bold text-primary">{progress.workoutsCompleted}/{progress.workoutsNeeded} treinos</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700" style={{ width: `${progress.progressPct}%` }} />
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-                {/* Adjustments summary */}
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                    ↓ Volume -{Math.round(comebackStatus.volumeReduction * 100)}%
-                  </span>
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                    ↓ Intensidade reduzida
-                  </span>
-                  {comebackStatus.cardioReduction && (
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                      🚶 Cardio leve apenas
-                    </span>
-                  )}
-                </div>
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-border/30 p-4 text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                <Flame className="w-4 h-4 text-primary" />
               </div>
+              <p className="text-2xl font-display font-black text-foreground">{streak}</p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Sequência</p>
             </div>
-          )}
-
-          {/* Alert Level (light warning, not comeback) */}
-          {comebackStatus && comebackStatus.level === "alert" && (
-            <div className="glass-card p-4 border border-amber-500/15">
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{comebackStatus.messageEmoji}</span>
-                <div>
-                  <p className="text-sm font-medium">{comebackStatus.message}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 italic">{comebackStatus.tooltip}</p>
-                </div>
+            <div className="rounded-2xl border border-border/30 p-4 text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                <Trophy className="w-4 h-4 text-amber-400" />
               </div>
+              <p className="text-2xl font-display font-black text-foreground">{totalCompleted}</p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Treinos</p>
             </div>
-          )}
-
-          {/* Muscle Fatigue Alert */}
-          {fatigueSummary && fatigueSummary.fatigued.length > 0 && (
-            <TooltipProvider>
-              <div className="glass-card p-4 lg:p-5 border border-amber-500/15 animate-fade-in">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center shrink-0">
-                    <span className="text-lg">⚠️</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold flex items-center gap-2">
-                      Fadiga Muscular Detectada
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-[9px] uppercase tracking-wider text-amber-400 font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/15 cursor-help">
-                            Proteção
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs max-w-[200px]">Consistência é mais importante que intensidade. O sistema protege seus músculos automaticamente.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Seus músculos precisam recuperar. Vamos ajustar o treino para manter evolução sem risco.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {fatigueSummary.fatigued.map(f => (
-                    <span key={f.group} className={`text-[10px] font-medium px-2 py-0.5 rounded-md flex items-center gap-1 ${
-                      f.level === "extreme"
-                        ? "bg-destructive/10 text-destructive border border-destructive/15"
-                        : "bg-amber-500/10 text-amber-400 border border-amber-500/15"
-                    }`}>
-                      {f.emoji} {f.group} — {f.label}
-                      <span className="text-muted-foreground">({f.weeklysets}/{f.maxWeeklySets} séries)</span>
-                    </span>
-                  ))}
-                </div>
-                {fatigueSummary.adjustment && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {fatigueSummary.adjustment.setsReduction > 0 && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                        ↓ Séries -{Math.round(fatigueSummary.adjustment.setsReduction * 100)}%
-                      </span>
-                    )}
-                    {fatigueSummary.adjustment.loadReduction > 0 && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                        ↓ Carga -{Math.round(fatigueSummary.adjustment.loadReduction * 100)}%
-                      </span>
-                    )}
-                    {fatigueSummary.adjustment.restIncrease > 0 && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
-                        ↑ Descanso +{fatigueSummary.adjustment.restIncrease}s
-                      </span>
-                    )}
-                    {fatigueSummary.adjustment.blockHeavy && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-destructive/10 text-destructive">
-                        🚫 Treino pesado bloqueado
-                      </span>
-                    )}
-                  </div>
-                )}
-                <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
-                  <p className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</p>
-                </div>
+            <div className="rounded-2xl border border-border/30 p-4 text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+              <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                <Dumbbell className="w-4 h-4 text-chart-2" />
               </div>
-            </TooltipProvider>
-          )}
-
-          {/* Smart Recovery Alert */}
-          {recoverySummary && (recoverySummary.showAlert || recoverySummary.showConsecutiveWarning) && (
-            <div className="glass-card p-4 lg:p-5 border border-primary/15 animate-fade-in relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-chart-2/3 opacity-60" />
-              <div className="relative z-10">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center shrink-0">
-                    <Heart className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold">{recoverySummary.alertTitle}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.alertMessage}</p>
-                  </div>
-                </div>
-
-                {/* Load indicator bar */}
-                <div className="mt-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-muted-foreground">Carga semanal</span>
-                    <span className={`text-[10px] font-bold ${
-                      recoverySummary.load.level === "overload" ? "text-destructive" :
-                      recoverySummary.load.level === "attention" ? "text-amber-400" : "text-primary"
-                    }`}>
-                      {recoverySummary.load.emoji} {recoverySummary.load.totalPoints}/{recoverySummary.load.maxPoints} pts
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-700 ${
-                      recoverySummary.load.level === "overload" ? "bg-gradient-to-r from-destructive to-orange-500" :
-                      recoverySummary.load.level === "attention" ? "bg-gradient-to-r from-amber-500 to-orange-400" :
-                      "bg-gradient-to-r from-primary to-chart-2"
-                    }`} style={{ width: `${Math.min(100, (recoverySummary.load.totalPoints / recoverySummary.load.maxPoints) * 100)}%` }} />
-                  </div>
-                </div>
-
-                {recoverySummary.consecutiveXPReduction && (
-                  <div className="mt-2 p-2 rounded-lg bg-destructive/5 border border-destructive/10">
-                    <p className="text-[10px] text-destructive font-medium">⚠️ XP reduzido em 20% — treinar sem descanso reduz seus ganhos.</p>
-                  </div>
-                )}
-
-                {/* Recovery action buttons */}
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {recoverySummary.actions.map(action => (
-                    <button
-                      key={action.id}
-                      onClick={() => {
-                        if (action.id === "regenerative") {
-                          setShowRegenerativeWorkout(true);
-                        }
-                        acceptRecoveryToday();
-                        toast.success(`+${10} XP bônus por recuperação inteligente! 🧘`, { duration: 4000 });
-                        // Refresh recovery summary
-                        const sessionData = sessions.map(s => ({ completed_at: s.completed_at, muscle_group: s.muscle_group, intensity: undefined as string | undefined }));
-                        setRecoverySummary(getRecoverySummary(sessionData));
-                      }}
-                      className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-secondary/40 border border-border/30 hover:bg-secondary/60 hover:border-primary/20 transition-all"
-                    >
-                      <span className="text-lg">{action.emoji}</span>
-                      <span className="text-[10px] font-medium text-foreground">{action.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
-                  <p className="text-[10px] text-muted-foreground italic">💚 Recuperar faz parte da evolução. +10 XP bônus ao aceitar.</p>
-                </div>
-              </div>
+              <p className="text-2xl font-display font-black text-foreground">{avgExercises}</p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">Média/Sessão</p>
             </div>
-          )}
+          </div>
 
-          {/* Regenerative Workout Modal */}
-          {showRegenerativeWorkout && (() => {
-            const regen = generateRegenerativeWorkout();
-            return (
-              <div className="glass-card p-4 lg:p-5 border-2 border-primary/20 animate-fade-in relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-chart-2/3" />
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
-                        <span className="text-lg">🧘</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold">Treino Regenerativo</p>
-                        <p className="text-[10px] text-muted-foreground">~20 min • Mobilidade + Core + Respiração</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => setShowRegenerativeWorkout(false)}>
-                      ✕
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {regen.exercicios.map((ex, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/20">
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
-                          {i + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{ex.nome}</p>
-                          <p className="text-[10px] text-muted-foreground">{ex.series}x{ex.reps} {ex.descanso !== "—" ? `• ${ex.descanso}` : ""}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Periodization Cycle Card */}
-          {activePlan && <PeriodizationCycleCard />}
-
-          {/* Plan Evolution — Coach Intelligence Card */}
-          {planEvolution && activePlan && (
-            <div className="rounded-2xl border border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden">
-              {/* Header */}
-              <div className="p-4 border-b border-border/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
-                    {planEvolution.maturityEmoji}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold">Personal IA</h3>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                        {planEvolution.maturityLabel}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Plano ativo há {planEvolution.planWeeks} semana{planEvolution.planWeeks !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-primary">{planEvolution.overallProgressPct}%</div>
-                    <div className="text-[10px] text-muted-foreground">Evolução</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Coach Message */}
-              <div className="px-4 py-3 bg-primary/5 border-b border-border/10">
-                <p className="text-xs leading-relaxed">{planEvolution.coachMessage}</p>
-              </div>
-
-              {/* Evolution Recommendations */}
-              {planEvolution.evolutionRecommendations.length > 0 && (
-                <div className="p-4 space-y-2">
-                  {planEvolution.evolutionRecommendations.slice(0, 2).map((rec, idx) => (
-                    <div key={idx} className={`flex items-start gap-2.5 p-2.5 rounded-xl border ${
-                      rec.impact === "positive" ? "bg-primary/5 border-primary/15" :
-                      rec.impact === "protective" ? "bg-chart-2/5 border-chart-2/15" :
-                      "bg-secondary/40 border-border/20"
-                    }`}>
-                      <span className="text-base mt-0.5">{rec.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-semibold">{rec.title}</p>
-                        <p className="text-[10px] text-muted-foreground leading-relaxed">{rec.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Exercise Swap Suggestions */}
-              {planEvolution.swapRecommendations.length > 0 && (
-                <div className="px-4 pb-4 space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5">
-                    <RotateCcw className="w-3 h-3" /> Variações Sugeridas
-                  </p>
-                  {planEvolution.swapRecommendations.map((swap, idx) => (
-                    <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 text-[11px]">
-                          <span className="text-muted-foreground line-through">{swap.originalExercise}</span>
-                          <ChevronRight className="w-3 h-3 text-primary shrink-0" />
-                          <span className="font-semibold text-primary">{swap.suggestedExercise}</span>
-                        </div>
-                        <p className="text-[9px] text-muted-foreground mt-0.5">{swap.reason}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Next Milestone */}
-              <div className="px-4 py-3 border-t border-border/10 bg-secondary/20">
-                <div className="flex items-center gap-2">
-                  <Target className="w-3.5 h-3.5 text-primary/60" />
-                  <p className="text-[10px] text-muted-foreground">{planEvolution.nextMilestone}</p>
-                </div>
-              </div>
-
-              {/* Refresh Plan CTA */}
-              {planEvolution.shouldRefreshPlan && (
-                <div className="px-4 py-3 border-t border-border/10">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs"
-                    onClick={() => { setView("generator"); resetEvolutionForNewPlan(); }}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                    Gerar Novo Plano para Evoluir
-                  </Button>
-                </div>
-              )}
+          {/* Weekly Consistency */}
+          <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">Consistência Semanal</span>
+              <span className="text-xs font-bold text-primary">
+                {weeklyConsistency.done}/{weeklyConsistency.target}
+              </span>
             </div>
-          )}
-
-          {/* Muscle Volume Card */}
-          {activePlan && (
-            <MuscleVolumeCard
-              level={profile?.experience_level || "intermediario"}
-              objective={profile?.objective || "hipertrofia"}
-              bodyFocus={activePlan?.body_focus || "completo"}
-            />
-          )}
+            <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden mb-2.5">
+              <div 
+                className="h-full rounded-full transition-all duration-700 ease-out" 
+                style={{ 
+                  width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%`,
+                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))',
+                  boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
+                }} 
+              />
+            </div>
+            <p className={`text-xs font-semibold ${consistencyFeedback.color}`}>
+              {consistencyFeedback.emoji} {consistencyFeedback.text}
+            </p>
+          </div>
 
           {/* ===== AI HERO CARD — Next Workout ===== */}
           {nextWorkout && (
             <div className="hero-card">
               <div className="relative z-10 p-6">
-                {/* AI Badge */}
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                     <Zap className="w-3.5 h-3.5 text-primary" />
@@ -1368,8 +1058,6 @@ const Treino = () => {
                   </div>
                   {getIntensityBadge(nextWorkout.intensidade)}
                 </div>
-
-                {/* Workout Info */}
                 <div className="flex items-start gap-4 mb-5">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${getGradient(nextWorkout.grupo)} flex items-center justify-center border border-primary/10 shadow-xl shrink-0`}>
                     <span className="text-3xl">{getMuscleIcon(nextWorkout.grupo)}</span>
@@ -1387,8 +1075,6 @@ const Treino = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Progress */}
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-muted-foreground font-medium">Progresso de hoje</span>
@@ -1398,8 +1084,6 @@ const Treino = () => {
                     <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-700 ease-out shadow-[0_0_12px_hsl(var(--primary)/0.35)]" style={{ width: `${todayProgress}%` }} />
                   </div>
                 </div>
-
-                {/* Premium CTA */}
                 <button 
                   onClick={() => startWorkout(activePlan, todayDayIndex >= 0 ? todayDayIndex : nextDayIndex)} 
                   className={`btn-premium flex items-center justify-center gap-2 ${todayCompleted ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -1412,8 +1096,6 @@ const Treino = () => {
                     <><Play className="w-5 h-5" /> Iniciar Treino</>
                   )}
                 </button>
-                
-                {/* Cardio do Dia */}
                 {!todayCompleted && (
                   <div className="mt-4 rounded-2xl border border-border/40 bg-card p-4">
                     <div className="flex items-center gap-2.5 mb-3">
@@ -1455,8 +1137,6 @@ const Treino = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Alongamento */}
                 {!todayCompleted && nextWorkout && (
                   <button
                     onClick={() => {
@@ -1475,7 +1155,6 @@ const Treino = () => {
                     <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   </button>
                 )}
-
                 {todayCompleted && (
                   <p className="text-xs text-primary mt-3 font-medium flex items-center gap-1.5 justify-center">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Treino de hoje concluído. Continue amanhã! 🔥
@@ -1485,137 +1164,567 @@ const Treino = () => {
             </div>
           )}
 
-          {/* Cycle Progression Status */}
-          {cycleStatus && (
-            <div className="glass-card p-4 lg:p-5 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
-                      <span className="text-lg">{cycleStatus.phaseEmoji}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold">{cycleStatus.phaseLabel}</p>
-                        <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">
-                          Semana {cycleStatus.currentWeek}/5
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{cycleStatus.phaseDescription}</p>
-                    </div>
-                  </div>
-                  {cycleStatus.totalCycles > 0 && (
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <RotateCcw className="w-3 h-3" />
-                      <span>{cycleStatus.totalCycles}º ciclo</span>
-                    </div>
-                  )}
+          {/* ===== SECTION NAVIGATION CARDS ===== */}
+          <div>
+            <h3 className="font-display font-bold text-xs mb-4 text-muted-foreground uppercase tracking-[0.15em] flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" /> Painel do Plano
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Modo Retomada */}
+              <button
+                onClick={() => setActiveSection(activeSection === "retomada" ? null : "retomada")}
+                className={`relative overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.97] border-2 ${
+                  activeSection === "retomada"
+                    ? "border-primary/40 shadow-lg"
+                    : "border-border/30 hover:border-primary/20"
+                }`}
+                style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/15 to-amber-500/10 flex items-center justify-center mb-3 border border-orange-500/10">
+                  <RotateCcw className="w-5 h-5 text-orange-400" />
                 </div>
-                {/* Cycle progress dots */}
-                <div className="flex items-center gap-2 mt-3">
-                  {(["adaptacao", "aumento", "moderado", "intenso", "deload"] as const).map((phase, i) => {
-                    const isActive = i + 1 === cycleStatus.currentWeek;
-                    const isPast = i + 1 < cycleStatus.currentWeek;
-                    const labels = ["🌱", "📈", "⚡", "🔥", "🧘"];
-                    return (
-                      <div key={phase} className="flex-1 flex flex-col items-center gap-1">
-                        <div className={`w-full h-2 rounded-full transition-all ${
-                          isActive ? "bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.4)]" :
-                          isPast ? "bg-primary/40" : "bg-muted"
-                        }`} />
-                        <span className={`text-[9px] ${isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>
-                          {labels[i]}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                {/* Adjustments summary */}
-                {cycleStatus.phase !== "adaptacao" && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {cycleStatus.loadMultiplier !== 1.0 && (
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                        cycleStatus.loadMultiplier > 1 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
-                      }`}>
-                        {cycleStatus.loadMultiplier > 1 ? "↑" : "↓"} Carga {Math.round((cycleStatus.loadMultiplier - 1) * 100)}%
-                      </span>
-                    )}
-                    {cycleStatus.volumeAdjust !== 0 && (
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                        cycleStatus.volumeAdjust > 0 ? "bg-primary/10 text-primary" : "bg-chart-2/10 text-chart-2"
-                      }`}>
-                        {cycleStatus.volumeAdjust > 0 ? "+" : ""}{cycleStatus.volumeAdjust} série
-                      </span>
-                    )}
-                    {cycleStatus.restAdjust !== 0 && (
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                        cycleStatus.restAdjust < 0 ? "bg-orange-500/10 text-orange-400" : "bg-chart-2/10 text-chart-2"
-                      }`}>
-                        Descanso {cycleStatus.restAdjust > 0 ? "+" : ""}{cycleStatus.restAdjust}s
-                      </span>
-                    )}
-                  </div>
+                <p className="text-sm font-display font-bold text-foreground">Modo Retomada</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">Proteção e readaptação</p>
+                {comebackStatus?.isInComebackMode && (
+                  <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse" />
                 )}
+              </button>
+
+              {/* Volume Muscular */}
+              <button
+                onClick={() => setActiveSection(activeSection === "volume" ? null : "volume")}
+                className={`relative overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.97] border-2 ${
+                  activeSection === "volume"
+                    ? "border-primary/40 shadow-lg"
+                    : "border-border/30 hover:border-primary/20"
+                }`}
+                style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center mb-3 border border-primary/10">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                </div>
+                <p className="text-sm font-display font-bold text-foreground">Volume Muscular</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">Séries e equilíbrio semanal</p>
+              </button>
+
+              {/* Adaptação */}
+              <button
+                onClick={() => setActiveSection(activeSection === "adaptacao" ? null : "adaptacao")}
+                className={`relative overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.97] border-2 ${
+                  activeSection === "adaptacao"
+                    ? "border-primary/40 shadow-lg"
+                    : "border-border/30 hover:border-primary/20"
+                }`}
+                style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-chart-2/15 to-emerald-500/10 flex items-center justify-center mb-3 border border-chart-2/10">
+                  <Activity className="w-5 h-5 text-chart-2" />
+                </div>
+                <p className="text-sm font-display font-bold text-foreground">Adaptação</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">Periodização e fadiga</p>
+                {fatigueSummary && fatigueSummary.fatigued.length > 0 && (
+                  <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                )}
+              </button>
+
+              {/* Evolução */}
+              <button
+                onClick={() => setActiveSection(activeSection === "evolucao" ? null : "evolucao")}
+                className={`relative overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.97] border-2 ${
+                  activeSection === "evolucao"
+                    ? "border-primary/40 shadow-lg"
+                    : "border-border/30 hover:border-primary/20"
+                }`}
+                style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/10 flex items-center justify-center mb-3 border border-purple-500/10">
+                  <TrendingUp className="w-5 h-5 text-purple-400" />
+                </div>
+                <p className="text-sm font-display font-bold text-foreground">Evolução</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">Progresso e personal IA</p>
+              </button>
+            </div>
+          </div>
+
+          {/* ===== SECTION CONTENT ===== */}
+
+          {/* SECTION: Modo Retomada */}
+          {activeSection === "retomada" && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setActiveSection(null)} className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors">
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <h3 className="text-sm font-display font-bold">Modo Retomada</h3>
               </div>
+
+              {comebackStatus && comebackStatus.level === "comeback" && comebackStatus.isInComebackMode ? (
+                <div className="glass-card p-5 relative overflow-hidden border border-primary/20">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5" />
+                  <div className="relative z-10">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-chart-2/10 flex items-center justify-center shadow-lg shrink-0">
+                        <span className="text-2xl">🔥</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold flex items-center gap-2">
+                          Modo Retomada
+                          <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Ativo</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{comebackStatus.message}</p>
+                      </div>
+                    </div>
+                    {(() => {
+                      const progress = getComebackProgress(comebackWorkouts, comebackStatus.comebackDaysRemaining + comebackWorkouts);
+                      return (
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[11px] text-muted-foreground">Progresso de retomada</span>
+                            <span className="text-[11px] font-bold text-primary">{progress.workoutsCompleted}/{progress.workoutsNeeded} treinos</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-700" style={{ width: `${progress.progressPct}%` }} />
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-[10px] text-muted-foreground italic">💡 Consistência é mais importante que intensidade.</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                        ↓ Volume -{Math.round(comebackStatus.volumeReduction * 100)}%
+                      </span>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                        ↓ Intensidade reduzida
+                      </span>
+                      {comebackStatus.cardioReduction && (
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-chart-2/10 text-chart-2">
+                          🚶 Cardio leve apenas
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : comebackStatus && comebackStatus.level === "alert" ? (
+                <div className="glass-card p-4 border border-amber-500/15">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{comebackStatus.messageEmoji}</span>
+                    <div>
+                      <p className="text-sm font-medium">{comebackStatus.message}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 italic">{comebackStatus.tooltip}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-border/30 p-8 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
+                    <CheckCircle2 className="w-7 h-7 text-primary" />
+                  </div>
+                  <p className="text-sm font-bold">Tudo certo!</p>
+                  <p className="text-xs text-muted-foreground mt-1">Sua consistência está boa. Continue treinando regularmente.</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Streak + Stats Row — Premium */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
-              <Flame className="w-5 h-5 text-primary mb-2" />
-              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{streak}</p>
-              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">
-                {streak > 0 ? "Sequência" : "Comece!"}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
-              <Trophy className="w-5 h-5 text-primary mb-2" />
-              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{totalCompleted}</p>
-              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Treinos</p>
-            </div>
-            <div className="rounded-2xl border border-border/30 p-4 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-              <div className="absolute top-0 right-0 w-16 h-16 rounded-full opacity-[0.06] -translate-y-4 translate-x-4 pointer-events-none" style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent)' }} />
-              <Dumbbell className="w-5 h-5 text-primary mb-2" />
-              <p className="text-3xl font-display font-black tracking-tight leading-none text-foreground">{avgExercises}</p>
-              <p className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-wider">Média/Sessão</p>
-            </div>
-          </div>
-
-          {/* Weekly Consistency — Premium */}
-          <div className="rounded-2xl border border-border/30 p-5 relative overflow-hidden" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center border border-primary/10" style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.04))' }}>
-                  <Target className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-display font-bold">Consistência Semanal</p>
-                  <p className="text-[10px] text-muted-foreground">Meta semanal de treinos</p>
-                </div>
+          {/* SECTION: Volume Muscular */}
+          {activeSection === "volume" && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setActiveSection(null)} className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors">
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <h3 className="text-sm font-display font-bold">Volume Muscular da Semana</h3>
               </div>
-              <span className={`text-lg font-display font-black ${consistencyFeedback.color}`}>
-                {weeklyConsistency.done}/{weeklyConsistency.target}
-              </span>
-            </div>
-            <div className="h-2.5 bg-muted/40 rounded-full overflow-hidden mb-2.5">
-              <div 
-                className="h-full rounded-full transition-all duration-700 ease-out" 
-                style={{ 
-                  width: `${Math.min(100, (weeklyConsistency.done / weeklyConsistency.target) * 100)}%`,
-                  background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.6))',
-                  boxShadow: '0 0 12px hsl(var(--primary) / 0.3)',
-                }} 
+              <MuscleVolumeCard
+                level={profile?.experience_level || "intermediario"}
+                objective={profile?.objective || "hipertrofia"}
+                bodyFocus={activePlan?.body_focus || "completo"}
               />
             </div>
-            <p className={`text-xs font-semibold ${consistencyFeedback.color}`}>
-              {consistencyFeedback.emoji} {consistencyFeedback.text}
-            </p>
-          </div>
+          )}
 
+          {/* SECTION: Adaptação */}
+          {activeSection === "adaptacao" && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setActiveSection(null)} className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors">
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <h3 className="text-sm font-display font-bold">Adaptação</h3>
+              </div>
+
+              {/* Muscle Fatigue Alert */}
+              {fatigueSummary && fatigueSummary.fatigued.length > 0 && (
+                <TooltipProvider>
+                  <div className="glass-card p-4 lg:p-5 border border-amber-500/15">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center shrink-0">
+                        <span className="text-lg">⚠️</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold flex items-center gap-2">
+                          Fadiga Muscular Detectada
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-[9px] uppercase tracking-wider text-amber-400 font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/15 cursor-help">
+                                Proteção
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs max-w-[200px]">Consistência é mais importante que intensidade. O sistema protege seus músculos automaticamente.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Seus músculos precisam recuperar. Vamos ajustar o treino para manter evolução sem risco.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {fatigueSummary.fatigued.map(f => (
+                        <span key={f.group} className={`text-[10px] font-medium px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                          f.level === "extreme"
+                            ? "bg-destructive/10 text-destructive border border-destructive/15"
+                            : "bg-amber-500/10 text-amber-400 border border-amber-500/15"
+                        }`}>
+                          {f.emoji} {f.group} — {f.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </TooltipProvider>
+              )}
+
+              {/* Recovery Summary */}
+              {recoverySummary && recoverySummary.suggestions.length > 0 && (
+                <div className="glass-card p-4 lg:p-5 border border-chart-2/15">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-chart-2/15 to-primary/5 flex items-center justify-center shrink-0">
+                      <span className="text-lg">💚</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold flex items-center gap-2">
+                        Recuperação Inteligente
+                        <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border ${
+                          recoverySummary.overallLevel === "recovered" ? "text-primary bg-primary/10 border-primary/15" :
+                          recoverySummary.overallLevel === "attention" ? "text-amber-400 bg-amber-500/10 border-amber-500/15" :
+                          "text-destructive bg-destructive/10 border-destructive/15"
+                        }`}>
+                          {recoverySummary.overallLevel === "recovered" ? "Recuperado" :
+                           recoverySummary.overallLevel === "attention" ? "Atenção" : "Fatigado"}
+                        </span>
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.overallMessage}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {recoverySummary.suggestions.slice(0, 3).map((s, i) => (
+                      <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
+                        <span className="text-sm shrink-0">{s.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold">{s.title}</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">{s.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {recoverySummary.canDoRegenerativeWorkout && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-3 text-xs"
+                      onClick={() => {
+                        acceptRecoveryToday();
+                        logRecoveryEvent("recovery_accepted", { overallLevel: recoverySummary.overallLevel });
+                        setShowRegenerativeWorkout(true);
+                      }}
+                    >
+                      🧘 Fazer Treino Regenerativo
+                    </Button>
+                  )}
+                  <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-[10px] text-muted-foreground italic">💚 Recuperar faz parte da evolução. +10 XP bônus ao aceitar.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Regenerative Workout Modal */}
+              {showRegenerativeWorkout && (() => {
+                const regen = generateRegenerativeWorkout();
+                return (
+                  <div className="glass-card p-4 lg:p-5 border-2 border-primary/20 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-chart-2/3" />
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                            <span className="text-lg">🧘</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold">Treino Regenerativo</p>
+                            <p className="text-[10px] text-muted-foreground">~20 min • Mobilidade + Core + Respiração</p>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="sm" className="text-xs" onClick={() => setShowRegenerativeWorkout(false)}>
+                          ✕
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {regen.exercicios.map((ex, i) => (
+                          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/20">
+                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
+                              {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{ex.nome}</p>
+                              <p className="text-[10px] text-muted-foreground">{ex.series}x{ex.reps} {ex.descanso !== "—" ? `• ${ex.descanso}` : ""}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Periodization Cycle Card */}
+              {activePlan && <PeriodizationCycleCard />}
+
+              {/* Cycle Progression Status */}
+              {cycleStatus && (
+                <div className="glass-card p-4 lg:p-5 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-chart-2/5 opacity-50" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                          <span className="text-lg">{cycleStatus.phaseEmoji}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold">{cycleStatus.phaseLabel}</p>
+                            <span className="text-[9px] uppercase tracking-wider text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">
+                              Semana {cycleStatus.currentWeek}/5
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">{cycleStatus.phaseDescription}</p>
+                        </div>
+                      </div>
+                      {cycleStatus.totalCycles > 0 && (
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <RotateCcw className="w-3 h-3" />
+                          <span>{cycleStatus.totalCycles}º ciclo</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      {[1, 2, 3, 4, 5].map(w => (
+                        <div key={w} className={`flex-1 h-2.5 rounded-full transition-all ${
+                          w < cycleStatus.currentWeek ? "bg-primary shadow-sm" :
+                          w === cycleStatus.currentWeek ? "bg-primary/60 animate-pulse" :
+                          "bg-muted/40"
+                        }`} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* No fatigue state */}
+              {(!fatigueSummary || fatigueSummary.fatigued.length === 0) && (!recoverySummary || recoverySummary.suggestions.length === 0) && !cycleStatus && (
+                <div className="rounded-2xl border border-border/30 p-8 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+                  <div className="w-14 h-14 rounded-2xl bg-chart-2/10 flex items-center justify-center mb-3">
+                    <Activity className="w-7 h-7 text-chart-2" />
+                  </div>
+                  <p className="text-sm font-bold">Corpo adaptado</p>
+                  <p className="text-xs text-muted-foreground mt-1">Nenhum alerta de fadiga ou recuperação no momento.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SECTION: Evolução */}
+          {activeSection === "evolucao" && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setActiveSection(null)} className="p-1.5 rounded-lg hover:bg-secondary/60 transition-colors">
+                  <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+                <h3 className="text-sm font-display font-bold">Evolução</h3>
+              </div>
+
+              {/* Plan Evolution — Coach Intelligence Card */}
+              {planEvolution && activePlan && (
+                <div className="rounded-2xl border border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden">
+                  <div className="p-4 border-b border-border/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-lg">
+                        {planEvolution.maturityEmoji}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold">Personal IA</h3>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                            {planEvolution.maturityLabel}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Plano ativo há {planEvolution.planWeeks} semana{planEvolution.planWeeks !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-primary">{planEvolution.overallProgressPct}%</div>
+                        <div className="text-[10px] text-muted-foreground">Evolução</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 bg-primary/5 border-b border-border/10">
+                    <p className="text-xs leading-relaxed">{planEvolution.coachMessage}</p>
+                  </div>
+                  {planEvolution.evolutionRecommendations.length > 0 && (
+                    <div className="p-4 space-y-2">
+                      {planEvolution.evolutionRecommendations.slice(0, 2).map((rec, idx) => (
+                        <div key={idx} className={`flex items-start gap-2.5 p-2.5 rounded-xl border ${
+                          rec.impact === "positive" ? "bg-primary/5 border-primary/15" :
+                          rec.impact === "protective" ? "bg-chart-2/5 border-chart-2/15" :
+                          "bg-secondary/40 border-border/20"
+                        }`}>
+                          <span className="text-base mt-0.5">{rec.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-semibold">{rec.title}</p>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">{rec.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {planEvolution.swapRecommendations.length > 0 && (
+                    <div className="px-4 pb-4 space-y-2">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1.5">
+                        <RotateCcw className="w-3 h-3" /> Variações Sugeridas
+                      </p>
+                      {planEvolution.swapRecommendations.map((swap, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 text-[11px]">
+                              <span className="text-muted-foreground line-through">{swap.originalExercise}</span>
+                              <ChevronRight className="w-3 h-3 text-primary shrink-0" />
+                              <span className="font-semibold text-primary">{swap.suggestedExercise}</span>
+                            </div>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">{swap.reason}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="px-4 py-3 border-t border-border/10 bg-secondary/20">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-3.5 h-3.5 text-primary/60" />
+                      <p className="text-[10px] text-muted-foreground">{planEvolution.nextMilestone}</p>
+                    </div>
+                  </div>
+                  {planEvolution.shouldRefreshPlan && (
+                    <div className="px-4 py-3 border-t border-border/10">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs"
+                        onClick={() => { setView("generator"); resetEvolutionForNewPlan(); }}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                        Gerar Novo Plano para Evoluir
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Weekly Evolution */}
+              {weeklyEvolution && (
+                <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(var(--chart-2) / 0.12), hsl(var(--chart-2) / 0.04))' }}>
+                      <BarChart3 className="w-4 h-4 text-chart-2" />
+                    </div>
+                    <p className="text-sm font-display font-bold">Evolução Semanal</p>
+                  </div>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
+                      <span className="text-xs font-bold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
+                    </div>
+                    {weeklyEvolution.avgWeightIncrease > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
+                        <span className="text-xs font-bold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">Consistência</span>
+                      <span className="text-xs font-bold text-foreground">{weeklyEvolution.consistency}%</span>
+                    </div>
+                    <div className="h-2 bg-muted/40 rounded-full overflow-hidden mt-1">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%`, background: 'linear-gradient(90deg, hsl(var(--chart-2)), hsl(var(--chart-2) / 0.5))' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Evolution Timeline */}
+              {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
+                <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
+                      <Activity className="w-4.5 h-4.5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">Histórico de Evolução</p>
+                      <p className="text-[10px] text-muted-foreground">Últimas {evolutionTimeline.length} semanas</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {evolutionTimeline.map((entry, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="w-16 shrink-0">
+                          <p className="text-[10px] text-muted-foreground font-medium">{entry.weekLabel}</p>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500" 
+                                   style={{ width: `${entry.consistency}%` }} />
+                            </div>
+                            <span className="text-[10px] font-bold text-foreground w-8 text-right">{entry.consistency}%</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px]">{entry.phaseEmoji}</span>
+                            <span className="text-[9px] text-muted-foreground">{entry.phaseLabel}</span>
+                            {entry.avgLoad > 0 && (
+                              <span className="text-[9px] text-primary font-medium">~{entry.avgLoad}kg</span>
+                            )}
+                            <span className="text-[9px] text-muted-foreground">{entry.sessionsCount} treinos</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!planEvolution && !weeklyEvolution && evolutionTimeline.length === 0 && (
+                <div className="rounded-2xl border border-border/30 p-8 flex flex-col items-center text-center" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
+                  <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-3">
+                    <TrendingUp className="w-7 h-7 text-purple-400" />
+                  </div>
+                  <p className="text-sm font-bold">Dados de evolução</p>
+                  <p className="text-xs text-muted-foreground mt-1">Complete treinos para ver seu progresso detalhado aqui.</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ===== PREMIUM PLAN DAYS CARDS ===== */}
           {activePlanData && (
@@ -1689,7 +1798,6 @@ const Treino = () => {
                               })()}
                             </p>
                           </div>
-                          {/* Right side: quick stats + action */}
                           <div className="flex items-center gap-2 shrink-0">
                             <div className="text-right hidden sm:block">
                               <p className="text-xs font-display font-bold text-foreground">{day.exercicios.length}</p>
@@ -1702,7 +1810,6 @@ const Treino = () => {
                             )}
                           </div>
                         </div>
-                        {/* Bottom row: exercise count + time + cardio option */}
                         <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground font-medium flex-wrap">
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/40 border border-border/20">
                             <Dumbbell className="w-3 h-3 text-primary/60" /> {day.exercicios.length} exercícios
@@ -1784,78 +1891,6 @@ const Treino = () => {
               </div>
             );
           })()}
-
-          {/* Weekly Evolution */}
-          {weeklyEvolution && (
-            <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(var(--chart-2) / 0.12), hsl(var(--chart-2) / 0.04))' }}>
-                  <BarChart3 className="w-4 h-4 text-chart-2" />
-                </div>
-                <p className="text-sm font-display font-bold">Evolução Semanal</p>
-              </div>
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Exercícios melhorados</span>
-                  <span className="text-xs font-bold text-primary">{weeklyEvolution.exercisesImproved}/{weeklyEvolution.exercisesTotal}</span>
-                </div>
-                {weeklyEvolution.avgWeightIncrease > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Aumento médio de carga</span>
-                    <span className="text-xs font-bold text-primary">+{weeklyEvolution.avgWeightIncrease} kg</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Consistência</span>
-                  <span className="text-xs font-bold text-foreground">{weeklyEvolution.consistency}%</span>
-                </div>
-                <div className="h-2 bg-muted/40 rounded-full overflow-hidden mt-1">
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${weeklyEvolution.consistency}%`, background: 'linear-gradient(90deg, hsl(var(--chart-2)), hsl(var(--chart-2) / 0.5))' }} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Evolution Timeline */}
-          {evolutionTimeline.length > 0 && evolutionTimeline.some(e => e.sessionsCount > 0) && (
-            <div className="rounded-2xl border border-border/30 p-4" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/15 to-chart-2/10 flex items-center justify-center">
-                  <Activity className="w-4.5 h-4.5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Histórico de Evolução</p>
-                  <p className="text-[10px] text-muted-foreground">Últimas {evolutionTimeline.length} semanas</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {evolutionTimeline.map((entry, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-16 shrink-0">
-                      <p className="text-[10px] text-muted-foreground font-medium">{entry.weekLabel}</p>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-primary to-chart-2 rounded-full transition-all duration-500" 
-                               style={{ width: `${entry.consistency}%` }} />
-                        </div>
-                        <span className="text-[10px] font-bold text-foreground w-8 text-right">{entry.consistency}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px]">{entry.phaseEmoji}</span>
-                        <span className="text-[9px] text-muted-foreground">{entry.phaseLabel}</span>
-                        {entry.avgLoad > 0 && (
-                          <span className="text-[9px] text-primary font-medium">~{entry.avgLoad}kg</span>
-                        )}
-                        <span className="text-[9px] text-muted-foreground">{entry.sessionsCount} treinos</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Calendar */}
           <div className="rounded-2xl border border-border/30 p-5" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}>
