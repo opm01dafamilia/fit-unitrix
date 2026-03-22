@@ -1408,12 +1408,12 @@ const Treino = () => {
                       <p className="text-sm font-bold flex items-center gap-2">
                         {recoverySummary.alertTitle}
                         <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border ${
-                          recoverySummary.load.level === "low" ? "text-primary bg-primary/10 border-primary/15" :
-                          recoverySummary.load.level === "moderate" ? "text-amber-400 bg-amber-500/10 border-amber-500/15" :
+                          recoverySummary.load.level === "recovered" ? "text-primary bg-primary/10 border-primary/15" :
+                          recoverySummary.load.level === "attention" ? "text-amber-400 bg-amber-500/10 border-amber-500/15" :
                           "text-destructive bg-destructive/10 border-destructive/15"
                         }`}>
-                          {recoverySummary.load.level === "low" ? "Recuperado" :
-                           recoverySummary.load.level === "moderate" ? "Atenção" : "Fatigado"}
+                          {recoverySummary.load.level === "recovered" ? "Recuperado" :
+                           recoverySummary.load.level === "attention" ? "Atenção" : "Fatigado"}
                         </span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.alertMessage}</p>
