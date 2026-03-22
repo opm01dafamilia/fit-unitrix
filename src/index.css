@@ -59,6 +59,19 @@
     --shadow-card: 0 4px 24px -4px hsl(225 18% 80% / 0.3);
     --shadow-card-hover: 0 8px 32px -4px hsl(225 18% 80% / 0.4);
     --shadow-hero: 0 12px 48px -8px hsl(225 18% 80% / 0.3);
+
+    --glass-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.95), hsl(0 0% 98% / 0.95));
+    --glass-border: hsl(225 12% 88% / 0.7);
+    --metric-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.98), hsl(0 0% 97% / 0.98));
+    --metric-border: hsl(225 12% 88% / 0.5);
+    --empty-bg: linear-gradient(145deg, hsl(0 0% 98% / 0.7), hsl(0 0% 96% / 0.7));
+    --empty-border: hsl(225 12% 85%);
+    --progress-bg: hsl(225 10% 90%);
+    --skeleton-from: hsl(225 10% 92%);
+    --skeleton-to: hsl(225 10% 96%);
+    --tooltip-bg: hsl(0 0% 100%);
+    --tooltip-border: hsl(225 12% 88%);
+    --tooltip-color: hsl(225 18% 10%);
   }
 
   :root {
