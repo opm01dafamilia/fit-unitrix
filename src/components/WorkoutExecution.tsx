@@ -1286,48 +1286,12 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
-      {/* ===== NEXT EXERCISE BUTTON (between GIF and muscles) ===== */}
+      {/* ===== NEXT EXERCISE BUTTON ===== */}
       {phase === "input" && currentExIndex < totalExercises - 1 && currentSets.length > 0 && (
-        <Button onClick={goNext} className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20">
+        <Button onClick={goNext} className="w-full h-14 text-base font-semibold bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 shadow-lg shadow-primary/20 rounded-2xl">
           Próximo Exercício <ChevronRight className="w-5 h-5 ml-2" />
         </Button>
       )}
-
-      {/* ===== MUSCLE BODY MAP ===== */}
-      <div className={`glass-card p-4 transition-opacity duration-200 ${swapFading ? 'opacity-30' : 'opacity-100'}`}>
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-primary" /> Músculos Ativados
-        </h3>
-        <div className="flex flex-row items-center gap-4">
-          <MuscleBodyMap key={`muscles-${currentExIndex}-${swapKey}`} highlightedMuscles={activeMusclesToShow} />
-          <div className="flex-1 min-w-0 space-y-2">
-            <div className="p-2 rounded-lg bg-primary/8 border border-primary/15">
-              <span className="text-[10px] uppercase tracking-wider text-primary font-semibold flex items-center gap-1">
-                <Target className="w-3 h-3" /> Principal
-              </span>
-              <p className="text-sm font-semibold mt-0.5">{libraryExercise?.musculos[0] || day.grupo}</p>
-            </div>
-            {(libraryExercise?.musculos?.length ?? 0) > 1 && (
-              <div className="p-2 rounded-lg bg-secondary/40 border border-border/30">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Secundários</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {libraryExercise!.musculos.slice(1).map((m, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-foreground/80 border border-border/30 font-medium">{m}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30 flex items-center gap-1">
-                <Dumbbell className="w-2.5 h-2.5" /> {libraryExercise?.equipamento || "Variado"}
-              </span>
-              <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary/60 text-muted-foreground border border-border/30">
-                {libraryExercise?.dificuldade || "intermediário"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ===== SMART LOAD SUGGESTION CARD ===== */}
       {(() => {
