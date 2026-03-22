@@ -85,7 +85,6 @@ const Configuracoes = () => {
 
   const handleLogout = async () => {
     await signOut();
-    navigate("/auth");
   };
 
   const handleHonestyToggle = (enabled: boolean) => {
