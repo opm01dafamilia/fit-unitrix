@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 import { useUserRole } from "@/hooks/useUserRole";
