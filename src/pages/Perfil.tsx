@@ -172,7 +172,7 @@ const Perfil = () => {
             </Select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-2 block">Cidade *</label>
+            <label className="text-xs font-medium text-muted-foreground mb-2 block">Cidade</label>
             <Input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Ex: São Paulo" className="bg-secondary/50 border-border/50" />
           </div>
           <div>
