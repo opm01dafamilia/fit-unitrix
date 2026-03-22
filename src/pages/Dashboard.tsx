@@ -906,28 +906,38 @@ const Dashboard = () => {
             <Star className="w-5 h-5 text-chart-4" />
             Seu Resumo Hoje
           </h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
-              <span className="text-lg mb-1">🏋️</span>
-              <span className="text-lg font-display font-bold">{weekWorkouts > 0 ? sessions.filter((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")).length : 0}</span>
-              <span className="text-[9px] text-muted-foreground">Treinos hoje</span>
-            </div>
-            <div className="p-3 rounded-xl bg-chart-3/5 border border-chart-3/10 flex flex-col items-center">
-              <span className="text-lg mb-1">🍽️</span>
-              <span className="text-lg font-display font-bold">—</span>
-              <span className="text-[9px] text-muted-foreground">Refeições</span>
-            </div>
-            <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
-              <span className="text-lg mb-1">🏃</span>
-              <span className="text-lg font-display font-bold">—</span>
-              <span className="text-[9px] text-muted-foreground">Cardio</span>
-            </div>
-            <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
-              <span className="text-lg mb-1">✨</span>
-              <span className="text-lg font-display font-bold">{microProgress.completed}</span>
-              <span className="text-[9px] text-muted-foreground">Micro-vitórias</span>
-            </div>
-          </div>
+          {(() => {
+            const todayStr = format(new Date(), "yyyy-MM-dd");
+            const todayWorkouts = sessions.filter((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === todayStr).length;
+            const todayDietData = dietTracking.find((d: any) => d.tracked_date === todayStr);
+            const todayMealsDone = todayDietData?.meals_done || 0;
+            const todayMealsTotal = todayDietData?.meals_total || 0;
+            const todayAdherence = todayDietData ? Math.round(todayDietData.adherence_pct || 0) : null;
+            return (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">🏋️</span>
+                  <span className="text-lg font-display font-bold">{todayWorkouts}</span>
+                  <span className="text-[9px] text-muted-foreground">Treinos hoje</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-3/5 border border-chart-3/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">🍽️</span>
+                  <span className="text-lg font-display font-bold">{todayMealsTotal > 0 ? `${todayMealsDone}/${todayMealsTotal}` : "—"}</span>
+                  <span className="text-[9px] text-muted-foreground">Refeições</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">📊</span>
+                  <span className="text-lg font-display font-bold">{todayAdherence !== null ? `${todayAdherence}%` : "—"}</span>
+                  <span className="text-[9px] text-muted-foreground">Aderência</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">✨</span>
+                  <span className="text-lg font-display font-bold">{microProgress.completed}</span>
+                  <span className="text-[9px] text-muted-foreground">Micro-vitórias</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
