@@ -6,6 +6,7 @@ import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 
 import WorkoutExecution from "@/components/WorkoutExecution";
 import CardioSession from "@/components/CardioSession";
+import StretchingSession from "@/components/StretchingSession";
 
 
 import { Button } from "@/components/ui/button";
