@@ -15,7 +15,7 @@ const ResetPassword = () => {
     // Check for recovery token in URL hash
     const hash = window.location.hash;
     if (!hash.includes("type=recovery")) {
-      navigate("/auth");
+      navigate("/");
     }
   }, [navigate]);
 
