@@ -902,7 +902,74 @@ function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
   });
 }
 
-// =====================================================
+// Prevent same exercise appearing on multiple days in the week (professional variety)
+function preventWeeklyDuplication(plan: WorkoutDay[], level: Level): WorkoutDay[] {
+  const globalUsed = new Map<string, number>(); // exercise name → day index
+
+  return plan.map((day, dayIdx) => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao") || g.includes("cardio")) return day;
+
+    const exercicios = day.exercicios.map(ex => {
+      const prevDay = globalUsed.get(ex.nome);
+      if (prevDay !== undefined && prevDay !== dayIdx) {
+        // This exercise already used on another day — try to find alternative
+        const exGroup = findExerciseGroup(ex.nome);
+        if (exGroup) {
+          const pool = exerciseDB[exGroup]?.[level] || exerciseDB[exGroup]?.intermediario || [];
+          const alternative = pool.find(alt => !globalUsed.has(alt.nome) && alt.nome !== ex.nome);
+          if (alternative) {
+            globalUsed.set(alternative.nome, dayIdx);
+            return { ...alternative, series: ex.series, descanso: ex.descanso };
+          }
+        }
+      }
+      globalUsed.set(ex.nome, dayIdx);
+      return ex;
+    });
+
+    return { ...day, exercicios };
+  });
+}
+
+function findExerciseGroup(exerciseName: string): string | null {
+  for (const [group, levels] of Object.entries(exerciseDB)) {
+    for (const exercises of Object.values(levels)) {
+      if (exercises.some(ex => ex.nome === exerciseName)) return group;
+    }
+  }
+  return null;
+}
+
+// Adjust series/reps by objective (professional volume management)
+function adjustVolumeByObjective(plan: WorkoutDay[], objective: Objective, level: Level): WorkoutDay[] {
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao") || g.includes("cardio")) return day;
+
+    const exercicios = day.exercicios.map(ex => {
+      const series = Number(ex.series);
+      const repsStr = ex.reps;
+
+      if (objective === "emagrecer") {
+        // Fat loss: moderate series, higher reps for metabolic stress
+        const reps = parseInt(repsStr);
+        if (!isNaN(reps) && reps < 12 && !repsStr.includes("s") && !repsStr.includes("min")) {
+          return { ...ex, reps: String(Math.min(reps + 2, 15)) };
+        }
+      } else if (objective === "massa") {
+        // Hypertrophy: ensure adequate volume on compound lifts
+        if (COMPOUND_EXERCISES.has(ex.nome) && series < 4 && level !== "iniciante") {
+          return { ...ex, series: String(Math.min(series + 1, 5)) };
+        }
+      }
+      return ex;
+    });
+
+    return { ...day, exercicios };
+  });
+}
+
 // MAIN GENERATOR
 // =====================================================
 export function generateWorkoutPlan(
