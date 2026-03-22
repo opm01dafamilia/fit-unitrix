@@ -524,13 +524,24 @@ function selectExercises(
   return selected;
 }
 
-function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Exercise {
+function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity, objective?: Objective): Exercise {
   const restMap: Record<DayIntensity, Record<string, string>> = {
     pesado: { "30s": "60s", "45s": "90s", "60s": "90s", "90s": "120s", "120s": "180s" },
     moderado: { "120s": "90s", "180s": "120s", "90s": "75s" },
     leve: { "90s": "60s", "120s": "60s", "180s": "90s", "60s": "45s", "45s": "30s" },
   };
-  return { ...exercise, descanso: restMap[intensity]?.[exercise.descanso] || exercise.descanso };
+  let rest = restMap[intensity]?.[exercise.descanso] || exercise.descanso;
+  // Objective-based rest adjustments (professional approach)
+  if (objective === "emagrecer") {
+    // Shorter rests for fat loss — keeps heart rate up
+    const shortenMap: Record<string, string> = { "180s": "120s", "120s": "90s", "90s": "60s" };
+    rest = shortenMap[rest] || rest;
+  } else if (objective === "massa" && intensity === "pesado") {
+    // Longer rests for hypertrophy on heavy days — allow full recovery
+    const lengthenMap: Record<string, string> = { "60s": "90s", "90s": "120s" };
+    rest = lengthenMap[rest] || rest;
+  }
+  return { ...exercise, descanso: rest };
 }
 
 // ===== PROFESSIONAL RULES =====
