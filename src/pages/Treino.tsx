@@ -1398,7 +1398,7 @@ const Treino = () => {
               )}
 
               {/* Recovery Summary */}
-              {recoverySummary && recoverySummary.suggestions.length > 0 && (
+              {recoverySummary && recoverySummary.showAlert && (
                 <div className="glass-card p-4 lg:p-5 border border-chart-2/15">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-chart-2/15 to-primary/5 flex items-center justify-center shrink-0">
@@ -1406,44 +1406,42 @@ const Treino = () => {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-bold flex items-center gap-2">
-                        Recuperação Inteligente
+                        {recoverySummary.alertTitle}
                         <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border ${
-                          recoverySummary.overallLevel === "recovered" ? "text-primary bg-primary/10 border-primary/15" :
-                          recoverySummary.overallLevel === "attention" ? "text-amber-400 bg-amber-500/10 border-amber-500/15" :
+                          recoverySummary.load.level === "low" ? "text-primary bg-primary/10 border-primary/15" :
+                          recoverySummary.load.level === "moderate" ? "text-amber-400 bg-amber-500/10 border-amber-500/15" :
                           "text-destructive bg-destructive/10 border-destructive/15"
                         }`}>
-                          {recoverySummary.overallLevel === "recovered" ? "Recuperado" :
-                           recoverySummary.overallLevel === "attention" ? "Atenção" : "Fatigado"}
+                          {recoverySummary.load.level === "low" ? "Recuperado" :
+                           recoverySummary.load.level === "moderate" ? "Atenção" : "Fatigado"}
                         </span>
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.overallMessage}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{recoverySummary.alertMessage}</p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    {recoverySummary.suggestions.slice(0, 3).map((s, i) => (
+                    {recoverySummary.actions.slice(0, 3).map((a, i) => (
                       <div key={i} className="flex items-start gap-2 p-2.5 rounded-xl bg-secondary/30 border border-border/20">
-                        <span className="text-sm shrink-0">{s.emoji}</span>
+                        <span className="text-sm shrink-0">{a.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold">{s.title}</p>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">{s.description}</p>
+                          <p className="text-[11px] font-semibold">{a.label}</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">{a.description}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                  {recoverySummary.canDoRegenerativeWorkout && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-3 text-xs"
-                      onClick={() => {
-                        acceptRecoveryToday();
-                        logRecoveryEvent("recovery_accepted", { overallLevel: recoverySummary.overallLevel });
-                        setShowRegenerativeWorkout(true);
-                      }}
-                    >
-                      🧘 Fazer Treino Regenerativo
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-3 text-xs"
+                    onClick={() => {
+                      acceptRecoveryToday();
+                      logRecoveryEvent({ date: new Date().toISOString(), type: "recovery_accepted", xpBonus: 10 });
+                      setShowRegenerativeWorkout(true);
+                    }}
+                  >
+                    🧘 Fazer Treino Regenerativo
+                  </Button>
                   <div className="mt-2.5 p-2 rounded-lg bg-primary/5 border border-primary/10">
                     <p className="text-[10px] text-muted-foreground italic">💚 Recuperar faz parte da evolução. +10 XP bônus ao aceitar.</p>
                   </div>
