@@ -59,6 +59,19 @@
     --shadow-card: 0 4px 24px -4px hsl(225 18% 80% / 0.3);
     --shadow-card-hover: 0 8px 32px -4px hsl(225 18% 80% / 0.4);
     --shadow-hero: 0 12px 48px -8px hsl(225 18% 80% / 0.3);
+
+    --glass-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.95), hsl(0 0% 98% / 0.95));
+    --glass-border: hsl(225 12% 88% / 0.7);
+    --metric-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.98), hsl(0 0% 97% / 0.98));
+    --metric-border: hsl(225 12% 88% / 0.5);
+    --empty-bg: linear-gradient(145deg, hsl(0 0% 98% / 0.7), hsl(0 0% 96% / 0.7));
+    --empty-border: hsl(225 12% 85%);
+    --progress-bg: hsl(225 10% 90%);
+    --skeleton-from: hsl(225 10% 92%);
+    --skeleton-to: hsl(225 10% 96%);
+    --tooltip-bg: hsl(0 0% 100%);
+    --tooltip-border: hsl(225 12% 88%);
+    --tooltip-color: hsl(225 18% 10%);
   }
 
   :root {
@@ -113,6 +126,19 @@
     --shadow-card: 0 4px 24px -4px hsl(225 18% 3% / 0.5);
     --shadow-card-hover: 0 8px 32px -4px hsl(225 18% 3% / 0.6);
     --shadow-hero: 0 12px 48px -8px hsl(225 18% 3% / 0.7);
+
+    --glass-bg: linear-gradient(145deg, hsl(225 16% 11% / 0.9), hsl(225 16% 7% / 0.9));
+    --glass-border: hsl(225 12% 16% / 0.6);
+    --metric-bg: linear-gradient(145deg, hsl(225 16% 12% / 0.95), hsl(225 16% 8% / 0.95));
+    --metric-border: hsl(225 12% 16% / 0.4);
+    --empty-bg: linear-gradient(145deg, hsl(225 16% 10% / 0.6), hsl(225 16% 7% / 0.6));
+    --empty-border: hsl(225 12% 18%);
+    --progress-bg: hsl(225 12% 14%);
+    --skeleton-from: hsl(225 14% 13%);
+    --skeleton-to: hsl(225 14% 18%);
+    --tooltip-bg: hsl(225 16% 9%);
+    --tooltip-border: hsl(225 12% 16%);
+    --tooltip-color: hsl(210 20% 96%);
   }
 }
 
@@ -217,16 +243,15 @@
   }
 
   .glass-card {
-    background: linear-gradient(145deg, hsl(225 16% 11% / 0.9), hsl(225 16% 7% / 0.9));
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(225 12% 16% / 0.6);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .glass-card:hover {
-    border-color: hsl(225 12% 20% / 0.7);
     box-shadow: var(--shadow-card-hover);
   }
 
@@ -237,7 +262,7 @@
 
   .progress-bar {
     @apply h-2.5 rounded-full overflow-hidden;
-    background: hsl(225 12% 14%);
+    background: var(--progress-bg);
   }
 
   .progress-fill {
@@ -252,17 +277,17 @@
   }
 
   .premium-card {
-    background: linear-gradient(145deg, hsl(225 16% 11% / 0.95), hsl(225 16% 7% / 0.95));
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(225 12% 16% / 0.5);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
   }
 
   .metric-card {
-    background: linear-gradient(145deg, hsl(225 16% 12% / 0.95), hsl(225 16% 8% / 0.95));
+    background: var(--metric-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(225 12% 16% / 0.4);
+    border: 1px solid var(--metric-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -276,8 +301,8 @@
 
   .empty-state {
     @apply py-12 px-6 text-center rounded-xl;
-    background: linear-gradient(145deg, hsl(225 16% 10% / 0.6), hsl(225 16% 7% / 0.6));
-    border: 1px dashed hsl(225 12% 18%);
+    background: var(--empty-bg);
+    border: 1px dashed var(--empty-border);
   }
 
   /* Premium hero card — large, rounded, dramatic */
@@ -352,9 +377,9 @@
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      hsl(225 14% 13%) 0%,
-      hsl(225 14% 18%) 50%,
-      hsl(225 14% 13%) 100%
+      var(--skeleton-from) 0%,
+      var(--skeleton-to) 50%,
+      var(--skeleton-from) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;

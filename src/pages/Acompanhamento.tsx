@@ -10,10 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { registerMicroVictory } from "@/lib/microVictoriesEngine";
 
 const tooltipStyle = {
-  background: 'hsl(225 16% 9%)',
-  border: '1px solid hsl(225 12% 16%)',
+  background: 'var(--tooltip-bg)',
+  border: '1px solid var(--tooltip-border)',
   borderRadius: '10px',
-  color: 'hsl(210 20% 96%)',
+  color: 'var(--tooltip-color)',
   fontSize: '12px',
   padding: '8px 12px',
 };
