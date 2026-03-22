@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
   History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
-  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList, Info
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
@@ -37,6 +37,7 @@ const coreNavItems = [
 const secondaryNavItems = [
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
+  { to: "/sobre", icon: Info, label: "Sobre o Fit-Pulse" },
 ];
 
 const AppLayout = () => {
