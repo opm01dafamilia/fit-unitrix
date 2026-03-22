@@ -449,6 +449,23 @@ const groupLabels: Record<string, string> = {
   quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
 };
 
+// Compound exercises should come first (professional standard)
+const COMPOUND_EXERCISES = new Set([
+  "Supino Reto", "Supino Inclinado Halteres", "Supino Reto Máquina",
+  "Agachamento Livre", "Agachamento Frontal", "Agachamento Hack", "Agachamento Búlgaro", "Agachamento Goblet",
+  "Stiff", "Stiff Romeno", "Good Morning",
+  "Barra Fixa", "Barra Fixa com Peso", "Remada Curvada", "Remada Cavaleiro", "Remada Curvada Pronada",
+  "Desenvolvimento Militar", "Desenvolvimento Arnold",
+  "Hip Thrust", "Hip Thrust Pesado",
+  "Leg Press", "Leg Press 45°", "Leg Press Pés Baixos",
+  "Burpees", "Burpees com Salto", "Thruster",
+]);
+
+function getDailySeed(): number {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
 function shuffleArray<T>(arr: T[], seed: number): T[] {
   const result = [...arr];
   let s = seed;
@@ -464,7 +481,10 @@ function selectExercises(
   pool: Exercise[], dayIndex: number, maxCount: number, usedNames: Set<string>, preferredNames?: Set<string>
 ): Exercise[] {
   if (pool.length === 0) return [];
-  const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
+  // Use daily seed + day index for variety across regenerations
+  const seed = getDailySeed() * 13 + dayIndex * 7919 + pool.length * 31;
+  const shuffled = shuffleArray(pool, seed);
+
   const isPreferred = (ex: Exercise) => {
     if (!preferredNames || preferredNames.size === 0) return false;
     const nameLower = ex.nome.toLowerCase();
@@ -473,13 +493,34 @@ function selectExercises(
     }
     return false;
   };
+
+  // Separate compounds from isolations for proper ordering
+  const compounds = shuffled.filter(ex => COMPOUND_EXERCISES.has(ex.nome) && !usedNames.has(ex.nome));
+  const isolations = shuffled.filter(ex => !COMPOUND_EXERCISES.has(ex.nome) && !usedNames.has(ex.nome));
   const preferred = shuffled.filter(ex => isPreferred(ex) && !usedNames.has(ex.nome));
-  const nonPreferred = shuffled.filter(ex => !isPreferred(ex) && !usedNames.has(ex.nome));
-  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.5));
+
   const selected: Exercise[] = [];
+
+  // 1. Add preferred exercises first (up to 40%)
+  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.4));
   for (const ex of preferred) { if (selected.length >= maxPreferred) break; selected.push(ex); }
-  for (const ex of nonPreferred) { if (selected.length >= maxCount) break; selected.push(ex); }
+
+  // 2. Fill with compounds first (professional: heavy compounds early)
+  for (const ex of compounds) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // 3. Then isolations
+  for (const ex of isolations) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // 4. Fallback if still short
   for (const ex of shuffled) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // Sort: compounds first, isolations after (professional order)
+  selected.sort((a, b) => {
+    const aComp = COMPOUND_EXERCISES.has(a.nome) ? 0 : 1;
+    const bComp = COMPOUND_EXERCISES.has(b.nome) ? 0 : 1;
+    return aComp - bComp;
+  });
+
   return selected;
 }
 
