@@ -116,7 +116,7 @@ const Onboarding = () => {
                 {errors.age && <p className="text-[11px] text-destructive mt-1">{errors.age}</p>}
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-2 block">Sexo</label>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Sexo Biológico</label>
                 <Select value={data.gender} onValueChange={(v) => { setData({ ...data, gender: v }); setErrors(er => ({ ...er, gender: "" })); }}>
                   <SelectTrigger className="bg-secondary/50 border-border/50"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
@@ -126,6 +126,7 @@ const Onboarding = () => {
                   </SelectContent>
                 </Select>
                 {errors.gender && <p className="text-[11px] text-destructive mt-1">{errors.gender}</p>}
+                <p className="text-[10px] text-muted-foreground mt-1">Após o cadastro, altere apenas no Perfil.</p>
               </div>
             </div>
           )}
