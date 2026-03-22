@@ -1107,6 +1107,18 @@ const Treino = () => {
         </div>
       </div>
 
+      {/* Personal Mode Active Banner */}
+      {user && localStorage.getItem(`fitpulse_personal_mode_${user.id}`) === "true" && (
+        <div className="flex items-center gap-3 p-3.5 rounded-xl border border-primary/15 bg-primary/5">
+          <Sparkles className="w-4 h-4 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Modo Personal ativo</p>
+            <p className="text-[10px] text-muted-foreground">Seu treino é renovado automaticamente todo domingo</p>
+          </div>
+          {autoRenewing && <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />}
+        </div>
+      )}
+
       {loadingPlans || loadingSessions ? (
         <TreinoDashboardSkeleton />
       ) : !activePlan ? (
