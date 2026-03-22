@@ -50,7 +50,8 @@ const Treino = () => {
   const navigate = useNavigate();
   const { guardAction, GateModal } = useSubscriptionGuard();
   // View state
-  const [view, setView] = useState<"dashboard" | "generator" | "execution" | "pre-cardio">("dashboard");
+  const [view, setView] = useState<"dashboard" | "generator" | "execution" | "pre-cardio" | "stretching">("dashboard");
+  const [stretchingGroup, setStretchingGroup] = useState("");
   const [executionKey, setExecutionKey] = useState(0);
   // Pre-cardio state — store pending plan/day to start after cardio finishes
   const [pendingCardio, setPendingCardio] = useState<{ plan: any; dayIndex: number } | null>(null);
