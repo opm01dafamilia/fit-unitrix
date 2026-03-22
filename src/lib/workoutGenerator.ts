@@ -1077,15 +1077,19 @@ export function generateWorkoutPlan(
     });
   }
 
-  // Post-processing pipeline
+  // Post-processing pipeline (professional personal trainer logic)
   plan = applyIntensityLevel(plan, intensityLevel);
   plan = applyCardioToWeek(plan, cardioFreq, level, objective, gender);
   plan = enrichFemaleExercises(plan, gender, level);
   plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
+  // Adjust volume based on objective (hypertrophy vs fat loss vs conditioning)
+  plan = adjustVolumeByObjective(plan, objective, level);
+  // Prevent same exercise on multiple days — professional variety
+  plan = preventWeeklyDuplication(plan, level);
   // Validate muscle group coherence — remove misplaced exercises
   plan = validateMuscleGroupCoherence(plan);
-  // Reorder auxiliary exercises to end + cap at 7-8 exercises per day
+  // Reorder: compounds first, auxiliaries last + cap at 8 exercises per day
   plan = reorderAndCapExercises(plan);
 
   return plan;
