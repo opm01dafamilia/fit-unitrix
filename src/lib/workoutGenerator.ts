@@ -492,9 +492,21 @@ function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Ex
   return { ...exercise, descanso: restMap[intensity]?.[exercise.descanso] || exercise.descanso };
 }
 
-// Primary muscle groups that should get 3-4 exercises when they're the main focus
+// ===== PROFESSIONAL RULES =====
+// Defines which auxiliary groups are valid companions for each primary group
+const VALID_PAIRINGS: Record<string, Set<string>> = {
+  peito:      new Set(["triceps", "biceps", "ombros"]),
+  costas:     new Set(["biceps", "triceps", "ombros"]),
+  quadriceps: new Set(["panturrilha", "gluteos"]),
+  posterior:  new Set(["panturrilha", "gluteos"]),
+  gluteos:    new Set(["quadriceps", "posterior", "panturrilha"]),
+  ombros:     new Set(["peito", "costas", "biceps", "triceps"]),
+  biceps:     new Set(["costas", "peito", "triceps", "ombros"]),
+  triceps:    new Set(["peito", "costas", "biceps", "ombros"]),
+};
+
+// Primary muscle groups that form the core of a workout day
 const PRIMARY_MUSCLE_GROUPS = new Set(["quadriceps", "costas", "posterior", "gluteos", "peito", "ombros", "pernas"]);
-// Secondary/auxiliary groups that complement the primary
 const SECONDARY_MUSCLE_GROUPS = new Set(["panturrilha", "biceps", "triceps", "abdomen"]);
 
 function getMaxExercisesForGroup(
@@ -505,47 +517,59 @@ function getMaxExercisesForGroup(
 ): number {
   if (intensity === "leve") return 1;
 
-  const primaryGroups = allGroupsInDay.filter(g => PRIMARY_MUSCLE_GROUPS.has(g));
-  const secondaryGroups = allGroupsInDay.filter(g => SECONDARY_MUSCLE_GROUPS.has(g));
   const isPrimary = PRIMARY_MUSCLE_GROUPS.has(group);
 
-  // Special rules per user request:
-  // Quadríceps day: 3-4 quad + 2 panturrilha
-  // Costas day: 3-4 costas + 2-3 braço
-  // Posterior day: 3-4 posterior + 2-3 glúteo
-  // Glúteo solo: 3-4 glúteo
+  // Professional rules per group:
+  // Peito/Costas as main → 3-5 exercises
+  // Quadríceps/Posterior as main → 3-5 exercises
+  // Glúteos as main → 3-4 exercises
+  // Ombros as main → 3-4 exercises
+  // Biceps/Triceps as auxiliary → 2-3 exercises
+  // Panturrilha as auxiliary → 2-3 exercises
+  // Abdomen as auxiliary → 1-2 exercises
 
   if (isPrimary) {
-    // If this is the only primary group (or paired with another primary like posterior+gluteos)
-    if (primaryGroups.length === 1) {
+    const primaryGroups = allGroupsInDay.filter(g => PRIMARY_MUSCLE_GROUPS.has(g));
+
+    if (group === "peito" || group === "costas") {
+      // Main focus: 3-5 based on level
+      if (primaryGroups.length <= 1) return level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
       return level === "iniciante" ? 3 : 4;
     }
-    // Two primary groups together (e.g. posterior + gluteos)
-    if (primaryGroups.length === 2) {
-      // The first primary gets more, the second gets complementary count
+
+    if (group === "quadriceps" || group === "posterior") {
+      if (primaryGroups.length <= 1) return level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
+      // Paired with another primary (e.g. posterior+gluteos)
       const idx = primaryGroups.indexOf(group);
-      if (idx === 0) return level === "iniciante" ? 3 : 4;
+      return idx === 0 ? (level === "iniciante" ? 3 : 4) : (level === "iniciante" ? 2 : 3);
+    }
+
+    if (group === "gluteos") {
+      // Solo glute day: 3-4; paired: 2-3
+      const otherPrimary = primaryGroups.filter(g => g !== "gluteos");
+      if (otherPrimary.length === 0) return level === "iniciante" ? 3 : 4;
       return level === "iniciante" ? 2 : 3;
     }
-    // 3+ primary groups in one day (rare, e.g. full body days)
-    return 2;
+
+    if (group === "ombros") {
+      const otherPrimary = primaryGroups.filter(g => g !== "ombros");
+      if (otherPrimary.length === 0) return level === "iniciante" ? 3 : 4;
+      return level === "iniciante" ? 2 : 3;
+    }
+
+    if (group === "pernas") {
+      return level === "iniciante" ? 3 : 4;
+    }
+
+    return 3;
   }
 
-  // Secondary groups (panturrilha, biceps, triceps, abdomen)
-  if (group === "panturrilha") return 2;
-  if (group === "biceps" || group === "triceps") {
-    // When paired with costas or peito, give 2-3
-    return level === "iniciante" ? 2 : Math.min(3, (exerciseDB[group]?.[level] || []).length);
-  }
+  // Secondary/auxiliary groups
+  if (group === "panturrilha") return level === "iniciante" ? 2 : 3;
+  if (group === "biceps" || group === "triceps") return level === "iniciante" ? 2 : 3;
   if (group === "abdomen") return level === "iniciante" ? 1 : 2;
 
-  // Fallback: HIIT, cardio, mobility etc
-  return 2;
-}
-
-// Legacy compatibility wrapper
-function getMaxExercisesPerGroup(intensity: DayIntensity, level: Level): number {
-  if (intensity === "leve") return 1;
+  // HIIT, cardio, mobility
   return 2;
 }
 
