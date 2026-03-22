@@ -527,7 +527,12 @@ const Treino = () => {
         days_per_week: Number(dias), body_focus: foco, plan_data: generatedPlan,
       } as any);
       if (error) throw error;
-      toast.success("Plano salvo!");
+      if (personalMode && user) {
+        localStorage.setItem(`fitpulse_personal_mode_${user.id}`, "true");
+        toast.success("Modo Personal ativado! Seu treino será renovado automaticamente a cada semana. 🤖");
+      } else {
+        toast.success("Plano salvo!");
+      }
       invalidateCache(CACHE_KEYS.workoutPlans(user.id));
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
