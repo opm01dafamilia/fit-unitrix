@@ -37,6 +37,7 @@ const coreNavItems = [
 const secondaryNavItems = [
   { to: "/perfil", icon: User, label: "Perfil" },
   { to: "/configuracoes", icon: Settings, label: "Configurações" },
+  { to: "/sobre", icon: Info, label: "Sobre o Fit-Pulse" },
 ];
 
 const AppLayout = () => {

@@ -294,6 +294,7 @@ const App = () => (
                 <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
                 <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
                 <Route path="/personal" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Personal /></Suspense></ErrorBoundary>} />
+                <Route path="/sobre" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><SobreFitPulse /></Suspense></ErrorBoundary>} />
               </Route>
               <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
             </Routes>
