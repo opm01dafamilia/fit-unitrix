@@ -297,6 +297,16 @@ const Treino = () => {
       setEvolutionTimeline(timeline);
     };
     fetchTimeline();
+
+    // Plan Evolution Engine — professional personal trainer intelligence
+    if (activePlanData) {
+      const evolution = getPlanEvolutionStatus(
+        activePlan.created_at,
+        activePlanData.map((d: any) => ({ exercicios: d.exercicios || [], grupo: d.grupo || "" })),
+        sessions.length
+      );
+      setPlanEvolution(evolution);
+    }
   }, [activePlan, user, loadingSessions, sessions]);
 
   const nextDayIndex = useMemo(() => {
