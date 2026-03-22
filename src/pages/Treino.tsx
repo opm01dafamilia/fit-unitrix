@@ -5,6 +5,7 @@ import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 
 
 import WorkoutExecution from "@/components/WorkoutExecution";
+import WeeklyWorkoutFolder from "@/components/WeeklyWorkoutFolder";
 import CardioSession from "@/components/CardioSession";
 import StretchingSession from "@/components/StretchingSession";
 
