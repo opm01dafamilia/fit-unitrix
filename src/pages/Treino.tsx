@@ -1291,31 +1291,46 @@ const Treino = () => {
                   )}
                 </button>
                 
-                {/* Warmup & Cardio */}
+                {/* Cardio do Dia */}
                 {!todayCompleted && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
-                      onClick={() => toast.info("🔥 Aquecimento iniciado! Faça 5-10 min de mobilidade e cardio leve.", { duration: 5000 })}>
-                      <Flame className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Aquecimento
-                    </Button>
-                    {nextWorkout.grupo?.toLowerCase().includes("cardio") && (
-                      <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
+                  <div className="mt-4 rounded-2xl border border-border/40 bg-card p-4">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500/15 to-red-500/10 flex items-center justify-center">
+                        <Flame className="w-4.5 h-4.5 text-orange-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-display font-bold text-foreground">Cardio do Dia</h3>
+                        <p className="text-[10px] text-muted-foreground">Escolha o melhor momento</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
                         onClick={() => {
-                          const cardioInfo = nextWorkout.exercicios?.find((ex: any) => ["cardio","corrida","caminhada","hiit","bicicleta"].some(k => ex.nome?.toLowerCase().includes(k)));
-                          toast.info(cardioInfo ? `🏃 Cardio: ${cardioInfo.nome} — ${cardioInfo.reps || "20min"}` : "🏃 Cardio do dia iniciado!", { duration: 5000 });
-                        }}>
-                        <Heart className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Cardio
-                      </Button>
-                    )}
-                    {!nextWorkout.grupo?.toLowerCase().includes("cardio") && nextWorkout.grupo?.toLowerCase().includes("+ cardio") && (
-                      <Button variant="outline" size="sm" className="text-xs rounded-xl border-border/50 hover:border-primary/30 hover:bg-primary/5"
+                          const dayIdx = todayDayIndex >= 0 ? todayDayIndex : nextDayIndex;
+                          setPendingCardio({ plan: activePlan, dayIndex: dayIdx });
+                          setView("pre-cardio");
+                        }}
+                        className="flex flex-col items-center gap-2 p-3.5 rounded-xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all active:scale-[0.97]"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Play className="w-5 h-5 text-primary" />
+                        </div>
+                        <span className="text-xs font-bold text-primary">Antes do Treino</span>
+                        <span className="text-[10px] text-muted-foreground leading-tight text-center">Aqueça e prepare o corpo</span>
+                      </button>
+                      <button
                         onClick={() => {
-                          const cardioEx = nextWorkout.exercicios?.find((ex: any) => ["cardio","corrida","caminhada","hiit","bicicleta"].some(k => ex.nome?.toLowerCase().includes(k)));
-                          toast.info(cardioEx ? `🏃 Cardio: ${cardioEx.nome} — ${cardioEx.reps || "15min"}` : "🏃 Cardio leve pós-treino — 15min", { duration: 5000 });
-                        }}>
-                        <Heart className="w-3.5 h-3.5 mr-1.5 text-primary" /> Iniciar Cardio
-                      </Button>
-                    )}
+                          toast.info("👍 Boa escolha! Faça seu cardio após finalizar o treino de hoje.", { duration: 5000 });
+                        }}
+                        className="flex flex-col items-center gap-2 p-3.5 rounded-xl border-2 border-border/40 bg-secondary/40 hover:bg-secondary/60 hover:border-border/60 transition-all active:scale-[0.97]"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-secondary/80 flex items-center justify-center">
+                          <Heart className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <span className="text-xs font-bold text-foreground">Depois do Treino</span>
+                        <span className="text-[10px] text-muted-foreground leading-tight text-center">Maximize a queima de gordura</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
