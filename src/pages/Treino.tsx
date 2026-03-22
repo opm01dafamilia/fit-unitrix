@@ -1336,7 +1336,7 @@ const Treino = () => {
                     variant="outline"
                     size="sm"
                     className="w-full text-xs"
-                    onClick={() => { setView("generate"); resetEvolutionForNewPlan(); }}
+                    onClick={() => { setView("generator"); resetEvolutionForNewPlan(); }}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
                     Gerar Novo Plano para Evoluir
