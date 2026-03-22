@@ -885,9 +885,33 @@ const Treino = () => {
             )}
           </div>
 
+          {/* Personal Mode Toggle */}
+          <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Modo Personal Fit-Pulse</p>
+                <p className="text-[11px] text-muted-foreground">Treinos semanais automáticos com evolução contínua</p>
+              </div>
+            </div>
+            <Switch
+              checked={personalMode}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  setShowPersonalModal(true);
+                } else {
+                  setPersonalMode(false);
+                  if (user) localStorage.removeItem(`fitpulse_personal_mode_${user.id}`);
+                }
+              }}
+            />
+          </div>
+
           <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
-            {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
-            {generating ? "Gerando..." : "Gerar Plano de Treino"}
+            {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : personalMode ? <Sparkles className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+            {generating ? "Gerando..." : personalMode ? "Gerar com Modo Personal" : "Gerar Plano de Treino"}
           </Button>
         </div>
 
