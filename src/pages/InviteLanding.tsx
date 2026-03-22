@@ -40,11 +40,7 @@ const InviteLanding = () => {
            style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 60%)' }} />
       
       <div className="w-full max-w-[400px] relative z-10 text-center">
-        <div className="w-20 h-20 rounded-3xl mb-6 mx-auto flex items-center justify-center shadow-lg shadow-primary/20"
-             style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
-          <Flame className="w-10 h-10 text-primary-foreground" />
-        </div>
-
+        <FitPulseLogo size="lg" className="justify-center mb-6" />
         <h1 className="font-display text-3xl font-bold tracking-tight mb-2">FitPulse</h1>
         
         {valid ? (

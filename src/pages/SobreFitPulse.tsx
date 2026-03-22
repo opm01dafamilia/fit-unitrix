@@ -17,10 +17,7 @@ const SobreFitPulse = () => {
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-             style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
-          <Flame className="w-5 h-5 text-primary-foreground" />
-        </div>
+        <FitPulseLogo size="sm" />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">Sobre o Fit-Pulse</h1>
           <p className="text-xs text-muted-foreground">Conheça o app e saiba como aproveitá-lo</p>

@@ -182,13 +182,7 @@ const AppLayout = () => {
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                 style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
-              <Flame className="w-3.5 h-3.5 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-sm">FitPulse</span>
-          </div>
+          <FitPulseLogo size="xs" showText />
           <div className="touch-target flex items-center justify-center">
             <NotificationCenter />
           </div>

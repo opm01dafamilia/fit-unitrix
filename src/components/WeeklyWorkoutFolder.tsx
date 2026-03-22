@@ -108,9 +108,7 @@ const WeeklyWorkoutFolder = ({
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Fit-Pulse</p>
-            </div>
+            <FitPulseLogo size="xs" showText />
             <p className="text-sm font-display font-bold text-foreground truncate">{day.dia}</p>
           </div>
           {isTodays && !isCompleted && (
