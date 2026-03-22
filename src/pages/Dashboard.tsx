@@ -941,7 +941,6 @@ const Dashboard = () => {
         </div>
       )}
 
-
       {!hasData && !showChecklist && (
         <div className="empty-state">
           <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
