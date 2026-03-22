@@ -116,6 +116,57 @@ const Treino = () => {
     }
   }, [profile]);
 
+  // Personal Mode — auto-renew workout plan on Sundays
+  useEffect(() => {
+    if (!user || !profile || loadingPlans || loadingSessions) return;
+    const isPersonalActive = localStorage.getItem(`fitpulse_personal_mode_${user.id}`) === "true";
+    if (!isPersonalActive) return;
+
+    const today = new Date();
+    const isSunday = today.getDay() === 0;
+    const lastRenewal = localStorage.getItem(`fitpulse_personal_renewal_${user.id}`);
+    const todayKey = format(today, "yyyy-MM-dd");
+    if (!isSunday || lastRenewal === todayKey) return;
+    if (savedPlans.length === 0) return;
+
+    const autoRenew = async () => {
+      setAutoRenewing(true);
+      try {
+        const current = savedPlans[0];
+        const obj = current.objective || profile.objective || "massa";
+        const lvl = current.experience_level || profile.experience_level || "intermediario";
+        const daysPerWeek = current.days_per_week || 4;
+        const bodyFocus = (current.body_focus || "completo") as BodyFocus;
+        const gender = (profile.gender || "masculino") as UserGender;
+
+        const newPlan = generateWorkoutPlan(obj as any, lvl as any, daysPerWeek, bodyFocus, "0", "intenso", undefined, gender);
+
+        const { error } = await supabase.from("workout_plans").insert({
+          user_id: user.id,
+          objective: obj,
+          experience_level: lvl,
+          days_per_week: daysPerWeek,
+          body_focus: bodyFocus,
+          plan_data: newPlan,
+        } as any);
+
+        if (!error) {
+          localStorage.setItem(`fitpulse_personal_renewal_${user.id}`, todayKey);
+          invalidateCache(CACHE_KEYS.workoutPlans(user.id));
+          const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+          setSavedPlans(data || []);
+          writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
+          toast.success("🤖 Modo Personal: novo treino da semana gerado!", { duration: 5000 });
+        }
+      } catch {
+        // Silent fail — will retry next load
+      } finally {
+        setAutoRenewing(false);
+      }
+    };
+    autoRenew();
+  }, [user, profile, loadingPlans, loadingSessions, savedPlans]);
+
   // Fetch plans & sessions with smart cache
   useEffect(() => {
     if (!user) return;
