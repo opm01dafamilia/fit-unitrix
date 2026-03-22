@@ -112,16 +112,7 @@ const AppLayout = () => {
       `}>
         {/* Brand */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" 
-                 style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
-              <Flame className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-display text-lg font-bold text-foreground tracking-tight">FitPulse</h1>
-              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest">Pro Fitness</p>
-            </div>
-          </div>
+          <FitPulseLogo size="sm" showText showSubtext />
           <div className="flex items-center gap-1">
             <div className="hidden lg:block">
               <NotificationCenter />
