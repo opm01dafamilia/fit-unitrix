@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Flame, ArrowRight, User, Ruler, Target, Dumbbell } from "lucide-react";
+import { ArrowRight, User, Ruler, Target, Dumbbell } from "lucide-react";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -77,10 +78,7 @@ const Onboarding = () => {
       
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}>
-            <Flame className="w-7 h-7 text-primary-foreground" />
-          </div>
+          <FitPulseLogo size="md" className="justify-center" />
           <h1 className="font-display text-2xl font-bold tracking-tight">Bem-vindo ao FitPulse!</h1>
           <p className="text-muted-foreground text-sm mt-1">Vamos configurar seu perfil</p>
         </div>
