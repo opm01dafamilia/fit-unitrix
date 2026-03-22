@@ -13,6 +13,7 @@ import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 import { useUserRole } from "@/hooks/useUserRole";
 import { resetBodyScrollLock } from "@/lib/bodyScrollLock";
+import RouteGuide from "@/components/RouteGuide";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
