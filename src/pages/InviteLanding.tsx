@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ECOSYSTEM_URL } from "@/lib/env";
+import FitPulseLogo from "@/components/FitPulseLogo";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();
