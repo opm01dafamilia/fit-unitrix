@@ -13,6 +13,7 @@ import BillingBanner from "@/components/BillingBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 import { useUserRole } from "@/hooks/useUserRole";
 import { resetBodyScrollLock } from "@/lib/bodyScrollLock";
+import RouteGuide from "@/components/RouteGuide";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
@@ -201,6 +202,7 @@ const AppLayout = () => {
         </header>
         <BillingBanner status={subscriptionStatus} />
         <div className="p-4 lg:p-8 mobile-content-safe lg:pb-8 max-w-7xl mx-auto page-enter min-h-0 w-full">
+          <RouteGuide />
           <Outlet />
         </div>
       </main>
