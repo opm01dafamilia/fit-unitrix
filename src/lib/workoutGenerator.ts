@@ -449,6 +449,23 @@ const groupLabels: Record<string, string> = {
   quadriceps: "Quadríceps", posterior: "Posterior", gluteos: "Glúteos", panturrilha: "Panturrilha",
 };
 
+// Compound exercises should come first (professional standard)
+const COMPOUND_EXERCISES = new Set([
+  "Supino Reto", "Supino Inclinado Halteres", "Supino Reto Máquina",
+  "Agachamento Livre", "Agachamento Frontal", "Agachamento Hack", "Agachamento Búlgaro", "Agachamento Goblet",
+  "Stiff", "Stiff Romeno", "Good Morning",
+  "Barra Fixa", "Barra Fixa com Peso", "Remada Curvada", "Remada Cavaleiro", "Remada Curvada Pronada",
+  "Desenvolvimento Militar", "Desenvolvimento Arnold",
+  "Hip Thrust", "Hip Thrust Pesado",
+  "Leg Press", "Leg Press 45°", "Leg Press Pés Baixos",
+  "Burpees", "Burpees com Salto", "Thruster",
+]);
+
+function getDailySeed(): number {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
 function shuffleArray<T>(arr: T[], seed: number): T[] {
   const result = [...arr];
   let s = seed;
@@ -464,7 +481,10 @@ function selectExercises(
   pool: Exercise[], dayIndex: number, maxCount: number, usedNames: Set<string>, preferredNames?: Set<string>
 ): Exercise[] {
   if (pool.length === 0) return [];
-  const shuffled = shuffleArray(pool, dayIndex * 7919 + pool.length * 31);
+  // Use daily seed + day index for variety across regenerations
+  const seed = getDailySeed() * 13 + dayIndex * 7919 + pool.length * 31;
+  const shuffled = shuffleArray(pool, seed);
+
   const isPreferred = (ex: Exercise) => {
     if (!preferredNames || preferredNames.size === 0) return false;
     const nameLower = ex.nome.toLowerCase();
@@ -473,23 +493,55 @@ function selectExercises(
     }
     return false;
   };
+
+  // Separate compounds from isolations for proper ordering
+  const compounds = shuffled.filter(ex => COMPOUND_EXERCISES.has(ex.nome) && !usedNames.has(ex.nome));
+  const isolations = shuffled.filter(ex => !COMPOUND_EXERCISES.has(ex.nome) && !usedNames.has(ex.nome));
   const preferred = shuffled.filter(ex => isPreferred(ex) && !usedNames.has(ex.nome));
-  const nonPreferred = shuffled.filter(ex => !isPreferred(ex) && !usedNames.has(ex.nome));
-  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.5));
+
   const selected: Exercise[] = [];
+
+  // 1. Add preferred exercises first (up to 40%)
+  const maxPreferred = Math.max(1, Math.ceil(maxCount * 0.4));
   for (const ex of preferred) { if (selected.length >= maxPreferred) break; selected.push(ex); }
-  for (const ex of nonPreferred) { if (selected.length >= maxCount) break; selected.push(ex); }
+
+  // 2. Fill with compounds first (professional: heavy compounds early)
+  for (const ex of compounds) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // 3. Then isolations
+  for (const ex of isolations) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // 4. Fallback if still short
   for (const ex of shuffled) { if (selected.length >= maxCount) break; if (!selected.includes(ex)) selected.push(ex); }
+
+  // Sort: compounds first, isolations after (professional order)
+  selected.sort((a, b) => {
+    const aComp = COMPOUND_EXERCISES.has(a.nome) ? 0 : 1;
+    const bComp = COMPOUND_EXERCISES.has(b.nome) ? 0 : 1;
+    return aComp - bComp;
+  });
+
   return selected;
 }
 
-function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity): Exercise {
+function adjustRestForIntensity(exercise: Exercise, intensity: DayIntensity, objective?: Objective): Exercise {
   const restMap: Record<DayIntensity, Record<string, string>> = {
     pesado: { "30s": "60s", "45s": "90s", "60s": "90s", "90s": "120s", "120s": "180s" },
     moderado: { "120s": "90s", "180s": "120s", "90s": "75s" },
     leve: { "90s": "60s", "120s": "60s", "180s": "90s", "60s": "45s", "45s": "30s" },
   };
-  return { ...exercise, descanso: restMap[intensity]?.[exercise.descanso] || exercise.descanso };
+  let rest = restMap[intensity]?.[exercise.descanso] || exercise.descanso;
+  // Objective-based rest adjustments (professional approach)
+  if (objective === "emagrecer") {
+    // Shorter rests for fat loss — keeps heart rate up
+    const shortenMap: Record<string, string> = { "180s": "120s", "120s": "90s", "90s": "60s" };
+    rest = shortenMap[rest] || rest;
+  } else if (objective === "massa" && intensity === "pesado") {
+    // Longer rests for hypertrophy on heavy days — allow full recovery
+    const lengthenMap: Record<string, string> = { "60s": "90s", "90s": "120s" };
+    rest = lengthenMap[rest] || rest;
+  }
+  return { ...exercise, descanso: rest };
 }
 
 // ===== PROFESSIONAL RULES =====
@@ -850,7 +902,74 @@ function reorderAndCapExercises(plan: WorkoutDay[]): WorkoutDay[] {
   });
 }
 
-// =====================================================
+// Prevent same exercise appearing on multiple days in the week (professional variety)
+function preventWeeklyDuplication(plan: WorkoutDay[], level: Level): WorkoutDay[] {
+  const globalUsed = new Map<string, number>(); // exercise name → day index
+
+  return plan.map((day, dayIdx) => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao") || g.includes("cardio")) return day;
+
+    const exercicios = day.exercicios.map(ex => {
+      const prevDay = globalUsed.get(ex.nome);
+      if (prevDay !== undefined && prevDay !== dayIdx) {
+        // This exercise already used on another day — try to find alternative
+        const exGroup = findExerciseGroup(ex.nome);
+        if (exGroup) {
+          const pool = exerciseDB[exGroup]?.[level] || exerciseDB[exGroup]?.intermediario || [];
+          const alternative = pool.find(alt => !globalUsed.has(alt.nome) && alt.nome !== ex.nome);
+          if (alternative) {
+            globalUsed.set(alternative.nome, dayIdx);
+            return { ...alternative, series: ex.series, descanso: ex.descanso };
+          }
+        }
+      }
+      globalUsed.set(ex.nome, dayIdx);
+      return ex;
+    });
+
+    return { ...day, exercicios };
+  });
+}
+
+function findExerciseGroup(exerciseName: string): string | null {
+  for (const [group, levels] of Object.entries(exerciseDB)) {
+    for (const exercises of Object.values(levels)) {
+      if (exercises.some(ex => ex.nome === exerciseName)) return group;
+    }
+  }
+  return null;
+}
+
+// Adjust series/reps by objective (professional volume management)
+function adjustVolumeByObjective(plan: WorkoutDay[], objective: Objective, level: Level): WorkoutDay[] {
+  return plan.map(day => {
+    const g = day.grupo.toLowerCase();
+    if (g.includes("mobilidade") || g.includes("recuperacao") || g.includes("cardio")) return day;
+
+    const exercicios = day.exercicios.map(ex => {
+      const series = Number(ex.series);
+      const repsStr = ex.reps;
+
+      if (objective === "emagrecer") {
+        // Fat loss: moderate series, higher reps for metabolic stress
+        const reps = parseInt(repsStr);
+        if (!isNaN(reps) && reps < 12 && !repsStr.includes("s") && !repsStr.includes("min")) {
+          return { ...ex, reps: String(Math.min(reps + 2, 15)) };
+        }
+      } else if (objective === "massa") {
+        // Hypertrophy: ensure adequate volume on compound lifts
+        if (COMPOUND_EXERCISES.has(ex.nome) && series < 4 && level !== "iniciante") {
+          return { ...ex, series: String(Math.min(series + 1, 5)) };
+        }
+      }
+      return ex;
+    });
+
+    return { ...day, exercicios };
+  });
+}
+
 // MAIN GENERATOR
 // =====================================================
 export function generateWorkoutPlan(
@@ -958,15 +1077,19 @@ export function generateWorkoutPlan(
     });
   }
 
-  // Post-processing pipeline
+  // Post-processing pipeline (professional personal trainer logic)
   plan = applyIntensityLevel(plan, intensityLevel);
   plan = applyCardioToWeek(plan, cardioFreq, level, objective, gender);
   plan = enrichFemaleExercises(plan, gender, level);
   plan = enrichMaleExercises(plan, gender, level);
   plan = enforceUpperLowerAlternation(plan);
+  // Adjust volume based on objective (hypertrophy vs fat loss vs conditioning)
+  plan = adjustVolumeByObjective(plan, objective, level);
+  // Prevent same exercise on multiple days — professional variety
+  plan = preventWeeklyDuplication(plan, level);
   // Validate muscle group coherence — remove misplaced exercises
   plan = validateMuscleGroupCoherence(plan);
-  // Reorder auxiliary exercises to end + cap at 7-8 exercises per day
+  // Reorder: compounds first, auxiliaries last + cap at 8 exercises per day
   plan = reorderAndCapExercises(plan);
 
   return plan;
