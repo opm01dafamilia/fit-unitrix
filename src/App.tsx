@@ -37,6 +37,7 @@ const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Personal = lazy(() => import("./pages/Personal"));
+const SobreFitPulse = lazy(() => import("./pages/SobreFitPulse"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GIF preloading removed from app start - now lazy-loaded per page
