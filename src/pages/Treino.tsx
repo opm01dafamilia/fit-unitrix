@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from "react";
-import { Dumbbell, ChevronDown, ChevronUp, ChevronRight, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw } from "lucide-react";
+import { Dumbbell, ChevronDown, ChevronUp, ChevronRight, Zap, Clock, Trash2, Timer, Loader2, Flame, Trophy, CalendarDays, Play, Check, ArrowLeft, TrendingUp, BarChart3, Heart, AlertCircle, CheckCircle2, Target, Activity, RotateCcw, Sparkles, RefreshCw } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 
 
@@ -12,6 +12,8 @@ import StretchingSession from "@/components/StretchingSession";
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
@@ -99,6 +101,9 @@ const Treino = () => {
   const [showRegenerativeWorkout, setShowRegenerativeWorkout] = useState(false);
   const [activeSection, setActiveSection] = useState<"retomada" | "volume" | "adaptacao" | "evolucao" | null>(null);
   const [planEvolution, setPlanEvolution] = useState<PlanEvolutionStatus | null>(null);
+  const [personalMode, setPersonalMode] = useState(false);
+  const [showPersonalModal, setShowPersonalModal] = useState(false);
+  const [autoRenewing, setAutoRenewing] = useState(false);
   // Pre-fill from profile & start lazy preload
   useEffect(() => {
     startLazyPreload();
@@ -110,6 +115,57 @@ const Treino = () => {
       setDias(autoSuggest);
     }
   }, [profile]);
+
+  // Personal Mode — auto-renew workout plan on Sundays
+  useEffect(() => {
+    if (!user || !profile || loadingPlans || loadingSessions) return;
+    const isPersonalActive = localStorage.getItem(`fitpulse_personal_mode_${user.id}`) === "true";
+    if (!isPersonalActive) return;
+
+    const today = new Date();
+    const isSunday = today.getDay() === 0;
+    const lastRenewal = localStorage.getItem(`fitpulse_personal_renewal_${user.id}`);
+    const todayKey = format(today, "yyyy-MM-dd");
+    if (!isSunday || lastRenewal === todayKey) return;
+    if (savedPlans.length === 0) return;
+
+    const autoRenew = async () => {
+      setAutoRenewing(true);
+      try {
+        const current = savedPlans[0];
+        const obj = current.objective || profile.objective || "massa";
+        const lvl = current.experience_level || profile.experience_level || "intermediario";
+        const daysPerWeek = current.days_per_week || 4;
+        const bodyFocus = (current.body_focus || "completo") as BodyFocus;
+        const gender = (profile.gender || "masculino") as UserGender;
+
+        const newPlan = generateWorkoutPlan(obj as any, lvl as any, daysPerWeek, bodyFocus, "0", "intenso", undefined, gender);
+
+        const { error } = await supabase.from("workout_plans").insert({
+          user_id: user.id,
+          objective: obj,
+          experience_level: lvl,
+          days_per_week: daysPerWeek,
+          body_focus: bodyFocus,
+          plan_data: newPlan,
+        } as any);
+
+        if (!error) {
+          localStorage.setItem(`fitpulse_personal_renewal_${user.id}`, todayKey);
+          invalidateCache(CACHE_KEYS.workoutPlans(user.id));
+          const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+          setSavedPlans(data || []);
+          writeCache(CACHE_KEYS.workoutPlans(user.id), data || []);
+          toast.success("🤖 Modo Personal: novo treino da semana gerado!", { duration: 5000 });
+        }
+      } catch {
+        // Silent fail — will retry next load
+      } finally {
+        setAutoRenewing(false);
+      }
+    };
+    autoRenew();
+  }, [user, profile, loadingPlans, loadingSessions, savedPlans]);
 
   // Fetch plans & sessions with smart cache
   useEffect(() => {
@@ -471,7 +527,12 @@ const Treino = () => {
         days_per_week: Number(dias), body_focus: foco, plan_data: generatedPlan,
       } as any);
       if (error) throw error;
-      toast.success("Plano salvo!");
+      if (personalMode && user) {
+        localStorage.setItem(`fitpulse_personal_mode_${user.id}`, "true");
+        toast.success("Modo Personal ativado! Seu treino será renovado automaticamente a cada semana. 🤖");
+      } else {
+        toast.success("Plano salvo!");
+      }
       invalidateCache(CACHE_KEYS.workoutPlans(user.id));
       const { data } = await supabase.from("workout_plans").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
       setSavedPlans(data || []);
@@ -829,9 +890,33 @@ const Treino = () => {
             )}
           </div>
 
+          {/* Personal Mode Toggle */}
+          <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Modo Personal Fit-Pulse</p>
+                <p className="text-[11px] text-muted-foreground">Treinos semanais automáticos com evolução contínua</p>
+              </div>
+            </div>
+            <Switch
+              checked={personalMode}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  setShowPersonalModal(true);
+                } else {
+                  setPersonalMode(false);
+                  if (user) localStorage.removeItem(`fitpulse_personal_mode_${user.id}`);
+                }
+              }}
+            />
+          </div>
+
           <Button onClick={handleGenerate} disabled={!objetivo || !nivel || !dias || generating} className="w-full sm:w-auto">
-            {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
-            {generating ? "Gerando..." : "Gerar Plano de Treino"}
+            {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : personalMode ? <Sparkles className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+            {generating ? "Gerando..." : personalMode ? "Gerar com Modo Personal" : "Gerar Plano de Treino"}
           </Button>
         </div>
 
@@ -932,6 +1017,64 @@ const Treino = () => {
             ))}
           </div>
         )}
+
+        {/* Personal Mode Confirmation Modal */}
+        <Dialog open={showPersonalModal} onOpenChange={setShowPersonalModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <DialogTitle className="text-center text-lg font-display">Modo Personal Fit-Pulse</DialogTitle>
+              <DialogDescription className="text-center text-sm leading-relaxed mt-2">
+                O modo Personal Fit-Pulse cria automaticamente seus treinos semanais com base no seu desempenho. A cada semana, o sistema ajusta seus treinos para melhorar seus resultados.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-2">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <RefreshCw className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Renovação automática</p>
+                  <p className="text-[11px] text-muted-foreground">Novo treino gerado todo domingo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <TrendingUp className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Evolução contínua</p>
+                  <p className="text-[11px] text-muted-foreground">Baseado no seu desempenho e consistência</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40 border border-border/30">
+                <Target className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Personalizado para você</p>
+                  <p className="text-[11px] text-muted-foreground">Segue suas preferências e objetivo</p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowPersonalModal(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  setPersonalMode(true);
+                  setShowPersonalModal(false);
+                  toast.success("Modo Personal ativado! Gere seu primeiro treino para começar. ✨");
+                }}
+                className="flex-1 gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Confirmar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -963,6 +1106,18 @@ const Treino = () => {
           </Button>
         </div>
       </div>
+
+      {/* Personal Mode Active Banner */}
+      {user && localStorage.getItem(`fitpulse_personal_mode_${user.id}`) === "true" && (
+        <div className="flex items-center gap-3 p-3.5 rounded-xl border border-primary/15 bg-primary/5">
+          <Sparkles className="w-4 h-4 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Modo Personal ativo</p>
+            <p className="text-[10px] text-muted-foreground">Seu treino é renovado automaticamente todo domingo</p>
+          </div>
+          {autoRenewing && <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />}
+        </div>
+      )}
 
       {loadingPlans || loadingSessions ? (
         <TreinoDashboardSkeleton />
