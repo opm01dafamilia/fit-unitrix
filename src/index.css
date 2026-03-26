@@ -294,7 +294,7 @@
   }
 
   .metric-card:hover {
-    border-color: hsl(152 69% 46% / 0.15);
+    border-color: hsl(265 85% 62% / 0.15);
     transform: translateY(-2px);
     box-shadow: var(--shadow-card-hover);
   }
