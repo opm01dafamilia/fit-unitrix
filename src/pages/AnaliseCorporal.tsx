@@ -339,7 +339,7 @@ const AnaliseCorporal = () => {
                   style={{
                     width: `${analysis.rhythmScore}%`,
                     background: analysis.rhythmScore >= 70
-                      ? 'linear-gradient(90deg, hsl(152 69% 46%), hsl(168 80% 38%))'
+                      ? 'linear-gradient(90deg, hsl(265 85% 62%), hsl(217 90% 58%))'
                       : analysis.rhythmScore >= 40
                       ? 'linear-gradient(90deg, hsl(45 93% 47%), hsl(36 77% 49%))'
                       : 'linear-gradient(90deg, hsl(0 84% 60%), hsl(0 72% 51%))'
