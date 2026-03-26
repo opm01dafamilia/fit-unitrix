@@ -248,11 +248,13 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
     box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
+    border-color: hsl(265 85% 62% / 0.12);
   }
 
   .glow-border {
@@ -282,6 +284,12 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .premium-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
   }
 
   .metric-card {
@@ -290,13 +298,13 @@
     border: 1px solid var(--metric-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .metric-card:hover {
-    border-color: hsl(265 85% 62% / 0.15);
+    border-color: hsl(265 85% 62% / 0.18);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-card-hover), 0 0 16px -6px hsl(265 85% 62% / 0.15);
   }
 
   .empty-state {
@@ -338,22 +346,23 @@
 
   /* Full-width premium button */
   .btn-premium {
-    @apply w-full font-semibold text-base rounded-2xl transition-all;
+    @apply w-full font-semibold text-base rounded-2xl;
     height: 56px;
     background: linear-gradient(135deg, hsl(265 85% 62%), hsl(217 90% 58%));
     color: hsl(0 0% 100%);
     box-shadow: 0 8px 32px -8px hsl(265 85% 62% / 0.35);
     border: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .btn-premium:hover {
-    opacity: 0.92;
     transform: translateY(-1px);
-    box-shadow: 0 12px 40px -8px hsl(265 85% 62% / 0.45);
+    box-shadow: 0 12px 40px -8px hsl(265 85% 62% / 0.5), 0 0 24px -6px hsl(265 85% 62% / 0.2);
+    filter: brightness(1.08);
   }
 
   .btn-premium:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.98);
   }
 
   /* Neon muscle glow */
@@ -410,7 +419,10 @@
 
   /* Active touch feedback for interactive elements */
   .touch-feedback {
-    transition: transform 0.1s ease, opacity 0.1s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .touch-feedback:hover {
+    transform: translateY(-1px);
   }
   .touch-feedback:active {
     transform: scale(0.97);
