@@ -358,7 +358,7 @@
 
   /* Neon muscle glow */
   .neon-glow {
-    filter: drop-shadow(0 0 12px hsl(152 69% 46% / 0.4)) drop-shadow(0 0 24px hsl(152 69% 46% / 0.15));
+    filter: drop-shadow(0 0 12px hsl(265 85% 62% / 0.4)) drop-shadow(0 0 24px hsl(265 85% 62% / 0.15));
   }
 
   @keyframes float-particle {
