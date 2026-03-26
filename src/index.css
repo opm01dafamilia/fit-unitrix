@@ -267,8 +267,8 @@
 
   .progress-fill {
     @apply h-full rounded-full transition-all duration-700 ease-out;
-    background: linear-gradient(90deg, hsl(152 69% 46%), hsl(168 80% 38%));
-    box-shadow: 0 0 12px -2px hsl(152 69% 46% / 0.4);
+    background: linear-gradient(90deg, hsl(265 85% 62%), hsl(217 90% 58%));
+    box-shadow: 0 0 12px -2px hsl(265 85% 62% / 0.4);
   }
 
   .stat-value {
