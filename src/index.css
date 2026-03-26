@@ -419,7 +419,10 @@
 
   /* Active touch feedback for interactive elements */
   .touch-feedback {
-    transition: transform 0.1s ease, opacity 0.1s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .touch-feedback:hover {
+    transform: translateY(-1px);
   }
   .touch-feedback:active {
     transform: scale(0.97);
