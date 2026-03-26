@@ -339,7 +339,7 @@ const AnaliseCorporal = () => {
                   style={{
                     width: `${analysis.rhythmScore}%`,
                     background: analysis.rhythmScore >= 70
-                      ? 'linear-gradient(90deg, hsl(152 69% 46%), hsl(168 80% 38%))'
+                      ? 'linear-gradient(90deg, hsl(265 85% 62%), hsl(217 90% 58%))'
                       : analysis.rhythmScore >= 40
                       ? 'linear-gradient(90deg, hsl(45 93% 47%), hsl(36 77% 49%))'
                       : 'linear-gradient(90deg, hsl(0 84% 60%), hsl(0 72% 51%))'
@@ -380,15 +380,15 @@ const AnaliseCorporal = () => {
             <AreaChart data={monthlyEvolution}>
               <defs>
                 <linearGradient id="monthlyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(152 69% 46%)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(152 69% 46%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(265 85% 62%)" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(265 85% 62%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
-              <XAxis dataKey="month" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 12% 15%)" vertical={false} />
+              <XAxis dataKey="month" stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="peso" stroke="hsl(152 69% 46%)" fill="url(#monthlyGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(152 69% 46%)', r: 4, strokeWidth: 0 }} />
+              <Area type="monotone" dataKey="peso" stroke="hsl(265 85% 62%)" fill="url(#monthlyGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(265 85% 62%)', r: 4, strokeWidth: 0 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

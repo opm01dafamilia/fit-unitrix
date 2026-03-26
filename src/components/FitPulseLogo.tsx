@@ -22,7 +22,7 @@ const FitPulseLogo = ({ size = "sm", showText = false, showSubtext = false, clas
     <div className={`flex items-center gap-3 ${className}`}>
       <div
         className={`${s.box} flex items-center justify-center shrink-0`}
-        style={{ background: 'linear-gradient(135deg, hsl(152 69% 46%), hsl(168 80% 38%))' }}
+        style={{ background: 'linear-gradient(135deg, hsl(265 85% 62%), hsl(217 90% 58%))' }}
       >
         <Flame className={`${s.icon} text-primary-foreground`} />
       </div>

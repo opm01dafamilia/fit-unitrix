@@ -30,10 +30,10 @@ export const FITNESS_LEVELS: FitnessLevel[] = [
   },
   {
     level: 3, title: "Evoluindo", minXP: 120,
-    auraColor: "152 69% 46%",
-    auraGradient: "linear-gradient(135deg, hsl(152 69% 38%), hsl(168 80% 42%))",
+    auraColor: "265 85% 62%",
+    auraGradient: "linear-gradient(135deg, hsl(265 85% 55%), hsl(217 90% 58%))",
     auraBorderClass: "border-primary/40",
-    auraGlowClass: "shadow-[0_0_28px_-4px_hsl(152_69%_46%_/_0.4)]",
+    auraGlowClass: "shadow-[0_0_28px_-4px_hsl(265_85%_62%_/_0.4)]",
   },
   {
     level: 4, title: "Focado", minXP: 250,
