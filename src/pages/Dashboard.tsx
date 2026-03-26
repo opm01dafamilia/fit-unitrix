@@ -807,15 +807,15 @@ const Dashboard = () => {
             <AreaChart data={weightChartData}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(152 69% 46%)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="hsl(152 69% 46%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(265 85% 62%)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(265 85% 62%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
-              <XAxis dataKey="semana" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 12% 15%)" vertical={false} />
+              <XAxis dataKey="semana" stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="peso" stroke="hsl(152 69% 46%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(152 69% 46%)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(225 16% 9%)' }} />
+              <Area type="monotone" dataKey="peso" stroke="hsl(265 85% 62%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(265 85% 62%)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(260 14% 9%)' }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

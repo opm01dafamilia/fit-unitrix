@@ -13,7 +13,7 @@ const NotFound = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center px-6">
         <div className="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-             style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.08))' }}>
+             style={{ background: 'linear-gradient(135deg, hsl(265 85% 62% / 0.15), hsl(217 90% 58% / 0.08))' }}>
           <Flame className="w-7 h-7 text-primary" />
         </div>
         <h1 className="mb-2 text-5xl font-display font-bold text-foreground">404</h1>

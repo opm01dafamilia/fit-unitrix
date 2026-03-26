@@ -155,7 +155,7 @@ const AppLayout = () => {
                 </div>
               ) : (
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                     style={{ background: 'linear-gradient(135deg, hsl(152 69% 46% / 0.15), hsl(168 80% 38% / 0.1))' }}>
+                     style={{ background: 'linear-gradient(135deg, hsl(265 85% 62% / 0.15), hsl(217 90% 58% / 0.1))' }}>
                   <User className="w-4 h-4 text-primary" />
                 </div>
               )}
