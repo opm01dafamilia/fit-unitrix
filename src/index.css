@@ -248,11 +248,13 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .glass-card:hover {
     box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
+    border-color: hsl(265 85% 62% / 0.12);
   }
 
   .glow-border {
@@ -282,6 +284,12 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .premium-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
   }
 
   .metric-card {
@@ -290,13 +298,13 @@
     border: 1px solid var(--metric-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-card);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .metric-card:hover {
-    border-color: hsl(265 85% 62% / 0.15);
+    border-color: hsl(265 85% 62% / 0.18);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-card-hover), 0 0 16px -6px hsl(265 85% 62% / 0.15);
   }
 
   .empty-state {
