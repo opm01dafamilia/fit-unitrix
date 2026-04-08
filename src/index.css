@@ -6,19 +6,19 @@
 
 @layer base {
   :root {
-    --background: 260 14% 9%;
+    --background: 228 18% 9%;
     --foreground: 220 20% 96%;
   }
 
   .light, [data-theme="light"] {
-    --background: 240 5% 96%;
-    --foreground: 260 15% 10%;
+    --background: 230 25% 97%;
+    --foreground: 224 71% 8%;
 
-    --card: 240 5% 100%;
-    --card-foreground: 260 15% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 8%;
 
-    --popover: 240 5% 100%;
-    --popover-foreground: 260 15% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 8%;
 
     --primary: 265 85% 58%;
     --primary-foreground: 0 0% 100%;
@@ -26,8 +26,8 @@
     --secondary: 217 90% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 8% 90%;
-    --muted-foreground: 240 8% 42%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 9% 46%;
 
     --accent: 152 55% 45%;
     --accent-foreground: 0 0% 100%;
@@ -35,19 +35,19 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 10% 85%;
-    --input: 240 10% 85%;
+    --border: 220 13% 90%;
+    --input: 220 13% 91%;
     --ring: 265 85% 58%;
 
     --radius: 0.875rem;
 
-    --sidebar-background: 240 5% 97%;
-    --sidebar-foreground: 260 12% 30%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 224 71% 8%;
     --sidebar-primary: 265 85% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 8% 94%;
-    --sidebar-accent-foreground: 260 15% 10%;
-    --sidebar-border: 240 10% 88%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 224 71% 8%;
+    --sidebar-border: 220 13% 90%;
     --sidebar-ring: 265 85% 58%;
 
     --chart-1: 265 85% 58%;
@@ -56,22 +56,22 @@
     --chart-4: 45 90% 50%;
     --chart-5: 0 72% 51%;
 
-    --shadow-card: 0 4px 24px -4px hsl(260 20% 75% / 0.25);
-    --shadow-card-hover: 0 8px 32px -4px hsl(260 20% 75% / 0.35);
-    --shadow-hero: 0 12px 48px -8px hsl(260 20% 75% / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(220 20% 80% / 0.3);
+    --shadow-card-hover: 0 6px 20px -4px hsl(220 20% 75% / 0.35);
+    --shadow-hero: 0 8px 32px -6px hsl(220 20% 75% / 0.25);
 
-    --glass-bg: linear-gradient(145deg, hsl(240 5% 100% / 0.95), hsl(240 5% 98% / 0.95));
-    --glass-border: hsl(240 10% 88% / 0.7);
-    --metric-bg: linear-gradient(145deg, hsl(240 5% 100% / 0.98), hsl(240 5% 97% / 0.98));
-    --metric-border: hsl(240 10% 88% / 0.5);
-    --empty-bg: linear-gradient(145deg, hsl(240 5% 98% / 0.7), hsl(240 5% 96% / 0.7));
-    --empty-border: hsl(240 10% 85%);
-    --progress-bg: hsl(240 8% 90%);
-    --skeleton-from: hsl(240 8% 92%);
-    --skeleton-to: hsl(240 8% 96%);
-    --tooltip-bg: hsl(240 5% 100%);
-    --tooltip-border: hsl(240 10% 88%);
-    --tooltip-color: hsl(260 15% 10%);
+    --glass-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.95), hsl(220 14% 98% / 0.95));
+    --glass-border: hsl(220 13% 90% / 0.7);
+    --metric-bg: linear-gradient(145deg, hsl(0 0% 100% / 0.98), hsl(220 14% 97% / 0.98));
+    --metric-border: hsl(220 13% 90% / 0.5);
+    --empty-bg: linear-gradient(145deg, hsl(220 14% 98% / 0.7), hsl(220 14% 96% / 0.7));
+    --empty-border: hsl(220 13% 90%);
+    --progress-bg: hsl(220 14% 92%);
+    --skeleton-from: hsl(220 14% 93%);
+    --skeleton-to: hsl(220 14% 97%);
+    --tooltip-bg: hsl(0 0% 100%);
+    --tooltip-border: hsl(220 13% 90%);
+    --tooltip-color: hsl(224 71% 8%);
   }
 
   :root {
