@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
   History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
-  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList, Info, CreditCard
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList, Info, CreditCard, Shield
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
@@ -46,7 +46,7 @@ const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { profile, signOut, subscriptionStatus } = useAuth();
-  const { isPersonal } = useUserRole();
+  const { isPersonal, isAdmin } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
