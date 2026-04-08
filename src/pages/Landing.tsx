@@ -10,11 +10,11 @@ import previewEvolucao from "@/assets/preview-evolucao.png";
 import previewPerfil from "@/assets/preview-perfil.png";
 
 const previews = [
-  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso em um só lugar", icon: LayoutDashboard },
+  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso", icon: LayoutDashboard },
   { img: previewTreino, label: "Treino", desc: "Treinos criados automaticamente pela IA", icon: Dumbbell },
   { img: previewEvolucao, label: "Evolução", desc: "Ajustes inteligentes semanais", icon: TrendingUp },
-  { img: previewAnalise, label: "Análise", desc: "IA adapta seu plano automaticamente", icon: Brain },
   { img: previewPerfil, label: "Perfil", desc: "Tudo personalizado para você", icon: UserCircle },
+  { img: previewAnalise, label: "Análise", desc: "IA adapta seu plano automaticamente", icon: Brain },
 ];
 
 const plans = [
@@ -130,13 +130,13 @@ const Landing = () => {
                     : "w-[260px] md:w-[280px]"
                 }`}
               >
-                <div className="overflow-hidden">
+                <div className="overflow-hidden bg-background/50 p-3">
                   <img
                     src={p.img}
                     alt={p.label}
                     loading="lazy"
-                    className={`w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03] ${
-                      i === 0 ? "h-[380px] md:h-[440px]" : "h-[300px] md:h-[360px]"
+                    className={`w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.03] ${
+                      i === 0 ? "h-[400px] md:h-[460px]" : "h-[320px] md:h-[380px]"
                     }`}
                   />
                 </div>
