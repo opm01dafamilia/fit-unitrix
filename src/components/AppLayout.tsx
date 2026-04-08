@@ -87,7 +87,7 @@ const AppLayout = () => {
       className={({ isActive }) =>
         `flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 touch-feedback min-h-[44px]
         ${isActive 
-          ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(152_69%_46%_/_0.15)]" 
+          ? "bg-primary/10 text-primary border border-primary/15 shadow-[0_0_16px_-4px_hsl(var(--primary)_/_0.15)]" 
           : "text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent"
         }`
       }
@@ -222,7 +222,7 @@ const AppLayout = () => {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-3 py-2 rounded-2xl text-[10px] font-medium transition-all duration-200 touch-feedback
                 ${isActive 
-                  ? "text-primary bg-primary/10 shadow-[0_0_12px_-4px_hsl(152_69%_46%_/_0.2)]" 
+                  ? "text-primary bg-primary/10 shadow-[0_0_12px_-4px_hsl(var(--primary)_/_0.2)]" 
                   : "text-muted-foreground"}`
               }
             >
