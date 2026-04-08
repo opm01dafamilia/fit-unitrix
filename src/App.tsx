@@ -6,10 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 
-import { lazy, Suspense, useEffect, useState, useCallback } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { useSSOAuth, redirectToEcosystem, hasSSOParams } from "./hooks/useSSOAuth";
 
 // Lazy load all pages for code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -39,15 +38,17 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Personal = lazy(() => import("./pages/Personal"));
 const SobreFitPulse = lazy(() => import("./pages/SobreFitPulse"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-
-// GIF preloading removed from app start - now lazy-loaded per page
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 // Optimized QueryClient with smart caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 30 * 60 * 1000, // 30 minutes cache
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
       retry: 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
@@ -126,113 +127,25 @@ const OfflineBanner = () => {
   );
 };
 
-const AUTO_REDIRECT_SECONDS = 8;
-
-const SSOErrorScreen = ({ ssoError }: { ssoError: string | null }) => {
-  const [countdown, setCountdown] = useState(AUTO_REDIRECT_SECONDS);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          redirectToEcosystem();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-          <span className="text-xl">⚠️</span>
-        </div>
-        <h1 className="text-base font-semibold text-foreground">Acesse pelo ecossistema para continuar</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {ssoError || "Não conseguimos validar seu acesso automático. Por favor, tente novamente pelo ecossistema."}
-        </p>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Redirecionando em <span className="font-semibold text-foreground">{countdown}s</span>…
-        </p>
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Tentar novamente
-          </button>
-          <button
-            type="button"
-            onClick={redirectToEcosystem}
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Ir ao ecossistema
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, profile, loading, setSubscriptionStatus } = useAuth();
-  const { ssoLoading, ssoFinished, ssoError, subscriptionStatus } = useSSOAuth();
-  const hasParams = hasSSOParams();
+  const { user, profile, loading } = useAuth();
 
-  useEffect(() => {
-    if (subscriptionStatus) {
-      setSubscriptionStatus(subscriptionStatus);
-    }
-  }, [subscriptionStatus, setSubscriptionStatus]);
-
-  // Redirect to ecosystem when no session, no SSO params, and auth is done loading
-  useEffect(() => {
-    if (!loading && !ssoLoading && ssoFinished && !user && !hasParams) {
-      redirectToEcosystem();
-    }
-  }, [loading, ssoLoading, ssoFinished, user, hasParams]);
-
-  // Still loading auth state or processing SSO token
-  if (loading || ssoLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">
-            {ssoLoading ? "Autenticando via SSO..." : "Carregando..."}
-          </p>
+          <p className="text-xs text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
-  // SSO finished but failed — show error with auto-redirect countdown
-  if (!user && hasParams && ssoFinished) {
-    return <SSOErrorScreen ssoError={ssoError} />;
-  }
-
-  // No user and no SSO params — show redirecting state (effect above handles the redirect)
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">Redirecionando ao ecossistema...</p>
-        </div>
-      </div>
-    );
-  }
-
+  if (!user) return <Navigate to="/login" replace />;
   if (profile && !profile.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
   return <>{children}</>;
 };
-
 
 const OnboardingRoute = () => {
   const { user, profile, loading } = useAuth();
@@ -245,10 +158,7 @@ const OnboardingRoute = () => {
     );
   }
 
-  if (!user) {
-    redirectToEcosystem();
-    return null;
-  }
+  if (!user) return <Navigate to="/login" replace />;
   if (profile?.onboarding_completed) return <Navigate to="/" replace />;
 
   return (
@@ -256,6 +166,19 @@ const OnboardingRoute = () => {
       <Onboarding />
     </Suspense>
   );
+};
+
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
 };
 
 const App = () => (
@@ -268,6 +191,11 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              {/* Public auth routes */}
+              <Route path="/login" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Login /></Suspense></PublicRoute>} />
+              <Route path="/signup" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Signup /></Suspense></PublicRoute>} />
+              <Route path="/forgot-password" element={<Suspense fallback={<PageSkeleton />}><ForgotPassword /></Suspense>} />
+              <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
               <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
               <Route path="/onboarding" element={<OnboardingRoute />} />
               <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
