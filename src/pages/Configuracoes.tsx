@@ -327,6 +327,42 @@ const Configuracoes = () => {
         </div>
       </div>
 
+      {/* Theme Color */}
+      <div className="glass-card p-5 lg:p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center">
+            <Palette className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-display font-semibold text-base">Cor do Tema</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Escolha a cor principal do app</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          {THEME_COLORS.map((color) => (
+            <button
+              key={color.id}
+              onClick={() => {
+                setSelectedColor(color.id);
+                saveThemeColor(color.id);
+                toast.success(`Tema ${color.label} aplicado!`);
+              }}
+              className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                selectedColor === color.id
+                  ? "border-primary bg-primary/10 scale-105"
+                  : "border-border/30 bg-secondary/30 hover:bg-secondary/50"
+              }`}
+            >
+              <div
+                className="w-8 h-8 rounded-full shadow-lg"
+                style={{ backgroundColor: color.preview }}
+              />
+              <span className="text-[11px] font-medium">{color.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Logout */}
       <div className="glass-card p-5 lg:p-6">
         <Button variant="destructive" onClick={handleLogout}>
