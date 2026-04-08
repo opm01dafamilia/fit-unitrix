@@ -130,13 +130,13 @@ const Landing = () => {
                     : "w-[260px] md:w-[280px]"
                 }`}
               >
-                <div className="overflow-hidden">
+                <div className="overflow-hidden bg-background/50 p-3">
                   <img
                     src={p.img}
                     alt={p.label}
                     loading="lazy"
-                    className={`w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03] ${
-                      i === 0 ? "h-[380px] md:h-[440px]" : "h-[300px] md:h-[360px]"
+                    className={`w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.03] ${
+                      i === 0 ? "h-[400px] md:h-[460px]" : "h-[320px] md:h-[380px]"
                     }`}
                   />
                 </div>
