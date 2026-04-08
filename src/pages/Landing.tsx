@@ -23,10 +23,10 @@ const plans = [
 ];
 
 const features = [
-  { icon: Dumbbell, title: "Treinos com IA", desc: "Planos personalizados que evoluem com você" },
-  { icon: Zap, title: "Modo Personal", desc: "Experiência de personal trainer dentro do app" },
-  { icon: TrendingUp, title: "Evolução Real", desc: "Acompanhe seu progresso com métricas detalhadas" },
-  { icon: Shield, title: "Dieta Inteligente", desc: "Planos alimentares adaptados ao seu objetivo" },
+  { icon: Dumbbell, title: "Treinos com IA", desc: "Treinos gerados automaticamente com base no seu objetivo" },
+  { icon: Zap, title: "Modo Personal", desc: "Experiência de personal trainer com inteligência artificial" },
+  { icon: TrendingUp, title: "Evolução Real", desc: "A IA analisa seu progresso e adapta tudo semanalmente" },
+  { icon: Shield, title: "Dieta Inteligente", desc: "Plano alimentar ajustado pela IA conforme sua evolução" },
 ];
 
 const Landing = () => {
@@ -53,15 +53,17 @@ const Landing = () => {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold mb-6">
             <Star className="w-3.5 h-3.5" /> Treine como um profissional
           </div>
-          <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-6">
-            Seu treino e dieta{" "}
+          <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-4">
+            Seu treino e dieta ajustados{" "}
             <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
-              personalizados por IA
+              automaticamente por inteligência artificial
             </span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            O FitPulse cria planos de treino e alimentação inteligentes que evoluem com você. 
-            Resultados reais, sem complicação.
+          <p className="text-base md:text-lg font-medium text-muted-foreground mb-3">
+            Sem personal. Sem planilhas. Sem complicação.
+          </p>
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-8">
+            O FitPulse usa IA para criar e ajustar seus treinos e alimentação com base no seu objetivo e evolução. Tudo automático.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/signup">
