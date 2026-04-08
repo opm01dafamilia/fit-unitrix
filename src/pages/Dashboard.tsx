@@ -944,7 +944,7 @@ const Dashboard = () => {
       {!hasData && !showChecklist && (
         <div className="empty-state">
           <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg, hsl(265 85% 62% / 0.15), hsl(217 90% 58% / 0.08))' }}>
+               style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.08))' }}>
             <Flame className="w-7 h-7 text-primary" />
           </div>
           <h3 className="font-display font-semibold text-lg mb-2">Comece sua jornada!</h3>
