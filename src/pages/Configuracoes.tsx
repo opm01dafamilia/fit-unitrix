@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield, LayoutGrid, Pin, PinOff } from "lucide-react";
+import { Settings, Lock, LogOut, Loader2, Bell, Ruler, Shield, LayoutGrid, Pin, PinOff, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -11,6 +11,7 @@ import { getHonestyMode, setHonestyMode, getValidationStats } from "@/lib/antiFa
 import { getMenuPreferences, saveMenuPreferences, resetMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import { getNotificationPreferences, saveNotificationPreferences, type NotificationType } from "@/lib/smartNotificationsEngine";
 import { isCoachModeActive, setCoachMode } from "@/lib/fitnessCoachEngine";
+import { THEME_COLORS, getSavedThemeColor, saveThemeColor, type ThemeColor } from "@/lib/themeColors";
 
 const Configuracoes = () => {
   const { signOut } = useAuth();

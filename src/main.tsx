@@ -1,6 +1,9 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { initThemeColor } from "./lib/themeColors";
+
+initThemeColor();
 
 // Register service worker for PWA
 if ("serviceWorker" in navigator) {
