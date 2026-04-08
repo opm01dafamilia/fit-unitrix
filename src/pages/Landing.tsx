@@ -109,35 +109,76 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* App Preview */}
-      <section className="py-20 px-6 border-t border-border/20">
-        <div className="max-w-6xl mx-auto">
+      {/* App Preview — Premium Showcase */}
+      <section className="py-20 px-6 border-t border-border/20 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2">
             Veja como o FitPulse funciona por dentro
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
             Treinos, dieta e evolução gerenciados automaticamente pela inteligência artificial
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {previews.map((p) => (
+
+          {/* Horizontal scroll showcase */}
+          <div className="flex gap-5 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
+            {previews.map((p, i) => (
               <div
                 key={p.label}
-                className="group rounded-2xl bg-card border border-border/50 overflow-hidden hover:border-primary/30 transition-all"
+                className={`group flex-shrink-0 snap-center rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.25)] ${
+                  i === 0
+                    ? "w-[320px] md:w-[380px]"
+                    : "w-[260px] md:w-[280px]"
+                }`}
               >
                 <div className="overflow-hidden">
                   <img
                     src={p.img}
                     alt={p.label}
                     loading="lazy"
-                    className="w-full h-48 object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    className={`w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03] ${
+                      i === 0 ? "h-[380px] md:h-[440px]" : "h-[300px] md:h-[360px]"
+                    }`}
                   />
                 </div>
-                <div className="p-5">
-                  <h3 className="font-semibold mb-1">{p.label}</h3>
-                  <p className="text-sm text-muted-foreground">{p.desc}</p>
+                <div className="p-4">
+                  <h3 className="font-semibold text-sm mb-0.5">{p.label}</h3>
+                  <p className="text-xs text-muted-foreground">{p.desc}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Feature pills row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-10">
+            {previews.map((p) => (
+              <div
+                key={`pill-${p.label}`}
+                className="flex items-start gap-3 p-4 rounded-xl bg-card/60 border border-border/30"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <p.icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold mb-0.5">{p.label}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{p.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* IA Banner */}
+          <div className="mt-10 p-6 rounded-2xl bg-card/60 border border-primary/20 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-1">
+                Inteligência Artificial em cada detalhe
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                O FitPulse aprende com você. Quanto mais você usa, mais precisos ficam seus treinos e dieta, garantindo resultados reais com um plano feito 100% para o seu perfil.
+              </p>
+            </div>
           </div>
         </div>
       </section>
