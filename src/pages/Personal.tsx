@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import { toast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -272,10 +273,24 @@ const Personal = () => {
   );
 
   // ============ ROLE CHECK ============
-  if (roleLoading) {
+  if (roleLoading || settingsLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isPersonalEnabled) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+        <div className="w-20 h-20 rounded-3xl bg-secondary/60 flex items-center justify-center mb-6 border border-border/30">
+          <Users className="w-10 h-10 text-muted-foreground" />
+        </div>
+        <h2 className="text-xl font-display font-bold mb-2">Modo Personal</h2>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Esta funcionalidade está temporariamente indisponível. Aguarde a liberação pelo administrador.
+        </p>
       </div>
     );
   }
