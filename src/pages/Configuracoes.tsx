@@ -28,6 +28,7 @@ const Configuracoes = () => {
   const [pinnedItems, setPinnedItems] = useState<string[]>(() => getMenuPreferences().pinnedSocialItems);
   const [notifPrefs, setNotifPrefs] = useState(() => getNotificationPreferences());
   const [coachMode, setCoachModeState] = useState(() => isCoachModeActive());
+  const [selectedColor, setSelectedColor] = useState<ThemeColor>(() => getSavedThemeColor());
 
   const NOTIF_TYPE_LABELS: Record<NotificationType, string> = {
     treino: "🏋️ Treino",
