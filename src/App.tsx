@@ -10,7 +10,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-// Lazy load all pages for code splitting
+// Lazy load all pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Treino = lazy(() => import("./pages/Treino"));
 const Dieta = lazy(() => import("./pages/Dieta"));
@@ -37,13 +37,22 @@ const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Personal = lazy(() => import("./pages/Personal"));
 const SobreFitPulse = lazy(() => import("./pages/SobreFitPulse"));
+const Planos = lazy(() => import("./pages/Planos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Landing = lazy(() => import("./pages/Landing"));
 
-// Optimized QueryClient with smart caching
+// Admin pages
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminSubscriptions = lazy(() => import("./pages/admin/AdminSubscriptions"));
+const AdminWebhook = lazy(() => import("./pages/admin/AdminWebhook"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -56,7 +65,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Page loading skeleton
 const PageSkeleton = () => (
   <div className="space-y-6 animate-pulse p-5 lg:p-8">
     <div className="h-8 w-48 bg-secondary/60 rounded-lg" />
@@ -70,7 +78,6 @@ const PageSkeleton = () => (
   </div>
 );
 
-// Offline banner component with sync status
 const OfflineBanner = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
@@ -159,7 +166,7 @@ const OnboardingRoute = () => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (profile?.onboarding_completed) return <Navigate to="/" replace />;
+  if (profile?.onboarding_completed) return <Navigate to="/app" replace />;
 
   return (
     <Suspense fallback={<PageSkeleton />}>
@@ -177,9 +184,27 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/app" replace />;
   return <>{children}</>;
 };
+
+// Landing route: if logged in, redirect to /app
+const LandingRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (user) return <Navigate to="/app" replace />;
+  return <Suspense fallback={<PageSkeleton />}><Landing /></Suspense>;
+};
+
+const S = ({ children }: { children: React.ReactNode }) => (
+  <ErrorBoundary><Suspense fallback={<PageSkeleton />}>{children}</Suspense></ErrorBoundary>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -191,6 +216,9 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              {/* Landing */}
+              <Route path="/" element={<LandingRoute />} />
+
               {/* Public auth routes */}
               <Route path="/login" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Login /></Suspense></PublicRoute>} />
               <Route path="/signup" element={<PublicRoute><Suspense fallback={<PageSkeleton />}><Signup /></Suspense></PublicRoute>} />
@@ -198,32 +226,45 @@ const App = () => (
               <Route path="/reset-password" element={<Suspense fallback={<PageSkeleton />}><ResetPassword /></Suspense>} />
               <Route path="/invite/:code" element={<Suspense fallback={<PageSkeleton />}><InviteLanding /></Suspense>} />
               <Route path="/onboarding" element={<OnboardingRoute />} />
-              <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                <Route path="/" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dashboard /></Suspense></ErrorBoundary>} />
-                <Route path="/treino" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Treino /></Suspense></ErrorBoundary>} />
-                <Route path="/dieta" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Dieta /></Suspense></ErrorBoundary>} />
-                <Route path="/acompanhamento" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Acompanhamento /></Suspense></ErrorBoundary>} />
-                <Route path="/metas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Metas /></Suspense></ErrorBoundary>} />
-                <Route path="/historico" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Historico /></Suspense></ErrorBoundary>} />
-                <Route path="/conquistas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Conquistas /></Suspense></ErrorBoundary>} />
-                <Route path="/biblioteca" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Biblioteca /></Suspense></ErrorBoundary>} />
-                <Route path="/analise" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><AnaliseCorporal /></Suspense></ErrorBoundary>} />
-                <Route path="/ranking" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Ranking /></Suspense></ErrorBoundary>} />
-                <Route path="/comunidade" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Comunidade /></Suspense></ErrorBoundary>} />
-                <Route path="/desafios" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Desafios /></Suspense></ErrorBoundary>} />
-                <Route path="/temporadas" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Temporadas /></Suspense></ErrorBoundary>} />
-                <Route path="/minha-liga" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><MinhaLiga /></Suspense></ErrorBoundary>} />
-                <Route path="/evolucao" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoTreino /></Suspense></ErrorBoundary>} />
-                <Route path="/evolucao-alimentar" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><EvolucaoAlimentar /></Suspense></ErrorBoundary>} />
-                <Route path="/convites" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Convites /></Suspense></ErrorBoundary>} />
-                <Route path="/amigos" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Amigos /></Suspense></ErrorBoundary>} />
-                <Route path="/perfil" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Perfil /></Suspense></ErrorBoundary>} />
-                <Route path="/perfil-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><PerfilFitness /></Suspense></ErrorBoundary>} />
-                <Route path="/configuracoes" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Configuracoes /></Suspense></ErrorBoundary>} />
-                <Route path="/score-fitness" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><ScoreFitness /></Suspense></ErrorBoundary>} />
-                <Route path="/personal" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><Personal /></Suspense></ErrorBoundary>} />
-                <Route path="/sobre" element={<ErrorBoundary><Suspense fallback={<PageSkeleton />}><SobreFitPulse /></Suspense></ErrorBoundary>} />
+
+              {/* App routes (protected) */}
+              <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+                <Route index element={<S><Dashboard /></S>} />
+                <Route path="treino" element={<S><Treino /></S>} />
+                <Route path="dieta" element={<S><Dieta /></S>} />
+                <Route path="acompanhamento" element={<S><Acompanhamento /></S>} />
+                <Route path="metas" element={<S><Metas /></S>} />
+                <Route path="historico" element={<S><Historico /></S>} />
+                <Route path="conquistas" element={<S><Conquistas /></S>} />
+                <Route path="biblioteca" element={<S><Biblioteca /></S>} />
+                <Route path="analise" element={<S><AnaliseCorporal /></S>} />
+                <Route path="ranking" element={<S><Ranking /></S>} />
+                <Route path="comunidade" element={<S><Comunidade /></S>} />
+                <Route path="desafios" element={<S><Desafios /></S>} />
+                <Route path="temporadas" element={<S><Temporadas /></S>} />
+                <Route path="minha-liga" element={<S><MinhaLiga /></S>} />
+                <Route path="evolucao" element={<S><EvolucaoTreino /></S>} />
+                <Route path="evolucao-alimentar" element={<S><EvolucaoAlimentar /></S>} />
+                <Route path="convites" element={<S><Convites /></S>} />
+                <Route path="amigos" element={<S><Amigos /></S>} />
+                <Route path="perfil" element={<S><Perfil /></S>} />
+                <Route path="perfil-fitness" element={<S><PerfilFitness /></S>} />
+                <Route path="configuracoes" element={<S><Configuracoes /></S>} />
+                <Route path="score-fitness" element={<S><ScoreFitness /></S>} />
+                <Route path="personal" element={<S><Personal /></S>} />
+                <Route path="sobre" element={<S><SobreFitPulse /></S>} />
+                <Route path="planos" element={<S><Planos /></S>} />
               </Route>
+
+              {/* Admin routes */}
+              <Route path="/admin" element={<Suspense fallback={<PageSkeleton />}><AdminLayout /></Suspense>}>
+                <Route index element={<Suspense fallback={<PageSkeleton />}><AdminDashboard /></Suspense>} />
+                <Route path="usuarios" element={<Suspense fallback={<PageSkeleton />}><AdminUsers /></Suspense>} />
+                <Route path="assinaturas" element={<Suspense fallback={<PageSkeleton />}><AdminSubscriptions /></Suspense>} />
+                <Route path="webhook" element={<Suspense fallback={<PageSkeleton />}><AdminWebhook /></Suspense>} />
+                <Route path="configuracoes" element={<Suspense fallback={<PageSkeleton />}><AdminSettings /></Suspense>} />
+              </Route>
+
               <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
             </Routes>
           </AuthProvider>
