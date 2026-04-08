@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight } from "lucide-react";
+import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight, LayoutDashboard, Brain, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FitPulseLogo from "@/components/FitPulseLogo";
 
@@ -10,11 +10,11 @@ import previewEvolucao from "@/assets/preview-evolucao.png";
 import previewPerfil from "@/assets/preview-perfil.png";
 
 const previews = [
-  { img: previewTreino, label: "Treino", desc: "Treinos criados automaticamente pela IA com base no seu objetivo" },
-  { img: previewEvolucao, label: "Evolução", desc: "Acompanhe sua evolução com ajustes inteligentes semanais" },
-  { img: previewAnalise, label: "Análise", desc: "A IA analisa seu desempenho e adapta seu plano" },
-  { img: previewPerfil, label: "Perfil", desc: "Tudo personalizado para você desde o início" },
-  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso em um só lugar" },
+  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso em um só lugar", icon: LayoutDashboard },
+  { img: previewTreino, label: "Treino", desc: "Treinos criados automaticamente pela IA", icon: Dumbbell },
+  { img: previewEvolucao, label: "Evolução", desc: "Ajustes inteligentes semanais", icon: TrendingUp },
+  { img: previewAnalise, label: "Análise", desc: "IA adapta seu plano automaticamente", icon: Brain },
+  { img: previewPerfil, label: "Perfil", desc: "Tudo personalizado para você", icon: UserCircle },
 ];
 
 const plans = [
