@@ -3,6 +3,20 @@ import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight } from "lucide-re
 import { Button } from "@/components/ui/button";
 import FitPulseLogo from "@/components/FitPulseLogo";
 
+import previewDashboard from "@/assets/preview-dashboard.png";
+import previewTreino from "@/assets/preview-treino.png";
+import previewAnalise from "@/assets/preview-analise.png";
+import previewEvolucao from "@/assets/preview-evolucao.png";
+import previewPerfil from "@/assets/preview-perfil.png";
+
+const previews = [
+  { img: previewTreino, label: "Treino", desc: "Treinos criados automaticamente pela IA com base no seu objetivo" },
+  { img: previewEvolucao, label: "Evolução", desc: "Acompanhe sua evolução com ajustes inteligentes semanais" },
+  { img: previewAnalise, label: "Análise", desc: "A IA analisa seu desempenho e adapta seu plano" },
+  { img: previewPerfil, label: "Perfil", desc: "Tudo personalizado para você desde o início" },
+  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso em um só lugar" },
+];
+
 const plans = [
   {
     name: "FitPulse Mensal",
@@ -89,6 +103,39 @@ const Landing = () => {
                 </div>
                 <h3 className="font-semibold mb-1">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* App Preview */}
+      <section className="py-20 px-6 border-t border-border/20">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2">
+            Veja como o FitPulse funciona por dentro
+          </h2>
+          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+            Treinos, dieta e evolução gerenciados automaticamente pela inteligência artificial
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {previews.map((p) => (
+              <div
+                key={p.label}
+                className="group rounded-2xl bg-card border border-border/50 overflow-hidden hover:border-primary/30 transition-all"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={p.img}
+                    alt={p.label}
+                    loading="lazy"
+                    className="w-full h-48 object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-semibold mb-1">{p.label}</h3>
+                  <p className="text-sm text-muted-foreground">{p.desc}</p>
+                </div>
               </div>
             ))}
           </div>
