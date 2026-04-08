@@ -135,7 +135,9 @@ const Landing = () => {
                     src={p.img}
                     alt={p.label}
                     loading="lazy"
-                    className={`w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.03] ${
+                    decoding="async"
+                    style={{ imageRendering: "auto", WebkitBackfaceVisibility: "hidden" }}
+                    className={`w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.03] will-change-transform ${
                       i === 0 ? "h-[400px] md:h-[460px]" : "h-[320px] md:h-[380px]"
                     }`}
                   />
