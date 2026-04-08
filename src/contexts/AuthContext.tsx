@@ -1,7 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { SubscriptionStatus, getStoredSubscriptionStatus } from "@/hooks/useSSOAuth";
+export type SubscriptionStatus = "active" | "trial" | "pending" | "canceled" | "expired" | "lifetime";
+
+const getStoredSubscriptionStatus = (): SubscriptionStatus => {
+  return (localStorage.getItem("fitpulse_sub_status") as SubscriptionStatus) || "active";
+};
 
 type Profile = {
   id: string;
