@@ -10,11 +10,11 @@ import previewEvolucao from "@/assets/preview-evolucao.png";
 import previewPerfil from "@/assets/preview-perfil.png";
 
 const previews = [
-  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso em um só lugar", icon: LayoutDashboard },
+  { img: previewDashboard, label: "Dashboard", desc: "Controle total do seu progresso", icon: LayoutDashboard },
   { img: previewTreino, label: "Treino", desc: "Treinos criados automaticamente pela IA", icon: Dumbbell },
   { img: previewEvolucao, label: "Evolução", desc: "Ajustes inteligentes semanais", icon: TrendingUp },
-  { img: previewAnalise, label: "Análise", desc: "IA adapta seu plano automaticamente", icon: Brain },
   { img: previewPerfil, label: "Perfil", desc: "Tudo personalizado para você", icon: UserCircle },
+  { img: previewAnalise, label: "Análise", desc: "IA adapta seu plano automaticamente", icon: Brain },
 ];
 
 const plans = [
