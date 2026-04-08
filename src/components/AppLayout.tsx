@@ -144,6 +144,14 @@ const AppLayout = () => {
           {/* Secondary */}
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Conta</p>
           {secondaryNavItems.map(renderNavLink)}
+
+          {/* Admin - only for admin users */}
+          {isAdmin && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Admin</p>
+              {renderNavLink({ to: "/admin", icon: Shield, label: "Administração" })}
+            </>
+          )}
         </nav>
 
         {/* User Card */}
