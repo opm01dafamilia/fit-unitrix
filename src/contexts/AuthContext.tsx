@@ -78,13 +78,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchSubscriptionStatus = async (userId: string) => {
     const { data } = await supabase
       .from("user_subscriptions")
-      .select("status")
+      .select("status, expires_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
     if (data?.status) {
-      const status = data.status as SubscriptionStatus;
+      let status = data.status as SubscriptionStatus;
+      // Auto-expire trial if past expiration date
+      if (status === "trial" && data.expires_at && new Date(data.expires_at) < new Date()) {
+        status = "expired";
+      }
       setSubscriptionStatus(status);
       localStorage.setItem("fitpulse_sub_status", status);
     }
