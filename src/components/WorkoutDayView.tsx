@@ -274,13 +274,13 @@ const WorkoutDayView = ({
           className="h-14 text-base font-bold rounded-2xl border-0 shadow-lg active:scale-[0.97] transition-all"
           style={{
             background: canStart && !isCompleted
-              ? 'linear-gradient(135deg, hsl(152 69% 46%), hsl(152 69% 38%))'
+              ? 'var(--gradient-primary)'
               : 'hsl(var(--muted))',
             color: canStart && !isCompleted
-              ? 'hsl(152 100% 8%)'
+              ? 'hsl(var(--primary-foreground))'
               : 'hsl(var(--muted-foreground))',
             boxShadow: canStart && !isCompleted
-              ? '0 8px 32px -8px hsl(152 69% 46% / 0.35)'
+              ? 'var(--shadow-glow)'
               : 'none',
           }}
         >

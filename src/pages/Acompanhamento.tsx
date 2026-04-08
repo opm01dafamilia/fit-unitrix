@@ -228,15 +228,15 @@ const Acompanhamento = () => {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(152 69% 46%)" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="hsl(152 69% 46%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(225 12% 14%)" vertical={false} />
               <XAxis dataKey="data" stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(220 10% 40%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="peso" stroke="hsl(152 69% 46%)" fill="url(#weightAreaGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(152 69% 46%)', r: 3, strokeWidth: 0 }} />
+              <Area type="monotone" dataKey="peso" stroke="hsl(var(--primary))" fill="url(#weightAreaGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(var(--primary))', r: 3, strokeWidth: 0 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
