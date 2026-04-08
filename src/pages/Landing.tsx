@@ -190,43 +190,71 @@ const Landing = () => {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-4">Escolha seu plano</h2>
           <p className="text-muted-foreground text-center mb-12">Comece sua transformação hoje</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative p-6 rounded-2xl border ${
-                  plan.popular
-                    ? "border-primary/40 bg-primary/5 shadow-[0_0_30px_-8px_hsl(var(--primary)/0.2)]"
-                    : "border-border/50 bg-card"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                    Mais popular
-                  </div>
-                )}
-                <h3 className="text-lg font-bold mb-2">{plan.name}</h3>
-                <p className="text-2xl font-display font-bold text-primary mb-1">{plan.highlight}</p>
-                <p className="text-sm text-muted-foreground mb-1">{plan.price}</p>
-                {plan.after && <p className="text-xs text-muted-foreground mb-4">{plan.after}</p>}
-                {!plan.after && <div className="mb-4" />}
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm">
-                      <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                        <ChevronRight className="w-3 h-3 text-primary" />
-                      </div>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a href={plan.link} target="_blank" rel="noopener noreferrer" className="block">
-                  <Button className="w-full rounded-xl" variant={plan.popular ? "default" : "secondary"}>
-                    Assinar agora
-                  </Button>
-                </a>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto items-stretch">
+            {/* Plano Mensal */}
+            <div className="relative p-7 rounded-3xl border border-border/50 bg-card flex flex-col">
+              <h3 className="text-lg font-bold mb-4">{plans[0].name}</h3>
+              <div className="mb-6">
+                <p className="text-3xl font-display font-extrabold text-primary leading-tight">{plans[0].highlight}</p>
+                <p className="text-sm text-muted-foreground mt-1.5">{plans[0].price}</p>
               </div>
-            ))}
+              <ul className="space-y-3 mb-8 flex-1">
+                {plans[0].features.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                      <ChevronRight className="w-3 h-3 text-primary" />
+                    </div>
+                    <span className="text-foreground/90">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href={plans[0].link} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full rounded-2xl h-14 text-base font-bold gap-2 shadow-md hover:shadow-lg transition-shadow" variant="secondary">
+                  Começar por R$&nbsp;9,90
+                </Button>
+              </a>
+              <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-muted-foreground">
+                <span>⚡ Acesso imediato</span>
+                <span>•</span>
+                <span>Cancele quando quiser</span>
+              </div>
+            </div>
+
+            {/* Plano Anual */}
+            <div className="relative p-7 rounded-3xl border-2 border-primary/40 bg-primary/[0.04] shadow-[0_0_40px_-8px_hsl(var(--primary)/0.25)] flex flex-col">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.4)]">
+                <Star className="w-3 h-3 fill-current" /> Mais popular
+              </div>
+              <h3 className="text-lg font-bold mb-4 mt-2">{plans[1].name}</h3>
+              <div className="mb-2">
+                <p className="text-3xl font-display font-extrabold text-primary leading-tight">{plans[1].highlight}</p>
+                <p className="text-sm text-muted-foreground mt-1.5">{plans[1].price}</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">{plans[1].after}</p>
+              </div>
+              <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-semibold px-3 py-1.5 rounded-full mb-6 w-fit">
+                <Zap className="w-3 h-3" /> Economia de até 40%
+              </div>
+              <ul className="space-y-3 mb-8 flex-1">
+                {plans[1].features.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                      <ChevronRight className="w-3 h-3 text-primary" />
+                    </div>
+                    <span className="text-foreground/90">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <a href={plans[1].link} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full rounded-2xl h-14 text-base font-bold gap-2 shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.4)] hover:shadow-[0_6px_28px_-4px_hsl(var(--primary)/0.5)] transition-shadow">
+                  Quero o melhor custo-benefício
+                </Button>
+              </a>
+              <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-muted-foreground">
+                <span>⚡ Acesso imediato</span>
+                <span>•</span>
+                <span>Suporte premium</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
