@@ -68,6 +68,7 @@ const defaultExercise = (): ManualExercise => ({
 const Personal = () => {
   const { user } = useAuth();
   const { isPersonal, loading: roleLoading } = useUserRole();
+  const { isPersonalEnabled, loading: settingsLoading } = useAppSettings();
 
   const [view, setView] = useState<View>("list");
   const [students, setStudents] = useState<Student[]>([]);
