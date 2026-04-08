@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import FitPulseLogo from "@/components/FitPulseLogo";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +13,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -25,6 +27,7 @@ const Login = () => {
     setLoading(false);
 
     if (error) {
+      setPassword("");
       toast({
         title: "Erro ao entrar",
         description: error.message === "Invalid login credentials"
@@ -34,7 +37,15 @@ const Login = () => {
       });
       return;
     }
-    navigate("/", { replace: true });
+
+    if (!rememberMe) {
+      // Session will still persist via Supabase default, but we flag it
+      localStorage.setItem("fitpulse_no_persist", "1");
+    } else {
+      localStorage.removeItem("fitpulse_no_persist");
+    }
+
+    navigate("/app", { replace: true });
   };
 
   return (
@@ -74,14 +85,24 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="remember"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer">
+                Manter conectado
+              </Label>
+            </div>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
               Esqueceu a senha?
             </Link>
