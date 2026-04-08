@@ -807,15 +807,15 @@ const Dashboard = () => {
             <AreaChart data={weightChartData}>
               <defs>
                 <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(265 85% 62%)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="hsl(265 85% 62%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor={`hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={`hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(260 12% 15%)" vertical={false} />
               <XAxis dataKey="semana" stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
               <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="hsl(240 8% 42%)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Area type="monotone" dataKey="peso" stroke="hsl(265 85% 62%)" fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: 'hsl(265 85% 62%)', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(260 14% 9%)' }} />
+              <Area type="monotone" dataKey="peso" stroke={`hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`} fill="url(#weightGrad)" strokeWidth={2.5} dot={{ fill: `hsl(${getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()})`, r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: 'hsl(260 14% 9%)' }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -944,7 +944,7 @@ const Dashboard = () => {
       {!hasData && !showChecklist && (
         <div className="empty-state">
           <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-               style={{ background: 'linear-gradient(135deg, hsl(265 85% 62% / 0.15), hsl(217 90% 58% / 0.08))' }}>
+               style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.08))' }}>
             <Flame className="w-7 h-7 text-primary" />
           </div>
           <h3 className="font-display font-semibold text-lg mb-2">Comece sua jornada!</h3>

@@ -95,7 +95,7 @@ const ProfilePhotoUpload = ({ currentUrl, onUploaded, size = "lg" }: ProfilePhot
           style={{
             background: displayUrl
               ? `url(${displayUrl}) center/cover no-repeat`
-              : "linear-gradient(135deg, hsl(265 85% 62% / 0.15), hsl(217 90% 58% / 0.1))",
+              : "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.1))",
           }}
           onClick={() => inputRef.current?.click()}
         >

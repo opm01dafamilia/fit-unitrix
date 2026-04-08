@@ -381,7 +381,7 @@ const Comunidade = () => {
       <button
         onClick={() => setShowCreatePost(true)}
         className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-30 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-        style={{ background: 'linear-gradient(135deg, hsl(265 85% 62%), hsl(217 90% 58%))' }}
+        style={{ background: 'var(--gradient-primary)' }}
       >
         <Plus className="w-6 h-6 text-primary-foreground" />
       </button>
