@@ -1299,9 +1299,9 @@ const Treino = () => {
                       setStretchingGroup(nextWorkout.grupo || "pernas");
                       setView("stretching");
                     }}
-                    className="mt-3 w-full flex items-center gap-3 p-3.5 rounded-2xl border border-green-500/20 bg-gradient-to-r from-green-500/5 to-emerald-500/5 hover:from-green-500/10 hover:to-emerald-500/10 transition-all active:scale-[0.98]"
+                    className="mt-3 w-full flex items-center gap-3 p-3.5 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/5 hover:from-primary/10 hover:to-primary/10 transition-all active:scale-[0.98]"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-lg">🧘</span>
                     </div>
                     <div className="flex-1 text-left">
@@ -1373,7 +1373,7 @@ const Treino = () => {
                 }`}
                 style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }}
               >
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-chart-2/15 to-emerald-500/10 flex items-center justify-center mb-3 border border-chart-2/10">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-chart-2/15 to-chart-2/10 flex items-center justify-center mb-3 border border-chart-2/10">
                   <Activity className="w-5 h-5 text-chart-2" />
                 </div>
                 <p className="text-sm font-display font-bold text-foreground">Adaptação</p>

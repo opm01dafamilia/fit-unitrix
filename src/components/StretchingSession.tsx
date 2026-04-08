@@ -257,7 +257,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
       {/* Exercise list */}
       <div className="glass-card p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-          <Timer className="w-3.5 h-3.5 text-green-500" /> Sequência
+          <Timer className="w-3.5 h-3.5 text-primary" /> Sequência
         </h3>
         <div className="space-y-2">
           {stretches.map((s, i) => (
@@ -266,7 +266,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
               onClick={() => { pause(); setCurrentIdx(i); }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
                 i === currentIdx
-                  ? "bg-green-500/10 border border-green-500/20 shadow-[0_0_12px_hsl(152_69%_46%/0.1)]"
+                  ? "bg-primary/10 border border-primary/20 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
                   : completed.has(i)
                   ? "bg-secondary/30 opacity-60"
                   : "bg-secondary/40 hover:bg-secondary/60"
@@ -274,9 +274,9 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
             >
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                 completed.has(i)
-                  ? "bg-green-500 text-white"
+                  ? "bg-primary text-primary-foreground"
                   : i === currentIdx
-                  ? "bg-green-500/15 text-green-500"
+                  ? "bg-primary/15 text-primary"
                   : "bg-muted text-muted-foreground"
               }`}>
                 {completed.has(i) ? <Check className="w-4 h-4" /> : <span className="text-sm">{stretchIllustrations[s.nome] || "🧘"}</span>}
