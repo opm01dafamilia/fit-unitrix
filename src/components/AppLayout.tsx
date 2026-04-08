@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Dumbbell, UtensilsCrossed, 
   Menu, Flame, LogOut, User, X, 
   History, Settings, UserCheck, Trophy, Crown, Users, Target, Medal,
-  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList, Info
+  BarChart3, Crosshair, TrendingUp, Apple, Gift, BookOpen, Activity, Gauge, ClipboardList, Info, CreditCard
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
@@ -21,24 +21,25 @@ const iconMap: Record<string, any> = {
 };
 
 const coreNavItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/treino", icon: Dumbbell, label: "Plano Ativo" },
-  { to: "/analise", icon: BarChart3, label: "Análise" },
-  { to: "/metas", icon: Crosshair, label: "Metas" },
-  { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
-  { to: "/acompanhamento", icon: TrendingUp, label: "Corpo" },
-  { to: "/evolucao", icon: TrendingUp, label: "Evolução Treino" },
-  { to: "/evolucao-alimentar", icon: Apple, label: "Evolução Dieta" },
-  { to: "/convites", icon: Gift, label: "Convites" },
-  { to: "/historico", icon: History, label: "Histórico" },
-  { to: "/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
-  { to: "/score-fitness", icon: Gauge, label: "Score Fitness" },
+  { to: "/app", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app/treino", icon: Dumbbell, label: "Plano Ativo" },
+  { to: "/app/analise", icon: BarChart3, label: "Análise" },
+  { to: "/app/metas", icon: Crosshair, label: "Metas" },
+  { to: "/app/dieta", icon: UtensilsCrossed, label: "Dieta" },
+  { to: "/app/acompanhamento", icon: TrendingUp, label: "Corpo" },
+  { to: "/app/evolucao", icon: TrendingUp, label: "Evolução Treino" },
+  { to: "/app/evolucao-alimentar", icon: Apple, label: "Evolução Dieta" },
+  { to: "/app/convites", icon: Gift, label: "Convites" },
+  { to: "/app/historico", icon: History, label: "Histórico" },
+  { to: "/app/perfil-fitness", icon: UserCheck, label: "Perfil Fitness" },
+  { to: "/app/score-fitness", icon: Gauge, label: "Score Fitness" },
 ];
 
 const secondaryNavItems = [
-  { to: "/perfil", icon: User, label: "Perfil" },
-  { to: "/configuracoes", icon: Settings, label: "Configurações" },
-  { to: "/sobre", icon: Info, label: "Sobre o Fit-Pulse" },
+  { to: "/app/planos", icon: CreditCard, label: "Meu Plano" },
+  { to: "/app/perfil", icon: User, label: "Perfil" },
+  { to: "/app/configuracoes", icon: Settings, label: "Configurações" },
+  { to: "/app/sobre", icon: Info, label: "Sobre o Fit-Pulse" },
 ];
 
 const AppLayout = () => {
@@ -69,7 +70,7 @@ const AppLayout = () => {
 
   const pinnedNavItems = MODULAR_ROUTES
     .filter(r => pinnedItems.includes(r.to))
-    .map(r => ({ to: r.to, icon: iconMap[r.icon] || Target, label: r.label }));
+    .map(r => ({ to: `/app${r.to}`, icon: iconMap[r.icon] || Target, label: r.label }));
 
   const objectiveLabel = profile?.objective === "emagrecer" ? "Emagrecimento" : 
     profile?.objective === "massa" ? "Ganho de Massa" : 
@@ -80,7 +81,7 @@ const AppLayout = () => {
     <NavLink
       key={item.to}
       to={item.to}
-      end={item.to === "/"}
+      end={item.to === "/app"}
       onClick={() => setSidebarOpen(false)}
       className={({ isActive }) =>
         `flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 touch-feedback min-h-[44px]
@@ -128,9 +129,9 @@ const AppLayout = () => {
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mb-3">Menu Principal</p>
           {coreNavItems.map(renderNavLink)}
 
-          {/* Personal Mode — visible for all during testing */}
+          {/* Personal Mode */}
           <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground px-3 mt-5 mb-3">Personal</p>
-          {renderNavLink({ to: "/personal", icon: ClipboardList, label: "Personal" })}
+          {renderNavLink({ to: "/app/personal", icon: ClipboardList, label: "Personal" })}
 
           {/* Pinned Modular Items */}
           {pinnedNavItems.length > 0 && (
@@ -194,20 +195,20 @@ const AppLayout = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav — premium feel with safe area */}
+      {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-2xl border-t border-border/30 lg:hidden safe-area-bottom-nav keyboard-hide">
         <div className="flex items-center justify-around px-2 pt-1.5 pb-1">
           {[
-            { to: "/", icon: LayoutDashboard, label: "Home" },
-            { to: "/treino", icon: Dumbbell, label: "Treino" },
-            { to: "/dieta", icon: UtensilsCrossed, label: "Dieta" },
-            { to: "/historico", icon: History, label: "Histórico" },
-            { to: "/perfil-fitness", icon: UserCheck, label: "Perfil" },
+            { to: "/app", icon: LayoutDashboard, label: "Home" },
+            { to: "/app/treino", icon: Dumbbell, label: "Treino" },
+            { to: "/app/dieta", icon: UtensilsCrossed, label: "Dieta" },
+            { to: "/app/historico", icon: History, label: "Histórico" },
+            { to: "/app/perfil-fitness", icon: UserCheck, label: "Perfil" },
           ].map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === "/"}
+              end={item.to === "/app"}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-3 py-2 rounded-2xl text-[10px] font-medium transition-all duration-200 touch-feedback
                 ${isActive 

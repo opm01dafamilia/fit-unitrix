@@ -1,7 +1,6 @@
-import { AlertTriangle, ExternalLink } from "lucide-react";
-import { SubscriptionStatus } from "@/hooks/useSSOAuth";
-
-import { ECOSYSTEM_URL } from "@/lib/env";
+import { AlertTriangle } from "lucide-react";
+import { SubscriptionStatus } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 interface BillingBannerProps {
   status: SubscriptionStatus;
@@ -43,14 +42,12 @@ const BillingBanner = ({ status }: BillingBannerProps) => {
             {c.icon} {c.message}
           </p>
         </div>
-        <a
-          href={`${ECOSYSTEM_URL}/billing`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          to="/app/planos"
           className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
         >
-          Regularizar <ExternalLink className="w-3 h-3" />
-        </a>
+          Regularizar
+        </Link>
       </div>
     </div>
   );
