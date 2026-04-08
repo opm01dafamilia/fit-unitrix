@@ -7,6 +7,14 @@ export const THEME_COLORS: { id: ThemeColor; label: string; preview: string; hsl
   { id: "gray",   label: "Cinza", preview: "#94A3B8", hsl: "215 16% 62%", hslLight: "215 16% 55%" },
 ];
 
+// Secondary accent per theme (used for gradients to avoid mixing colors)
+const SECONDARY_HSL: Record<ThemeColor, string> = {
+  purple: "217 90% 58%",
+  green: "160 60% 38%",
+  red: "0 65% 42%",
+  gray: "220 14% 50%",
+};
+
 const STORAGE_KEY = "fitpulse_theme_color";
 
 export const getSavedThemeColor = (): ThemeColor => {
@@ -25,23 +33,27 @@ export const applyThemeColor = (color: ThemeColor) => {
   const root = document.documentElement;
   const isLight = root.classList.contains("light") || root.getAttribute("data-theme") === "light";
   const hsl = isLight ? theme.hslLight : theme.hsl;
+  const secondary = SECONDARY_HSL[color];
 
+  // Core color tokens
   root.style.setProperty("--primary", hsl);
   root.style.setProperty("--ring", hsl);
   root.style.setProperty("--sidebar-primary", hsl);
   root.style.setProperty("--sidebar-ring", hsl);
   root.style.setProperty("--chart-1", hsl);
 
-  // Update gradient-primary for dark mode
+  // Gradient & glow tokens
+  root.style.setProperty("--gradient-primary", `linear-gradient(135deg, hsl(${hsl}), hsl(${secondary}))`);
+  root.style.setProperty("--shadow-glow", `0 0 40px -8px hsl(${hsl} / 0.2)`);
+
+  // Body background radial uses a desaturated version of the primary
   if (!isLight) {
-    root.style.setProperty("--gradient-primary", `linear-gradient(135deg, hsl(${hsl}), hsl(217 90% 58%))`);
-    root.style.setProperty("--shadow-glow", `0 0 40px -8px hsl(${hsl} / 0.2)`);
+    const hue = hsl.split(" ")[0];
+    root.style.setProperty("--gradient-body-bg", `radial-gradient(ellipse at 50% 0%, hsl(${hue} 22% 15%) 0%, hsl(228 18% 9%) 60%)`);
   }
 };
 
 export const initThemeColor = () => {
   const color = getSavedThemeColor();
-  if (color !== "purple") {
-    applyThemeColor(color);
-  }
+  applyThemeColor(color);
 };
