@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import type { SubscriptionStatus } from "@/hooks/useSSOAuth";
+import type { SubscriptionStatus } from "@/contexts/AuthContext";
 
 /**
  * Centralised subscription access control.

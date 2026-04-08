@@ -1,4 +1,4 @@
-import { ExternalLink, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +10,7 @@ import {
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { toast } from "@/components/ui/sonner";
 import { useState, useCallback } from "react";
-
-import { ECOSYSTEM_URL } from "@/lib/env";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Hook that returns a guard function.
@@ -50,14 +49,8 @@ export const useSubscriptionGuard = () => {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-4">
-          <Button asChild className="w-full">
-            <a
-              href={`${ECOSYSTEM_URL}/billing`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Regularizar assinatura <ExternalLink className="w-4 h-4 ml-1.5" />
-            </a>
+          <Button className="w-full" onClick={() => { setOpen(false); window.location.href = "/app/planos"; }}>
+            Ver planos
           </Button>
           <Button variant="ghost" onClick={() => setOpen(false)} className="w-full">
             Voltar
@@ -76,8 +69,8 @@ export const useSubscriptionGuard = () => {
 export const toastSubscriptionBlocked = () => {
   toast.error("Recurso bloqueado — regularize sua assinatura para continuar.", {
     action: {
-      label: "Regularizar",
-      onClick: () => window.open(`${ECOSYSTEM_URL}/billing`, "_blank"),
+      label: "Ver planos",
+      onClick: () => window.location.href = "/app/planos",
     },
   });
 };
