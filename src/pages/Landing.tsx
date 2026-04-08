@@ -54,9 +54,9 @@ const Landing = () => {
             <Star className="w-3.5 h-3.5" /> Treine como um profissional
           </div>
           <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-4">
-            Seu treino e dieta ajustados{" "}
+            Seu treino e dieta{" "}
             <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
-              automaticamente por inteligência artificial
+              personalizados por IA
             </span>
           </h1>
           <p className="text-base md:text-lg font-medium text-muted-foreground mb-3">
