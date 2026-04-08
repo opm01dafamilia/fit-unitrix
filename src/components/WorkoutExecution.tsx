@@ -999,10 +999,10 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           </div>
         </div>
         <div className="glass-card p-6 flex flex-col items-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5 opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 opacity-50" />
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-500/5 flex items-center justify-center mb-3 shadow-lg">
-              <Heart className="w-9 h-9 text-green-500" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-3 shadow-lg">
+              <Heart className="w-9 h-9 text-primary" />
             </div>
             <h2 className="font-display font-bold text-lg text-center">Alongamento Recomendado</h2>
             <p className="text-xs text-muted-foreground text-center mt-1">3–5 minutos para preparar seus músculos</p>
@@ -1013,7 +1013,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           <div className="space-y-2.5">
             {stretching.map((s, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-secondary/40">
-                <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm">🧘</span></div>
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm">🧘</span></div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{s.nome}</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{s.desc}</p>
@@ -1235,7 +1235,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
                 grupoLabel: day.grupo, musculos: [day.grupo], musculosDestacados: activeMusclesToShow,
                 instrucoes: [], dicas: [], equipamento: "Variado", dificuldade: "intermediário",
                 tipo: "composto", tipoExercicio: "musculação", alternativas: [],
-                animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(152 69% 46%)" },
+                animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(var(--primary))" },
               }} 
               size="lg" className="mb-3" 
             />
@@ -1519,7 +1519,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
           <div className="flex flex-col items-center">
             <div className={`w-14 h-14 rounded-full border-[3px] flex items-center justify-center mb-1 transition-all ${
-              currentSets.length >= targetSeries ? "border-green-500/50 bg-green-500/10 shadow-[0_0_12px_hsl(152_69%_46%/0.3)]" : "border-muted-foreground/20"
+              currentSets.length >= targetSeries ? "border-primary/50 bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]" : "border-muted-foreground/20"
             }`}>
               <span className="font-display font-bold text-sm">{currentSets.length}/{targetSeries}</span>
             </div>

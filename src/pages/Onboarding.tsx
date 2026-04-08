@@ -74,7 +74,7 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03] pointer-events-none"
-           style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
+           style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 70%)' }} />
       
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">

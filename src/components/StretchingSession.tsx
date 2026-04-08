@@ -164,8 +164,8 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
               key={i}
               onClick={() => { pause(); setCurrentIdx(i); }}
               className={`w-2.5 h-2.5 rounded-full transition-all ${
-                i === currentIdx ? "bg-green-500 scale-125 shadow-[0_0_6px_hsl(152_69%_46%/0.5)]" :
-                completed.has(i) ? "bg-green-500/50" : "bg-muted-foreground/20"
+                i === currentIdx ? "bg-primary scale-125 shadow-[0_0_6px_hsl(var(--primary)/0.5)]" :
+                completed.has(i) ? "bg-primary/50" : "bg-muted-foreground/20"
               }`}
             />
           ))}
@@ -174,14 +174,14 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
 
       {/* Illustration card */}
       <div className="glass-card p-6 flex flex-col items-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/5 opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 opacity-50" />
         <div className="relative z-10 flex flex-col items-center w-full">
-          <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-green-500/15 to-emerald-500/10 flex items-center justify-center mb-4 shadow-xl border border-green-500/15">
+          <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-primary/15 to-primary/10 flex items-center justify-center mb-4 shadow-xl border border-primary/15">
             <span className="text-6xl">{emoji}</span>
           </div>
           <h2 className="font-display font-bold text-lg text-center">{current.nome}</h2>
           <p className="text-sm text-muted-foreground text-center mt-1.5 max-w-xs leading-relaxed">{current.desc}</p>
-          <span className="mt-2 text-[10px] font-semibold px-3 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/15">
+          <span className="mt-2 text-[10px] font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/15">
             {current.duracao}
           </span>
         </div>
@@ -194,7 +194,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
             <circle cx="64" cy="64" r="56" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" />
             <circle
               cx="64" cy="64" r="56" fill="none"
-              stroke={isDone ? "hsl(152 69% 46%)" : "hsl(var(--primary))"}
+              stroke={isDone ? "hsl(var(--primary))" : "hsl(var(--primary))"}
               strokeWidth="6" strokeLinecap="round"
               strokeDasharray={`${2 * Math.PI * 56}`}
               strokeDashoffset={`${2 * Math.PI * 56 * (1 - progress / 100)}`}
@@ -202,7 +202,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`font-display font-bold text-2xl tabular-nums ${isDone ? "text-green-500" : "text-foreground"}`}>
+            <span className={`font-display font-bold text-2xl tabular-nums ${isDone ? "text-primary" : "text-foreground"}`}>
               {formatTime(seconds)}
             </span>
             <span className="text-[10px] text-muted-foreground">/ {formatTime(targetSeconds)}</span>
@@ -257,7 +257,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
       {/* Exercise list */}
       <div className="glass-card p-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
-          <Timer className="w-3.5 h-3.5 text-green-500" /> Sequência
+          <Timer className="w-3.5 h-3.5 text-primary" /> Sequência
         </h3>
         <div className="space-y-2">
           {stretches.map((s, i) => (
@@ -266,7 +266,7 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
               onClick={() => { pause(); setCurrentIdx(i); }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
                 i === currentIdx
-                  ? "bg-green-500/10 border border-green-500/20 shadow-[0_0_12px_hsl(152_69%_46%/0.1)]"
+                  ? "bg-primary/10 border border-primary/20 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
                   : completed.has(i)
                   ? "bg-secondary/30 opacity-60"
                   : "bg-secondary/40 hover:bg-secondary/60"
@@ -274,9 +274,9 @@ export default function StretchingSession({ muscleGroup, onBack, onFinish }: Pro
             >
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                 completed.has(i)
-                  ? "bg-green-500 text-white"
+                  ? "bg-primary text-primary-foreground"
                   : i === currentIdx
-                  ? "bg-green-500/15 text-green-500"
+                  ? "bg-primary/15 text-primary"
                   : "bg-muted text-muted-foreground"
               }`}>
                 {completed.has(i) ? <Check className="w-4 h-4" /> : <span className="text-sm">{stretchIllustrations[s.nome] || "🧘"}</span>}

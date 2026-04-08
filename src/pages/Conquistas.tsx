@@ -392,7 +392,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <div className={`glass-card p-4 transition-all ${
       achievement.unlocked
-        ? "border border-primary/20 shadow-[0_0_20px_-8px_hsl(152_69%_46%_/_0.15)]"
+        ? "border border-primary/20 shadow-[0_0_20px_-8px_hsl(var(--primary)_/_0.15)]"
         : "opacity-60"
     }`}>
       <div className="flex items-start gap-3">
