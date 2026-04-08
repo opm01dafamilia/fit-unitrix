@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
         const statusMap: Record<string, string> = {
           paid: "active",
           approved: "active",
-          refunded: "canceled",
-          chargedback: "canceled",
+          refunded: "refunded",
+          chargedback: "chargedback",
           waiting_payment: "pending",
           overdue: "pending",
           canceled: "canceled",
