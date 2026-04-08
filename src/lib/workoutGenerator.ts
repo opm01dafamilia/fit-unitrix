@@ -565,9 +565,16 @@ function getMaxExercisesForGroup(
   group: string,
   allGroupsInDay: string[],
   intensity: DayIntensity,
-  level: Level
+  level: Level,
+  workoutTime: string
 ): number {
   if (intensity === "leve") return 1;
+
+let timeFactor = 1;
+
+if (workoutTime === "30") timeFactor = 0.7;
+if (workoutTime === "45") timeFactor = 1;
+if (workoutTime === "60") timeFactor = 1.3;
 
   const isPrimary = PRIMARY_MUSCLE_GROUPS.has(group);
 
@@ -584,45 +591,82 @@ function getMaxExercisesForGroup(
     const primaryGroups = allGroupsInDay.filter(g => PRIMARY_MUSCLE_GROUPS.has(g));
 
     if (group === "peito" || group === "costas") {
-      // Main focus: 3-5 based on level
-      if (primaryGroups.length <= 1) return level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
-      return level === "iniciante" ? 3 : 4;
-    }
+  // Main focus: 3–5 based on level
 
-    if (group === "quadriceps" || group === "posterior") {
-      if (primaryGroups.length <= 1) return level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
-      // Paired with another primary (e.g. posterior+gluteos)
-      const idx = primaryGroups.indexOf(group);
-      return idx === 0 ? (level === "iniciante" ? 3 : 4) : (level === "iniciante" ? 2 : 3);
-    }
+  if (primaryGroups.length <= 1) {
+    const base = level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
+    return Math.round(base * timeFactor);
+  }
 
+  const base = level === "iniciante" ? 3 : 4;
+  return Math.round(base * timeFactor);
+}
+
+  if (group === "quadriceps" || group === "posterior") {
+   if (primaryGroups.length <= 1) {
+    const base = level === "iniciante" ? 3 : level === "intermediario" ? 4 : 5;
+    return Math.round(base * timeFactor);
+  }
+
+  // Paired with another primary (e.g. posterior+gluteos)
+  const idx = primaryGroups.indexOf(group);
+  const base = idx === 0
+    ? (level === "iniciante" ? 3 : 4)
+    : (level === "iniciante" ? 2 : 3);
+
+  return Math.round(base * timeFactor);
+}
+  
     if (group === "gluteos") {
-      // Solo glute day: 3-4; paired: 2-3
-      const otherPrimary = primaryGroups.filter(g => g !== "gluteos");
-      if (otherPrimary.length === 0) return level === "iniciante" ? 3 : 4;
-      return level === "iniciante" ? 2 : 3;
+  // Solo glute day: 3–4; paired: 2–3
+  const otherPrimary = primaryGroups.filter(g => g !== "gluteos");
+
+  if (otherPrimary.length === 0) {
+    const base = level === "iniciante" ? 3 : 4;
+    return Math.round(base * timeFactor);
+  }
+
+     const base = level === "iniciante" ? 2 : 3;
+     return Math.round(base * timeFactor);
     }
 
     if (group === "ombros") {
-      const otherPrimary = primaryGroups.filter(g => g !== "ombros");
-      if (otherPrimary.length === 0) return level === "iniciante" ? 3 : 4;
-      return level === "iniciante" ? 2 : 3;
-    }
+  const otherPrimary = primaryGroups.filter(g => g !== "ombros");
+
+  if (otherPrimary.length === 0) {
+    const base = level === "iniciante" ? 3 : 4;
+    return Math.round(base * timeFactor);
+  }
+
+    const base = level === "iniciante" ? 2 : 3;
+    return Math.round(base * timeFactor);
+   }
 
     if (group === "pernas") {
-      return level === "iniciante" ? 3 : 4;
+      const base = level === "iniciante" ? 3 : 4;
+      return Math.round(base * timeFactor);
     }
 
-    return 3;
+   return Math.round(3 * timeFactor);
   }
 
   // Secondary/auxiliary groups
-  if (group === "panturrilha") return level === "iniciante" ? 2 : 3;
-  if (group === "biceps" || group === "triceps") return level === "iniciante" ? 2 : 3;
-  if (group === "abdomen") return level === "iniciante" ? 1 : 2;
+  if (group === "panturrilha") {
+  const base = level === "iniciante" ? 2 : 3;
+  return Math.round(base * timeFactor);
+}
 
-  // HIIT, cardio, mobility
-  return 2;
+if (group === "biceps" || group === "triceps") {
+  const base = level === "iniciante" ? 2 : 3;
+  return Math.round(base * timeFactor);
+}
+  if (group === "abdomen") {
+  const base = level === "iniciante" ? 1 : 2;
+  return Math.round(base * timeFactor);
+}
+
+// HIIT, cardio, mobility
+return Math.round(2 * timeFactor);
 }
 
 export type CardioFrequency = "0" | "1-2" | "3-4" | "daily";
@@ -980,6 +1024,8 @@ export function generateWorkoutPlan(
   cardioFreq: CardioFrequency = "0",
   intensityLevel: IntensityLevel = "intenso",
   preferences?: ExercisePreferences,
+  hasPain?: boolean,
+  painNotes: string,
   gender?: UserGender
 ): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
@@ -1008,16 +1054,81 @@ export function generateWorkoutPlan(
       const exercicios: Exercise[] = [];
       const volumeMultiplier = entry.intensity === "leve" ? 0.5 : entry.intensity === "moderado" ? 0.75 : 1;
 
-      entry.groups.forEach(group => {
-        const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-        const maxPerGroup = getMaxExercisesForGroup(group, entry.groups, entry.intensity, level);
-        const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
-        selected.forEach(ex => {
-          const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
-          const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, entry.intensity);
-          exercicios.push(adjusted);
-        });
-      });
+      const primaryGroup = entry.groups[0];
+
+entry.groups.forEach(group => {
+  if (group !== primaryGroup && entry.groups.length > 1) {
+    const allowedCombos: Record<string, string[]> = {
+      peito: ["triceps", "ombros"],
+      costas: ["biceps"],
+      quadriceps: ["panturrilha", "posterior"],
+      posterior: ["gluteos"],
+      ombros: ["triceps"],
+      abdomen: [],
+      hiit: [],
+    };
+
+    if (!allowedCombos[primaryGroup] || !allowedCombos[primaryGroup].includes(group)) {
+      return;
+    }
+  }
+
+  const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
+
+const homeExerciseKeywords = [
+  "flexão",
+  "prancha",
+  "polichinelo",
+  "burpee",
+  "abdominal solo",
+  "corrida estacionária"
+];
+
+const safePool = pool.filter((ex) => {
+  const name = ex.name.toLowerCase();
+
+  const isHomeExercise = homeExerciseKeywords.some((keyword) =>
+    name.includes(keyword)
+  );
+
+  if (isHomeExercise) {
+    return false;
+  }
+
+  if (hasPain && painNotes) {
+    const notes = painNotes.toLowerCase();
+
+    if (notes.includes("joelho")) {
+      return !name.includes("agachamento") && !name.includes("leg press");
+    }
+
+    if (notes.includes("ombro")) {
+      return !name.includes("supino") && !name.includes("desenvolvimento") && !name.includes("flexão");
+    }
+
+    if (notes.includes("coluna")) {
+      return !name.includes("stiff") && !name.includes("levantamento");
+    }
+  }
+
+  return true;
+});
+
+const maxPerGroup = getMaxExercisesForGroup(
+  group,
+  entry.groups,
+  entry.intensity,
+  level,
+  workoutTime
+);
+const selected = selectExercises(safePool, i, maxPerGroup, prevDayExercises, preferredNames);
+
+  selected.forEach(ex => {
+    const adjustedSeries = Math.max(1, Math.round(Number(ex.series) * config.seriesMultiplier * volumeMultiplier));
+    const adjusted = adjustRestForIntensity({ ...ex, series: String(adjustedSeries) }, entry.intensity);
+    exercicios.push(adjusted);
+  });
+});
 
       prevDayExercises.clear();
       exercicios.forEach(ex => prevDayExercises.add(ex.nome));

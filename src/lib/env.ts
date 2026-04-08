@@ -12,7 +12,7 @@
 
 /** Base URL of the ecosystem / Platform Hub */
 export const ECOSYSTEM_URL: string =
-  import.meta.env.VITE_ECOSYSTEM_URL || "https://eco-platform-hub.lovable.app";
+  import.meta.env.VITE_ECOSYSTEM_URL || "https://eco.unitrixapp.com.br";
 
 /** App key used in SSO handshake */
 export const APP_KEY: string =

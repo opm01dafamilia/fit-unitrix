@@ -22,7 +22,6 @@ const Onboarding = () => {
     experience_level: "", training_location: "",
 training_days: "",
 intensity_preference: "",
-workout_time: "",
 has_pain: "",
 pain_notes: ""
   });
@@ -36,7 +35,7 @@ pain_notes: ""
     title: "Treino Personalizado",
     desc: "Vamos ajustar seu treino ideal",
     icon: Dumbbell,
-    fields: ["training_days", "intensity_preference", "workout_time", "has_pain", "pain_notes"]
+    fields: ["training_days", "intensity_preference", "has_pain", "pain_notes"]
   },
 ];
 
@@ -66,18 +65,12 @@ pain_notes: ""
         height: Number(data.height), weight: Number(data.weight),
         objective: data.objective, activity_level: data.activity_level,
         experience_level: data.experience_level, training_location: data.training_location,
-        training_days: data.training_days,
-        intensity_preference: data.intensity_preference,
-        workout_time: data.workout_time,
-        has_pain: data.has_pain,
-        pain_notes: data.pain_notes,
-        terms_accepted: data.terms_accepted,
         onboarding_completed: true,
       })
       .eq("user_id", user.id);
     setLoading(false);
     if (error) toast.error("Erro ao salvar perfil");
-    else { await refreshProfile(); toast.success("Perfil configurado!"); navigate("/dashboard"); }
+    else { await refreshProfile(); toast.success("Perfil configurado!"); navigate("/"); }
   };
 
   const handleNext = () => {
@@ -91,7 +84,7 @@ pain_notes: ""
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03] pointer-events-none"
-           style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 70%)' }} />
+           style={{ background: 'radial-gradient(circle, hsl(152 69% 46%), transparent 70%)' }} />
       
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">
@@ -217,120 +210,65 @@ pain_notes: ""
                   </SelectContent>
                 </Select>
                 {errors.training_location && <p className="text-[11px] text-destructive mt-1">{errors.training_location}</p>}
-              </div> 
-  <div>
-  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-    Dias de treino por semana
-  </label>
-  <Select
-    value={data.training_days}
-    onValueChange={(v) => setData({ ...data, training_days: v })}
-  >
-    <SelectTrigger className="bg-secondary/50 border-border/50">
-      <SelectValue placeholder="Selecione" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="3">3 dias</SelectItem>
-      <SelectItem value="4">4 dias</SelectItem>
-      <SelectItem value="5">5 dias</SelectItem>
-      <SelectItem value="6">6 dias</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
+              </div>
+            </div>
+          )}
+{step === 4 && (
+  <div className="space-y-4">
+    <div>
+      <label className="text-xs font-medium text-muted-foreground mb-2 block">Quantos dias você pode treinar por semana?</label>
+      <Input
+        placeholder="Ex: 3, 4, 5"
+        value={data.training_days}
+        onChange={(e) => setData({ ...data, training_days: e.target.value })}
+      />
+    </div>
 
-<div>
-  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-    Intensidade do treino
-  </label>
-  <Select
-    value={data.intensity_preference}
-    onValueChange={(v) => setData({ ...data, intensity_preference: v })}
-  >
-    <SelectTrigger className="bg-secondary/50 border-border/50">
-      <SelectValue placeholder="Selecione" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="leve">Leve</SelectItem>
-      <SelectItem value="moderado">Moderado</SelectItem>
-      <SelectItem value="intenso">Intenso</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
+    <div>
+      <label className="text-xs font-medium text-muted-foreground mb-2 block">Qual intensidade você prefere?</label>
+      <Select value={data.intensity_preference} onValueChange={(v) => setData({ ...data, intensity_preference: v })}>
+        <SelectTrigger className="bg-secondary/50 border-border/50">
+          <SelectValue placeholder="Selecione" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="leve">Leve</SelectItem>
+          <SelectItem value="moderado">Moderado</SelectItem>
+          <SelectItem value="intenso">Intenso</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
 
-<div>
-  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-    Tempo de treino
-  </label>
-  <Select
-    value={data.workout_time}
-    onValueChange={(v) => setData({ ...data, workout_time: v })}
-  >
-    <SelectTrigger className="bg-secondary/50 border-border/50">
-      <SelectValue placeholder="Selecione" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="30">30 minutos</SelectItem>
-      <SelectItem value="45">45 minutos</SelectItem>
-      <SelectItem value="60">60 minutos</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
+    <div>
+      <label className="text-xs font-medium text-muted-foreground mb-2 block">Você sente dores?</label>
+      <Select value={data.has_pain} onValueChange={(v) => setData({ ...data, has_pain: v })}>
+        <SelectTrigger className="bg-secondary/50 border-border/50">
+          <SelectValue placeholder="Selecione" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="nao">Não</SelectItem>
+          <SelectItem value="sim">Sim</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
 
-<div>
-  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-    Possui alguma dor?
-  </label>
-  <Select
-    value={data.has_pain}
-    onValueChange={(v) => setData({ ...data, has_pain: v })}
-  >
-    <SelectTrigger className="bg-secondary/50 border-border/50">
-      <SelectValue placeholder="Selecione" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="sim">Sim</SelectItem>
-      <SelectItem value="nao">Não</SelectItem>
-    </SelectContent>
-  </Select>
-</div>
-
-  <div>
-  <label className="text-xs font-medium text-muted-foreground mb-2 block">
-    Observações de dor
-  </label>
-  <Input
-    placeholder="Ex: dor no joelho, ombro..."
-    value={data.pain_notes}
-    onChange={(e) => setData({ ...data, pain_notes: e.target.value })}
-    className="bg-secondary/50 border-border/50"
-  />
-</div>
-
-<div className="mt-4 p-3 border border-border/50 rounded-lg bg-secondary/30">
-  <p className="text-[11px] text-muted-foreground leading-relaxed">
-    Este aplicativo gera treinos utilizando inteligência artificial com base nas informações fornecidas.
-    As recomendações servem apenas como orientação e não substituem a avaliação de um profissional qualificado.
-    Em caso de dores, limitações ou condições específicas, procure um médico ou instrutor.
-  </p>
-
-  <div className="flex items-center gap-2 mt-3">
-    <input
-      type="checkbox"
-      checked={data.terms_accepted}
-      onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
-    />
-    <label className="text-xs text-muted-foreground">
-      Declaro que li e estou ciente das informações acima
-    </label>
+    {data.has_pain === "sim" && (
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-2 block">Onde você sente dor?</label>
+        <Input
+          placeholder="Ex: joelho, lombar..."
+          value={data.pain_notes}
+          onChange={(e) => setData({ ...data, pain_notes: e.target.value })}
+        />
+      </div>
+    )}
   </div>
-</div>
-</div>
 )}
+
           <div className="flex gap-3 mt-6">
             {step > 0 && (
               <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1">Voltar</Button>
             )}
-            <Button onClick={handleNext} disabled={!canAdvance() || loading || (step === 3 && !data.terms_accepted)} className="flex-1">
+            <Button onClick={handleNext} disabled={!canAdvance() || loading} className="flex-1">
               {loading ? "Salvando..." : step < steps.length - 1 ? "Próximo" : "Finalizar"}
               {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
