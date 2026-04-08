@@ -1,4 +1,4 @@
-import { ExternalLink, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +10,7 @@ import {
 import { useSubscriptionAccess } from "@/hooks/useSubscriptionAccess";
 import { toast } from "@/components/ui/sonner";
 import { useState, useCallback } from "react";
-
-import { ECOSYSTEM_URL } from "@/lib/env";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Hook that returns a guard function.
