@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ECOSYSTEM_URL } from "@/lib/env";
 import FitPulseLogo from "@/components/FitPulseLogo";
 
 const InviteLanding = () => {
@@ -47,10 +46,10 @@ const InviteLanding = () => {
           <>
             <p className="text-muted-foreground text-sm mb-6">
               Você foi convidado para o FitPulse! 🎉<br />
-              Acesse pelo ecossistema para começar.
+              Continue seu acesso diretamente no FitPulse.
             </p>
-            <Button onClick={() => window.location.href = ECOSYSTEM_URL} className="w-full h-12 text-sm font-medium">
-              Acessar pelo Ecossistema
+            <Button onClick={() => navigate("/signup")} className="w-full h-12 text-sm font-medium">
+              Criar conta no FitPulse
             </Button>
           </>
         ) : (
@@ -58,8 +57,8 @@ const InviteLanding = () => {
             <p className="text-muted-foreground text-sm mb-6">
               Link de convite inválido ou expirado.
             </p>
-            <Button onClick={() => window.location.href = ECOSYSTEM_URL} variant="outline" className="w-full">
-              Ir para o Ecossistema
+            <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+              Ir para o FitPulse
             </Button>
           </>
         )}
