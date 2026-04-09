@@ -361,7 +361,7 @@ const AnaliseCorporal = () => {
             Para ativar a análise inteligente, defina uma meta de peso na página de Metas.
           </p>
           <button
-            onClick={() => navigate("/metas")}
+            onClick={() => navigate("/app/metas")}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/15 transition-colors"
           >
             Criar Meta <ArrowRight className="w-4 h-4" />
