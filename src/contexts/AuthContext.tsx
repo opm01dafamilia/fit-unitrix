@@ -137,6 +137,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setProfile(null);
     localStorage.removeItem("fitpulse_sub_status");
+    // Redireciona para o login do próprio FitPulse (nunca para ecossistema externo)
+    window.location.href = window.location.origin + "/login";
   };
 
   return (
