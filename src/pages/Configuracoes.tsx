@@ -115,7 +115,7 @@ const Configuracoes = () => {
           <h3 className="font-display font-semibold text-base">Perfil</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-4">Edite suas informações pessoais como nome, peso, altura e objetivo.</p>
-        <Button variant="outline" size="sm" onClick={() => navigate("/perfil")}>Editar Perfil</Button>
+        <Button variant="outline" size="sm" onClick={() => navigate("/app/perfil")}>Editar Perfil</Button>
       </div>
 
       {/* Honesty Mode */}

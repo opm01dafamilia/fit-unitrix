@@ -396,21 +396,21 @@ const AnaliseCorporal = () => {
 
       {/* Integration Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <button onClick={() => navigate("/dieta")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
+        <button onClick={() => navigate("/app/dieta")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
           <UtensilsCrossed className="w-5 h-5 text-chart-3 mb-3 group-hover:scale-110 transition-transform" />
           <h4 className="font-display font-semibold text-sm mb-1">Dieta</h4>
           <p className="text-[11px] text-muted-foreground">
             {weekAdherence}% aderência • {dietStreak} dias de streak
           </p>
         </button>
-        <button onClick={() => navigate("/treino")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
+        <button onClick={() => navigate("/app/treino")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
           <Dumbbell className="w-5 h-5 text-primary mb-3 group-hover:scale-110 transition-transform" />
           <h4 className="font-display font-semibold text-sm mb-1">Treino</h4>
           <p className="text-[11px] text-muted-foreground">
             {weekSessions.length} treinos • {weekSeries} séries esta semana
           </p>
         </button>
-        <button onClick={() => navigate("/metas")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
+        <button onClick={() => navigate("/app/metas")} className="glass-card p-5 text-left hover:border-primary/20 transition-all group">
           <Target className="w-5 h-5 text-chart-4 mb-3 group-hover:scale-110 transition-transform" />
           <h4 className="font-display font-semibold text-sm mb-1">Metas</h4>
           <p className="text-[11px] text-muted-foreground">

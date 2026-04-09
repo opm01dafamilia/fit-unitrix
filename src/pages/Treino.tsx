@@ -785,7 +785,7 @@ const Treino = () => {
               <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
               <div>
                 <p className="text-xs font-medium text-amber-300">Sexo não definido</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Defina seu sexo no <button onClick={() => navigate("/perfil-fitness")} className="text-primary underline">Perfil Fitness</button> para gerar um treino personalizado.</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Defina seu sexo no <button onClick={() => navigate("/app/perfil-fitness")} className="text-primary underline">Perfil Fitness</button> para gerar um treino personalizado.</p>
               </div>
             </div>
           )}
@@ -1916,7 +1916,7 @@ const Treino = () => {
             const unlocked = achievements.filter(a => a.unlocked).length;
             const nextAchievement = achievements.find(a => !a.unlocked);
             return (
-              <div className="rounded-2xl border border-border/30 p-4 cursor-pointer hover:border-primary/20 transition-all active:scale-[0.98]" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }} onClick={() => navigate("/conquistas")}>
+              <div className="rounded-2xl border border-border/30 p-4 cursor-pointer hover:border-primary/20 transition-all active:scale-[0.98]" style={{ background: 'linear-gradient(145deg, hsl(var(--card)), hsl(var(--card) / 0.6))' }} onClick={() => navigate("/app/conquistas")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsl(45 93% 47% / 0.12), hsl(45 93% 47% / 0.04))' }}>

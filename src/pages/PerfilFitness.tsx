@@ -502,7 +502,7 @@ const PerfilFitness = () => {
             <Trophy className="w-4 h-4 text-chart-3" />
             <h3 className="text-sm font-bold">Conquistas</h3>
           </div>
-          <button onClick={() => navigate("/conquistas")} className="text-[11px] text-primary font-medium hover:underline">
+          <button onClick={() => navigate("/app/conquistas")} className="text-[11px] text-primary font-medium hover:underline">
             Ver todas →
           </button>
         </div>
