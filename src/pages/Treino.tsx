@@ -139,7 +139,7 @@ const Treino = () => {
         const bodyFocus = (current.body_focus || "completo") as BodyFocus;
         const gender = (profile.gender || "masculino") as UserGender;
 
-        const newPlan = generateWorkoutPlan(obj as any, lvl as any, daysPerWeek, bodyFocus, "0", "intenso", undefined, gender);
+        const newPlan = generateWorkoutPlan(obj as any, lvl as any, daysPerWeek, bodyFocus, "0", "intenso", undefined, undefined, undefined, gender);
 
         const { error } = await supabase.from("workout_plans").insert({
           user_id: user.id,
@@ -507,7 +507,7 @@ const Treino = () => {
           ? { preferred: preferredExercises, freeText: preferenceText.trim() || undefined }
           : undefined;
         const genderToUse = profile.gender as UserGender;
-        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, genderToUse);
+        const plan = generateWorkoutPlan(objetivo as any, nivel as any, Number(dias), foco, cardioFreq, intensityLevel, prefs, undefined, undefined, genderToUse);
         setGeneratedPlan(plan);
         setShowPlan(true);
         setViewingSaved(null);

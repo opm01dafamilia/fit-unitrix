@@ -1025,8 +1025,9 @@ export function generateWorkoutPlan(
   intensityLevel: IntensityLevel = "intenso",
   preferences?: ExercisePreferences,
   hasPain?: boolean,
-  painNotes: string,
-  gender?: UserGender
+  painNotes?: string,
+  gender?: UserGender,
+  workoutTime?: string
 ): WorkoutDay[] {
   const days = Math.max(3, Math.min(7, daysPerWeek));
   const config = levelConfig[level];
@@ -1085,7 +1086,7 @@ const homeExerciseKeywords = [
 ];
 
 const safePool = pool.filter((ex) => {
-  const name = ex.name.toLowerCase();
+  const name = ex.nome.toLowerCase();
 
   const isHomeExercise = homeExerciseKeywords.some((keyword) =>
     name.includes(keyword)
@@ -1119,7 +1120,7 @@ const maxPerGroup = getMaxExercisesForGroup(
   entry.groups,
   entry.intensity,
   level,
-  workoutTime
+  workoutTime || "45"
 );
 const selected = selectExercises(safePool, i, maxPerGroup, prevDayExercises, preferredNames);
 
@@ -1167,7 +1168,7 @@ const selected = selectExercises(safePool, i, maxPerGroup, prevDayExercises, pre
 
       muscleGroups.forEach(group => {
         const pool = exerciseDB[group]?.[level] || exerciseDB[group]?.intermediario || [];
-        const maxPerGroup = getMaxExercisesForGroup(group, muscleGroups, dayIntensity, level);
+        const maxPerGroup = getMaxExercisesForGroup(group, muscleGroups, dayIntensity, level, workoutTime || "45");
         const selected = selectExercises(pool, i, maxPerGroup, prevDayExercises, preferredNames);
         selected.forEach(ex => {
           const adjustedSeries = Math.max(2, Math.round(Number(ex.series) * config.seriesMultiplier));
