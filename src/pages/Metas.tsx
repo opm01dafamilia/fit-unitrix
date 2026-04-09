@@ -49,6 +49,8 @@ const Metas = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingMetas, setLoadingMetas] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [smartGoals, setSmartGoals] = useState<SmartGoal[]>([]);
+  const [loadingSmart, setLoadingSmart] = useState(true);
 
   const fetchMetas = async () => {
     if (!user) return;
@@ -63,7 +65,47 @@ const Metas = () => {
     }
   };
 
+  // Fetch data for smart goals
+  const fetchSmartGoals = async () => {
+    if (!user || !profile) return;
+    setLoadingSmart(true);
+    try {
+      const [dietRes, bodyRes, workoutRes, dietTrackRes] = await Promise.all([
+        supabase.from("diet_plans").select("objective, weight, plan_data").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+        supabase.from("body_tracking").select("weight, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+        supabase.from("workout_sessions").select("id").eq("user_id", user.id).gte("completed_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from("diet_tracking").select("adherence_pct").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(30),
+      ]);
+
+      const dietPlan = dietRes.data?.[0] || null;
+      const bodyHistory = (bodyRes.data || []) as { weight: number; created_at: string }[];
+      const workoutCount = workoutRes.data?.length || 0;
+
+      const goals = generateSmartGoals(
+        { weight: profile.weight ?? null, objective: profile.objective ?? null, activityLevel: profile.activity_level ?? null },
+        dietPlan,
+        bodyHistory,
+        workoutCount
+      );
+
+      // Update diet adherence goal if data exists
+      const avgAdherence = dietTrackRes.data?.length
+        ? Math.round(dietTrackRes.data.reduce((sum, d) => sum + Number(d.adherence_pct), 0) / dietTrackRes.data.length)
+        : 0;
+      const updated = goals.map(g =>
+        g.id === "auto-dieta" ? { ...g, currentValue: avgAdherence, progress: Math.min(100, Math.round((avgAdherence / 80) * 100)) } : g
+      );
+
+      setSmartGoals(updated);
+    } catch {
+      console.error("Erro ao gerar metas inteligentes");
+    } finally {
+      setLoadingSmart(false);
+    }
+  };
+
   useEffect(() => { fetchMetas(); }, [user]);
+  useEffect(() => { fetchSmartGoals(); }, [user, profile]);
 
   // Pre-fill peso atual from profile
   useEffect(() => {
