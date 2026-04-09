@@ -47,7 +47,7 @@ const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { profile, signOut, subscriptionStatus } = useAuth();
-  const { isPersonal, isAdmin } = useUserRole();
+  const { isPersonal, isAdmin, isAdminMaster, isAdminViewer } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
