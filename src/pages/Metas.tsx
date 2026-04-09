@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2, ArrowRight, Sparkles, Zap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addWeeks, addMonths, format } from "date-fns";
+import { generateSmartGoals, SmartGoal } from "@/lib/smartGoalsEngine";
 
 const prazoOptions = [
   { value: "1s", label: "1 semana" },
