@@ -46,7 +46,6 @@ const AdminDashboard = () => {
     { label: "Usuários em Trial", value: stats.trialUsers, icon: Clock, color: "text-yellow-400" },
     { label: "Cancelados", value: stats.canceledUsers, icon: XCircle, color: "text-destructive" },
     { label: "Receita Estimada", value: `R$ ${stats.estimatedRevenue.toFixed(2)}`, icon: DollarSign, color: "text-primary" },
-    { label: "Último Webhook", value: stats.lastWebhookEvent, icon: Activity, color: "text-muted-foreground" },
   ];
 
   return (
