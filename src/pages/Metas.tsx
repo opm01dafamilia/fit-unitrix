@@ -289,6 +289,76 @@ const Metas = () => {
         ))}
       </div>
 
+      {/* Smart Goals (Auto-generated) */}
+      {!showForm && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />
+              <h2 className="font-display font-bold text-base">Metas Inteligentes</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">IA</span>
+            </div>
+            <button onClick={fetchSmartGoals} className="text-muted-foreground hover:text-primary p-1.5 rounded-lg hover:bg-primary/10 transition-colors">
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingSmart ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          {loadingSmart ? (
+            <div className="grid gap-3">
+              {[1, 2].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+            </div>
+          ) : smartGoals.length === 0 ? (
+            <div className="glass-card p-5 text-center">
+              <Sparkles className="w-8 h-8 text-primary/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Complete seu perfil e crie uma dieta para gerar metas automáticas</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {smartGoals.map((goal) => (
+                <div key={goal.id} className="glass-card p-4 lg:p-5 border border-primary/10">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-lg shrink-0">
+                      {goal.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm truncate">{goal.title}</p>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{goal.description}</p>
+                    </div>
+                    <span className={`text-xs font-bold shrink-0 ${goal.progress >= 80 ? 'text-primary' : goal.progress >= 40 ? 'text-chart-2' : 'text-muted-foreground'}`}>
+                      {goal.progress}%
+                    </span>
+                  </div>
+
+                  <div className="progress-bar !h-2 mb-2">
+                    <div
+                      className="progress-fill transition-all duration-700"
+                      style={{ width: `${goal.progress}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>{goal.currentValue} / {goal.targetValue} {goal.unit}</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      até {new Date(goal.targetDate).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Manual Goals Header */}
+      {!showForm && metas.length > 0 && (
+        <div className="flex items-center gap-2 pt-2">
+          <Target className="w-4 h-4 text-muted-foreground" />
+          <h2 className="font-display font-bold text-base text-muted-foreground">Metas Manuais</h2>
+        </div>
+      )}
       {/* Creation / Edit Form */}
       {showForm && !showConfirm && (
         <div className="glass-card p-6 lg:p-8 glow-border max-w-2xl mx-auto animate-slide-up">
