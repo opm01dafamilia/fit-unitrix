@@ -24,7 +24,8 @@ training_days: "",
 intensity_preference: "",
 workout_time: "",
 has_pain: "",
-pain_notes: ""
+pain_notes: "",
+terms_accepted: false as boolean
   });
 
   const steps = [
@@ -330,7 +331,7 @@ pain_notes: ""
             {step > 0 && (
               <Button variant="outline" onClick={() => setStep(step - 1)} className="flex-1">Voltar</Button>
             )}
-            <Button onClick={handleNext} disabled={!canAdvance() || loading || (step === 3 && !data.terms_accepted)} className="flex-1">
+            <Button onClick={handleNext} disabled={!canAdvance() || loading || (step === steps.length - 1 && !data.terms_accepted)} className="flex-1">
               {loading ? "Salvando..." : step < steps.length - 1 ? "Próximo" : "Finalizar"}
               {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
