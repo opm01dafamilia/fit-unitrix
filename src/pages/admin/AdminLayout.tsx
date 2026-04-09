@@ -1,20 +1,24 @@
-import { NavLink, Outlet, Navigate } from "react-router-dom";
+import { NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, CreditCard, Activity, Settings, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import FitPulseLogo from "@/components/FitPulseLogo";
 
-const adminNav = [
-  { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
-  { to: "/admin/usuarios", icon: Users, label: "Usuários" },
-  { to: "/admin/assinaturas", icon: CreditCard, label: "Assinaturas" },
-  { to: "/admin/webhook", icon: Activity, label: "Webhook" },
-  { to: "/admin/configuracoes", icon: Settings, label: "Configurações" },
+const allAdminNav = [
+  { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true, viewerAccess: true },
+  { to: "/admin/usuarios", icon: Users, label: "Usuários", viewerAccess: false },
+  { to: "/admin/assinaturas", icon: CreditCard, label: "Assinaturas", viewerAccess: true },
+  { to: "/admin/webhook", icon: Activity, label: "Webhook", viewerAccess: false },
+  { to: "/admin/configuracoes", icon: Settings, label: "Configurações", viewerAccess: false },
 ];
+
+// Routes accessible by admin_viewer
+const viewerAllowedPaths = ["/admin", "/admin/assinaturas"];
 
 const AdminLayout = () => {
   const { user, loading, signOut } = useAuth();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const { isAdmin, isAdminMaster, isAdminViewer, loading: roleLoading } = useUserRole();
+  const location = useLocation();
 
   if (loading || roleLoading) {
     return (
@@ -26,15 +30,30 @@ const AdminLayout = () => {
 
   if (!user || !isAdmin) return <Navigate to="/login" replace />;
 
+  // Block admin_viewer from accessing restricted routes
+  if (isAdminViewer && !isAdminMaster) {
+    const currentPath = location.pathname.replace(/\/$/, "") || "/admin";
+    if (!viewerAllowedPaths.includes(currentPath)) {
+      return <Navigate to="/admin" replace />;
+    }
+  }
+
+  const visibleNav = isAdminMaster
+    ? allAdminNav
+    : allAdminNav.filter((item) => item.viewerAccess);
+
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="w-64 border-r border-border/50 bg-card flex flex-col shrink-0">
         <div className="px-6 py-5 border-b border-border/50 flex items-center gap-2">
           <Shield className="w-5 h-5 text-primary" />
           <span className="font-display font-bold text-sm">Admin</span>
+          {isAdminViewer && !isAdminMaster && (
+            <span className="ml-auto text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">Visualização</span>
+          )}
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          {adminNav.map((item) => (
+          {visibleNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -62,7 +81,7 @@ const AdminLayout = () => {
         </div>
       </aside>
       <main className="flex-1 p-8 overflow-auto">
-        <Outlet />
+        <Outlet context={{ isAdminMaster, isAdminViewer }} />
       </main>
     </div>
   );

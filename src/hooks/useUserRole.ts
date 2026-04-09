@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type AppRole = "admin" | "personal" | "user";
+export type AppRole = "admin" | "personal" | "user" | "admin_master" | "admin_viewer";
 
 export const useUserRole = () => {
   const { user } = useAuth();
@@ -40,8 +40,13 @@ export const useUserRole = () => {
   }, [user]);
 
   const hasRole = (role: AppRole) => roles.includes(role);
-  const isPersonal = hasRole("personal") || hasRole("admin");
-  const isAdmin = hasRole("admin");
+  
+  // admin_master has full access, admin_viewer has read-only access
+  // legacy "admin" role is treated as admin_master for backwards compatibility
+  const isAdminMaster = hasRole("admin_master") || hasRole("admin");
+  const isAdminViewer = hasRole("admin_viewer");
+  const isAdmin = isAdminMaster || isAdminViewer;
+  const isPersonal = hasRole("personal") || isAdminMaster;
 
-  return { roles, loading, hasRole, isPersonal, isAdmin };
+  return { roles, loading, hasRole, isPersonal, isAdmin, isAdminMaster, isAdminViewer };
 };
