@@ -475,7 +475,7 @@ const Dashboard = () => {
               <p className="text-sm font-semibold">⚠️ {comebackAlert.dashboardAlert}</p>
               <p className="text-[10px] text-muted-foreground mt-1 italic">💡 Consistência é mais importante que intensidade.</p>
             </div>
-            <button onClick={() => navigate("/treino")} className="text-xs text-primary font-medium shrink-0 hover:underline">
+            <button onClick={() => navigate("/app/treino")} className="text-xs text-primary font-medium shrink-0 hover:underline">
               Ir para treino →
             </button>
           </div>
@@ -500,10 +500,10 @@ const Dashboard = () => {
 
         const dailyMissions: DailyMission[] = [
           { id: "profile", label: "Complete seu perfil", icon: "👤", xp: 5, completed: profileComplete },
-          { id: "workout", label: "Treine hoje", icon: "🏋️", xp: 10, completed: trainedToday, action: () => navigate("/treino") },
-          { id: "diet", label: "Registre uma refeição", icon: "🍽️", xp: 5, completed: (todayDiet?.meals_done || 0) > 0, action: () => navigate("/dieta") },
-          { id: "weight", label: "Registre seu peso", icon: "⚖️", xp: 5, completed: hasLoggedWeight, action: () => navigate("/acompanhamento") },
-          { id: "goal", label: "Tenha uma meta ativa", icon: "🎯", xp: 5, completed: activeGoals.length > 0, action: () => navigate("/metas") },
+          { id: "workout", label: "Treine hoje", icon: "🏋️", xp: 10, completed: trainedToday, action: () => navigate("/app/treino") },
+          { id: "diet", label: "Registre uma refeição", icon: "🍽️", xp: 5, completed: (todayDiet?.meals_done || 0) > 0, action: () => navigate("/app/dieta") },
+          { id: "weight", label: "Registre seu peso", icon: "⚖️", xp: 5, completed: hasLoggedWeight, action: () => navigate("/app/acompanhamento") },
+          { id: "goal", label: "Tenha uma meta ativa", icon: "🎯", xp: 5, completed: activeGoals.length > 0, action: () => navigate("/app/metas") },
         ];
 
         return <DailyMissionsCard missions={dailyMissions} bonusXP={15} />;
@@ -703,7 +703,7 @@ const Dashboard = () => {
               <Trophy className="w-5 h-5 text-yellow-500" />
               Conquistas
             </h3>
-            <button onClick={() => navigate("/conquistas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+            <button onClick={() => navigate("/app/conquistas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
               Ver todas <ArrowRight className="w-3 h-3" />
             </button>
           </div>
@@ -784,7 +784,7 @@ const Dashboard = () => {
           <div className="glass-card p-5 lg:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-base">Metas Ativas</h3>
-              <button onClick={() => navigate("/metas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+              <button onClick={() => navigate("/app/metas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
                 Ver todas <ArrowRight className="w-3 h-3" />
               </button>
             </div>
@@ -836,7 +836,7 @@ const Dashboard = () => {
         <div className="glass-card p-5 lg:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-semibold text-base">Atividade Recente</h3>
-            <button onClick={() => navigate("/historico")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
+            <button onClick={() => navigate("/app/historico")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
               Ver histórico <ArrowRight className="w-3 h-3" />
             </button>
           </div>
