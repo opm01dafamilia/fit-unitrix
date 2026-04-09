@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Target, Plus, Trophy, TrendingUp, CheckCircle2, Trash2, Edit2, X, Clock, AlertTriangle, Loader2, ArrowRight, Sparkles, Zap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addWeeks, addMonths, format } from "date-fns";
+import { generateSmartGoals, SmartGoal } from "@/lib/smartGoalsEngine";
 
 const prazoOptions = [
   { value: "1s", label: "1 semana" },
@@ -48,6 +49,8 @@ const Metas = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loadingMetas, setLoadingMetas] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [smartGoals, setSmartGoals] = useState<SmartGoal[]>([]);
+  const [loadingSmart, setLoadingSmart] = useState(true);
 
   const fetchMetas = async () => {
     if (!user) return;
@@ -62,7 +65,47 @@ const Metas = () => {
     }
   };
 
+  // Fetch data for smart goals
+  const fetchSmartGoals = async () => {
+    if (!user || !profile) return;
+    setLoadingSmart(true);
+    try {
+      const [dietRes, bodyRes, workoutRes, dietTrackRes] = await Promise.all([
+        supabase.from("diet_plans").select("objective, weight, plan_data").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+        supabase.from("body_tracking").select("weight, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+        supabase.from("workout_sessions").select("id").eq("user_id", user.id).gte("completed_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from("diet_tracking").select("adherence_pct").eq("user_id", user.id).order("tracked_date", { ascending: false }).limit(30),
+      ]);
+
+      const dietPlan = dietRes.data?.[0] || null;
+      const bodyHistory = (bodyRes.data || []) as { weight: number; created_at: string }[];
+      const workoutCount = workoutRes.data?.length || 0;
+
+      const goals = generateSmartGoals(
+        { weight: profile.weight ?? null, objective: profile.objective ?? null, activityLevel: profile.activity_level ?? null },
+        dietPlan,
+        bodyHistory,
+        workoutCount
+      );
+
+      // Update diet adherence goal if data exists
+      const avgAdherence = dietTrackRes.data?.length
+        ? Math.round(dietTrackRes.data.reduce((sum, d) => sum + Number(d.adherence_pct), 0) / dietTrackRes.data.length)
+        : 0;
+      const updated = goals.map(g =>
+        g.id === "auto-dieta" ? { ...g, currentValue: avgAdherence, progress: Math.min(100, Math.round((avgAdherence / 80) * 100)) } : g
+      );
+
+      setSmartGoals(updated);
+    } catch {
+      console.error("Erro ao gerar metas inteligentes");
+    } finally {
+      setLoadingSmart(false);
+    }
+  };
+
   useEffect(() => { fetchMetas(); }, [user]);
+  useEffect(() => { fetchSmartGoals(); }, [user, profile]);
 
   // Pre-fill peso atual from profile
   useEffect(() => {
@@ -246,6 +289,76 @@ const Metas = () => {
         ))}
       </div>
 
+      {/* Smart Goals (Auto-generated) */}
+      {!showForm && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />
+              <h2 className="font-display font-bold text-base">Metas Inteligentes</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">IA</span>
+            </div>
+            <button onClick={fetchSmartGoals} className="text-muted-foreground hover:text-primary p-1.5 rounded-lg hover:bg-primary/10 transition-colors">
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingSmart ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          {loadingSmart ? (
+            <div className="grid gap-3">
+              {[1, 2].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+            </div>
+          ) : smartGoals.length === 0 ? (
+            <div className="glass-card p-5 text-center">
+              <Sparkles className="w-8 h-8 text-primary/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Complete seu perfil e crie uma dieta para gerar metas automáticas</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {smartGoals.map((goal) => (
+                <div key={goal.id} className="glass-card p-4 lg:p-5 border border-primary/10">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 flex items-center justify-center text-lg shrink-0">
+                      {goal.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm truncate">{goal.title}</p>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{goal.description}</p>
+                    </div>
+                    <span className={`text-xs font-bold shrink-0 ${goal.progress >= 80 ? 'text-primary' : goal.progress >= 40 ? 'text-chart-2' : 'text-muted-foreground'}`}>
+                      {goal.progress}%
+                    </span>
+                  </div>
+
+                  <div className="progress-bar !h-2 mb-2">
+                    <div
+                      className="progress-fill transition-all duration-700"
+                      style={{ width: `${goal.progress}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>{goal.currentValue} / {goal.targetValue} {goal.unit}</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      até {new Date(goal.targetDate).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Manual Goals Header */}
+      {!showForm && metas.length > 0 && (
+        <div className="flex items-center gap-2 pt-2">
+          <Target className="w-4 h-4 text-muted-foreground" />
+          <h2 className="font-display font-bold text-base text-muted-foreground">Metas Manuais</h2>
+        </div>
+      )}
       {/* Creation / Edit Form */}
       {showForm && !showConfirm && (
         <div className="glass-card p-6 lg:p-8 glow-border max-w-2xl mx-auto animate-slide-up">
