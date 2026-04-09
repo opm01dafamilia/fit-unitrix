@@ -132,13 +132,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    localStorage.removeItem("fitpulse_sub_status");
-    // Redireciona para o login do próprio FitPulse (nunca para ecossistema externo)
-    window.location.href = window.location.origin + "/login";
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } finally {
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      localStorage.removeItem("fitpulse_sub_status");
+      window.location.replace(`${window.location.origin}/login`);
+    }
   };
 
   return (
