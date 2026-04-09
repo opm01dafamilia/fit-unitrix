@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, CreditCard, Clock, XCircle, DollarSign, Activity } from "lucide-react";
+import { Users, CreditCard, Clock, XCircle, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
