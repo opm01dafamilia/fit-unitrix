@@ -18,6 +18,7 @@ import LevelUpModal from "@/components/LevelUpModal";
 import { getComebackStatus } from "@/lib/comebackEngine";
 import { generateSmartNotifications, type BehavioralContext } from "@/lib/smartNotificationsEngine";
 import { registerMicroVictory, getDailySummary, getDailyProgress, getMicroStreak, getTodayXP, getVictoryMessage } from "@/lib/microVictoriesEngine";
+import DailyMissionsCard, { type DailyMission } from "@/components/DailyMissionsCard";
 import { calculateFitnessScore, type FitnessScoreInput } from "@/lib/fitnessScoreEngine";
 
 
