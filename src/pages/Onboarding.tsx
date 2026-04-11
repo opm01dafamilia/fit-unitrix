@@ -97,7 +97,7 @@ terms_accepted: false as boolean
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">
           <FitPulseLogo size="md" className="justify-center" />
-          <h1 className="font-display text-2xl font-bold tracking-tight">Bem-vindo ao FitPulse!</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">Bem-vindo ao Fit-Unitrix!</h1>
           <p className="text-muted-foreground text-sm mt-1">Vamos configurar seu perfil</p>
         </div>
 

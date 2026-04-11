@@ -173,7 +173,7 @@ const ActivityFeedCard = ({ activity, currentUserId, onReaction, onUserClick, on
           onClick={() => {
             const shareText = `${activity.user_name}: ${activity.description}`;
             if (navigator.share) {
-              navigator.share({ title: "FitPulse", text: shareText }).catch(() => {});
+              navigator.share({ title: "Fit-Unitrix", text: shareText }).catch(() => {});
             } else {
               navigator.clipboard.writeText(shareText);
             }

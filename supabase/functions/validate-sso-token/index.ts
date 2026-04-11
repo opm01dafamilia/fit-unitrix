@@ -36,7 +36,7 @@ const maskToken = (t: string) =>
   t.length > 10 ? `${t.slice(0, 6)}...${t.slice(-4)}` : "***";
 
 /**
- * Maps the ecosystem's `access_type` (pt-BR) to FitPulse subscription status.
+ * Maps the ecosystem's `access_type` (pt-BR) to Fit-Unitrix subscription status.
  */
 const mapAccessType = (data: EcosystemValidationData): string => {
   const raw = (data.access_type || "").trim().toLowerCase();

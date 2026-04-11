@@ -588,9 +588,9 @@ const Desafios = () => {
             size="sm"
             className="gap-2"
             onClick={() => {
-              const text = `💪 Completei ${completedCount}/${challenges.length} desafios semanais no FitPulse! +${totalXPEarned} XP! #FitPulse`;
+              const text = `💪 Completei ${completedCount}/${challenges.length} desafios semanais no Fit-Unitrix! +${totalXPEarned} XP! #Fit-Unitrix`;
               if (navigator.share) {
-                navigator.share({ title: "FitPulse Desafios", text }).catch(() => {});
+                navigator.share({ title: "Fit-Unitrix Desafios", text }).catch(() => {});
               } else {
                 navigator.clipboard.writeText(text);
                 toast.success("Copiado para compartilhar!");

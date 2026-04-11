@@ -1,5 +1,5 @@
 /**
- * Smart Cache - Stale-while-revalidate pattern for FitPulse
+ * Smart Cache - Stale-while-revalidate pattern for Fit-Unitrix
  * Shows cached data instantly, then syncs silently in background.
  */
 
@@ -74,7 +74,7 @@ export function invalidateCache(key: string): void {
   } catch {}
 }
 
-/** Clear all FitPulse caches. */
+/** Clear all Fit-Unitrix caches. */
 export function clearAllCaches(): void {
   try {
     const keys = Object.keys(localStorage).filter(k => k.startsWith(CACHE_PREFIX));

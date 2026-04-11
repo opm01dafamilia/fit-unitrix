@@ -4,13 +4,13 @@ import { ExternalLink, Eye, EyeOff } from "lucide-react";
 
 const fitpulsePlans = [
   {
-    name: "FitPulse Mensal",
+    name: "Fit-Unitrix Mensal",
     price: "R$ 19,90/mês (primeiro mês R$ 9,90)",
     link: "https://pay.kiwify.com.br/gLBLXaS",
     visible: true,
   },
   {
-    name: "FitPulse Anual",
+    name: "Fit-Unitrix Anual",
     price: "12x R$ 15,20 ou R$ 147,00 à vista (depois R$ 197,00/ano)",
     link: "https://pay.kiwify.com.br/BDxFfhj",
     visible: true,
@@ -58,7 +58,7 @@ const AdminSubscriptions = () => {
     <div>
       <h1 className="text-2xl font-display font-bold mb-6">Assinaturas</h1>
 
-      <h2 className="text-lg font-semibold mb-4">Planos FitPulse (visíveis ao usuário)</h2>
+      <h2 className="text-lg font-semibold mb-4">Planos Fit-Unitrix (visíveis ao usuário)</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {fitpulsePlans.map((p) => <PlanCard key={p.name} plan={p} />)}
       </div>

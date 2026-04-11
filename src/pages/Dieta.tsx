@@ -47,7 +47,7 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
         <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">FitPulse</span>
+            <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/15">Fit-Unitrix</span>
           </div>
           <div className="flex items-center gap-3 mt-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/10">
@@ -95,7 +95,7 @@ const MealFocusCard = ({ meal, onClose }: { meal: MealPlan; onClose: () => void 
       <div className="px-5 pb-5 pt-1">
         <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary/20 border border-border/15">
           <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Plano gerado por</span>
-          <span className="text-[10px] font-bold text-primary tracking-wider uppercase">FitPulse</span>
+          <span className="text-[10px] font-bold text-primary tracking-wider uppercase">Fit-Unitrix</span>
         </div>
       </div>
     </div>

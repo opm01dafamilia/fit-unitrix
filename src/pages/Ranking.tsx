@@ -283,9 +283,9 @@ const Ranking = () => {
               </div>
             </div>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
-              const text = `💪 Estou em #${showUserPos.pos} no ranking fitness ${showUserPos.label} no FitPulse! Vem competir!`;
+              const text = `💪 Estou em #${showUserPos.pos} no ranking fitness ${showUserPos.label} no Fit-Unitrix! Vem competir!`;
               if (navigator.share) {
-                navigator.share({ title: "FitPulse Ranking", text }).catch(() => {});
+                navigator.share({ title: "Fit-Unitrix Ranking", text }).catch(() => {});
               } else {
                 navigator.clipboard.writeText(text);
                 toast.success("Copiado para compartilhar!");

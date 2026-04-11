@@ -29,7 +29,7 @@ const FitPulseLogo = ({ size = "sm", showText = false, showSubtext = false, clas
       {(showText || showSubtext) && (
         <div>
           {showText && (
-            <h1 className={`font-display ${s.text} font-bold text-foreground tracking-tight`}>FitPulse</h1>
+            <h1 className={`font-display ${s.text} font-bold text-foreground tracking-tight`}>Fit-Unitrix</h1>
           )}
           {showSubtext && (
             <p className={`${s.subtext} text-muted-foreground font-medium uppercase tracking-widest`}>Pro Fitness</p>

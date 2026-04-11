@@ -1,5 +1,5 @@
 /**
- * Smart Progression Cycle Engine for FitPulse
+ * Smart Progression Cycle Engine for Fit-Unitrix
  * Manages periodization cycles: adaptation → increase → moderate → high → deload
  * Provides load, volume, rep, and rest progression recommendations.
  */
