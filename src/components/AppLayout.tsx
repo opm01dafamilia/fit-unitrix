@@ -156,6 +156,11 @@ const AppLayout = () => {
           )}
         </nav>
 
+        {/* Theme Toggle */}
+        <div className="mx-4 mb-2">
+          <ThemeToggle />
+        </div>
+
         {/* User Card */}
         <div className="mx-4 mb-3">
           <div className="p-3.5 rounded-xl bg-secondary/60 border border-border/50">
