@@ -1,5 +1,5 @@
 import { Dumbbell, UtensilsCrossed, BarChart3, Crosshair, Trophy, Users, TrendingUp, Heart, Sparkles, Info } from "lucide-react";
-import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
+import FitUnitrixLogo from "@/components/FitUnitrixLogo";
 
 const features = [
   { icon: Dumbbell, title: "Treinos Personalizados", desc: "Planos de treino gerados de acordo com seu nível, objetivo e dias disponíveis." },
@@ -17,7 +17,7 @@ const SobreFitUnitrix = () => {
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Fit-UnitrixLogo size="sm" />
+        <FitUnitrixLogo size="sm" />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">Sobre o Fit-Pulse</h1>
           <p className="text-xs text-muted-foreground">Conheça o app e saiba como aproveitá-lo</p>

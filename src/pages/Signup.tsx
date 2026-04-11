@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
+import FitUnitrixLogo from "@/components/FitUnitrixLogo";
 import { Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -68,7 +68,7 @@ const Signup = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-4">
-          <Fit-UnitrixLogo size="md" showText showSubtext />
+          <FitUnitrixLogo size="md" showText showSubtext />
           <p className="text-sm text-muted-foreground">Crie sua conta gratuita</p>
         </div>
 

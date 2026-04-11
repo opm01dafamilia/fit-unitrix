@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight, LayoutDashboard, Brain, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
+import FitUnitrixLogo from "@/components/FitUnitrixLogo";
 
 import previewDashboard from "@/assets/preview-dashboard.png";
 import previewTreino from "@/assets/preview-treino.png";
@@ -49,7 +49,7 @@ const Landing = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Fit-UnitrixLogo size="sm" showText />
+          <FitUnitrixLogo size="sm" showText />
           <div className="flex items-center gap-3">
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
@@ -262,7 +262,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="py-10 px-6 border-t border-border/20">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Fit-UnitrixLogo size="xs" showText />
+          <FitUnitrixLogo size="xs" showText />
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Fit-Unitrix. Todos os direitos reservados.</p>
         </div>
       </footer>
