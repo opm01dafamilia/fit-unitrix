@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Play, Square, Moon, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
-import ThemeToggle from "@/components/ThemeToggle";
 import type { MuscleId } from "@/lib/exerciseLibrary";
 
 const exerciseToMuscles: Record<string, MuscleId[]> = {
@@ -172,7 +171,6 @@ const WorkoutDayView = ({
     <div className="space-y-4 animate-slide-up w-full">
       {/* Top Bar */}
       <div className="flex items-center gap-2 flex-wrap">
-        <ThemeToggle />
         {hasCardio && (
           <button
             onClick={() => setPriority(priority === "cardio" ? "treino" : "cardio")}
