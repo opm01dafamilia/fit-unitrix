@@ -365,7 +365,7 @@ const PerfilFitness = () => {
           {socialHubItems.map((item) => (
             <button
               key={item.to}
-              onClick={() => navigate(item.to)}
+              onClick={() => navigate(`/app${item.to}`)}
               className={`glass-card p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] border ${item.borderColor} group`}
             >
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 border ${item.borderColor}`}>
