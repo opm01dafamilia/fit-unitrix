@@ -12,7 +12,7 @@ const features = [
   { icon: Heart, title: "Cardio & Alongamento", desc: "Sessões complementares de cardio e alongamento integradas ao treino." },
 ];
 
-const SobreFitUnitrix = () => {
+const SobreFitPulse = () => {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header */}
@@ -97,4 +97,4 @@ const SobreFitUnitrix = () => {
   );
 };
 
-export default SobreFitUnitrix;
+export default SobreFitPulse;
