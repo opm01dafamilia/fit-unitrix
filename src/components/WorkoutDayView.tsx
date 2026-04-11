@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Play, Square, Moon, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MuscleBodyMap from "@/components/MuscleBodyMap";
-import ThemeToggle from "@/components/ThemeToggle";
+import type { MuscleId } from "@/lib/exerciseLibrary";
 import type { MuscleId } from "@/lib/exerciseLibrary";
 
 const exerciseToMuscles: Record<string, MuscleId[]> = {
