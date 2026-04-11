@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import FitUnitrixLogo from "@/components/FitPulseLogo";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,7 +52,7 @@ const Login = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-4">
-          <FitUnitrixLogo size="md" showText showSubtext />
+          <FitPulseLogo size="md" showText showSubtext />
           <p className="text-sm text-muted-foreground">Entre na sua conta</p>
         </div>
 

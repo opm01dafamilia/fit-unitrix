@@ -1,6 +1,6 @@
 import { Flame } from "lucide-react";
 
-interface FitUnitrixLogoProps {
+interface FitPulseLogoProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   showText?: boolean;
   showSubtext?: boolean;
@@ -15,7 +15,7 @@ const sizeMap = {
   xl: { box: "w-24 h-24 rounded-3xl shadow-xl shadow-primary/25", icon: "w-12 h-12", text: "text-4xl", subtext: "text-base" },
 };
 
-const FitUnitrixLogo = ({ size = "sm", showText = false, showSubtext = false, className = "" }: FitUnitrixLogoProps) => {
+const FitPulseLogo = ({ size = "sm", showText = false, showSubtext = false, className = "" }: FitPulseLogoProps) => {
   const s = sizeMap[size];
 
   return (
@@ -40,4 +40,4 @@ const FitUnitrixLogo = ({ size = "sm", showText = false, showSubtext = false, cl
   );
 };
 
-export default FitUnitrixLogo;
+export default FitPulseLogo;

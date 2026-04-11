@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import FitUnitrixLogo from "@/components/FitPulseLogo";
+import FitPulseLogo from "@/components/FitPulseLogo";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();
@@ -39,7 +39,7 @@ const InviteLanding = () => {
            style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 60%)' }} />
       
       <div className="w-full max-w-[400px] relative z-10 text-center">
-        <FitUnitrixLogo size="lg" className="justify-center mb-6" />
+        <FitPulseLogo size="lg" className="justify-center mb-6" />
         <h1 className="font-display text-3xl font-bold tracking-tight mb-2">Fit-Unitrix</h1>
         
         {valid ? (

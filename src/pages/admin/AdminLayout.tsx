@@ -3,7 +3,7 @@ import { NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, CreditCard, Activity, Settings, LogOut, Shield, Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import FitUnitrixLogo from "@/components/FitPulseLogo";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const allAdminNav = [
@@ -95,7 +95,7 @@ const AdminLayout = () => {
             <ThemeToggle />
           </div>
           <NavLink to="/" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all">
-            <FitUnitrixLogo size="xs" />
+            <FitPulseLogo size="xs" />
             <span>Voltar ao App</span>
           </NavLink>
           <button onClick={signOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-destructive transition-all w-full">

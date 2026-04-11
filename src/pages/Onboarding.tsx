@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, User, Ruler, Target, Dumbbell } from "lucide-react";
-import FitUnitrixLogo from "@/components/FitPulseLogo";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -96,7 +96,7 @@ terms_accepted: false as boolean
       
       <div className="w-full max-w-lg relative">
         <div className="text-center mb-8">
-          <FitUnitrixLogo size="md" className="justify-center" />
+          <FitPulseLogo size="md" className="justify-center" />
           <h1 className="font-display text-2xl font-bold tracking-tight">Bem-vindo ao Fit-Unitrix!</h1>
           <p className="text-muted-foreground text-sm mt-1">Vamos configurar seu perfil</p>
         </div>

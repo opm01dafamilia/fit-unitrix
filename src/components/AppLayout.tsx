@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
-import FitUnitrixLogo from "@/components/FitPulseLogo";
+import FitPulseLogo from "@/components/FitPulseLogo";
 import BillingBanner from "@/components/BillingBanner";
 import TrialBanner from "@/components/TrialBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
@@ -115,7 +115,7 @@ const AppLayout = () => {
       `}>
         {/* Brand */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-sidebar-border">
-          <FitUnitrixLogo size="sm" showText showSubtext />
+          <FitPulseLogo size="sm" showText showSubtext />
           <div className="flex items-center gap-1">
             <div className="hidden lg:block">
               <NotificationCenter />
@@ -198,7 +198,7 @@ const AppLayout = () => {
           <button onClick={() => setSidebarOpen(true)} className="text-foreground p-2 -ml-2 touch-target touch-feedback rounded-xl">
             <Menu className="w-5 h-5" />
           </button>
-          <FitUnitrixLogo size="xs" showText />
+          <FitPulseLogo size="xs" showText />
           <div className="touch-target flex items-center justify-center">
             <NotificationCenter />
           </div>
