@@ -1090,7 +1090,7 @@ const Treino = () => {
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, hsl(var(--primary)), transparent 50%)' }} />
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-1">FitPulse</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-1">Fit-Unitrix</p>
             <h1 className="text-3xl lg:text-4xl font-display font-black tracking-tight leading-none">Treino</h1>
             <p className="text-muted-foreground text-sm mt-1.5">Sua jornada fitness começa aqui</p>
           </div>

@@ -278,7 +278,7 @@ const Configuracoes = () => {
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
             <p className="text-sm text-muted-foreground mb-4">
-              Quando ativado, o FitPulse aumenta a frequência de mensagens motivacionais, sugestões diárias e alertas estratégicos.
+              Quando ativado, o Fit-Unitrix aumenta a frequência de mensagens motivacionais, sugestões diárias e alertas estratégicos.
             </p>
             <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30">
               <div className="flex items-center gap-2">
@@ -310,7 +310,7 @@ const Configuracoes = () => {
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
             <p className="text-sm text-muted-foreground mb-4">
-              O FitPulse acompanha seu comportamento e envia alertas estratégicos como um coach pessoal.
+              O Fit-Unitrix acompanha seu comportamento e envia alertas estratégicos como um coach pessoal.
             </p>
             <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/30 mb-3">
               <span className="text-sm font-medium">Notificações ativas</span>

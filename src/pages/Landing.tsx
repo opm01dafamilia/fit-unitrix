@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight, LayoutDashboard, Brain, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import FitPulseLogo from "@/components/FitPulseLogo";
+import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
 
 import previewDashboard from "@/assets/preview-dashboard.png";
 import previewTreino from "@/assets/preview-treino.png";
@@ -19,14 +19,14 @@ const previews = [
 
 const plans = [
   {
-    name: "FitPulse Mensal",
+    name: "Fit-Unitrix Mensal",
     highlight: "Primeiro mês R$ 9,90",
     price: "R$ 19,90/mês",
     link: "https://pay.kiwify.com.br/gLBLXaS",
-    features: ["Treinos personalizados por IA", "Dieta inteligente", "Acompanhamento completo", "Comunidade FitPulse"],
+    features: ["Treinos personalizados por IA", "Dieta inteligente", "Acompanhamento completo", "Comunidade Fit-Unitrix"],
   },
   {
-    name: "FitPulse Anual",
+    name: "Fit-Unitrix Anual",
     highlight: "12x de R$ 15,20",
     price: "ou R$ 147,00 à vista",
     after: "Depois R$ 197,00/ano",
@@ -49,7 +49,7 @@ const Landing = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <FitPulseLogo size="sm" showText />
+          <Fit-UnitrixLogo size="sm" showText />
           <div className="flex items-center gap-3">
             <Link to="/login">
               <Button variant="ghost" size="sm">Entrar</Button>
@@ -77,7 +77,7 @@ const Landing = () => {
             Sem personal. Sem planilhas. Sem complicação.
           </p>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto mb-8">
-            O FitPulse usa IA para criar e ajustar seus treinos e alimentação com base no seu objetivo e evolução. Tudo automático.
+            O Fit-Unitrix usa IA para criar e ajustar seus treinos e alimentação com base no seu objetivo e evolução. Tudo automático.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/signup">
@@ -113,7 +113,7 @@ const Landing = () => {
       <section className="py-20 px-6 border-t border-border/20 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2">
-            Veja como o FitPulse funciona por dentro
+            Veja como o Fit-Unitrix funciona por dentro
           </h2>
           <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
             Treinos, dieta e evolução gerenciados automaticamente pela inteligência artificial
@@ -178,7 +178,7 @@ const Landing = () => {
                 Inteligência Artificial em cada detalhe
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                O FitPulse aprende com você. Quanto mais você usa, mais precisos ficam seus treinos e dieta, garantindo resultados reais com um plano feito 100% para o seu perfil.
+                O Fit-Unitrix aprende com você. Quanto mais você usa, mais precisos ficam seus treinos e dieta, garantindo resultados reais com um plano feito 100% para o seu perfil.
               </p>
             </div>
           </div>
@@ -262,8 +262,8 @@ const Landing = () => {
       {/* Footer */}
       <footer className="py-10 px-6 border-t border-border/20">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <FitPulseLogo size="xs" showText />
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} FitPulse. Todos os direitos reservados.</p>
+          <Fit-UnitrixLogo size="xs" showText />
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Fit-Unitrix. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

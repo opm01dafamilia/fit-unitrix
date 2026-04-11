@@ -45,7 +45,7 @@ export const useSubscriptionGuard = () => {
           <DialogDescription className="text-sm text-muted-foreground mt-1">
             {subscriptionStatus === "pending"
               ? "Seu pagamento está pendente. Regularize para usar este recurso."
-              : "Sua assinatura está inativa. Renove para desbloquear todos os recursos do FitPulse."}
+              : "Sua assinatura está inativa. Renove para desbloquear todos os recursos do Fit-Unitrix."}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-4">

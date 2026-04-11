@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import FitPulseLogo from "@/components/FitPulseLogo";
+import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
 import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -68,7 +68,7 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-4">
-          <FitPulseLogo size="md" showText />
+          <Fit-UnitrixLogo size="md" showText />
           <h1 className="text-lg font-bold">Nova senha</h1>
           <p className="text-sm text-muted-foreground text-center">
             Defina sua nova senha abaixo.

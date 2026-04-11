@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import FitPulseLogo from "@/components/FitPulseLogo";
+import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();
@@ -39,17 +39,17 @@ const InviteLanding = () => {
            style={{ background: 'radial-gradient(circle, hsl(var(--primary)), transparent 60%)' }} />
       
       <div className="w-full max-w-[400px] relative z-10 text-center">
-        <FitPulseLogo size="lg" className="justify-center mb-6" />
-        <h1 className="font-display text-3xl font-bold tracking-tight mb-2">FitPulse</h1>
+        <Fit-UnitrixLogo size="lg" className="justify-center mb-6" />
+        <h1 className="font-display text-3xl font-bold tracking-tight mb-2">Fit-Unitrix</h1>
         
         {valid ? (
           <>
             <p className="text-muted-foreground text-sm mb-6">
-              Você foi convidado para o FitPulse! 🎉<br />
-              Continue seu acesso diretamente no FitPulse.
+              Você foi convidado para o Fit-Unitrix! 🎉<br />
+              Continue seu acesso diretamente no Fit-Unitrix.
             </p>
             <Button onClick={() => navigate("/signup")} className="w-full h-12 text-sm font-medium">
-              Criar conta no FitPulse
+              Criar conta no Fit-Unitrix
             </Button>
           </>
         ) : (
@@ -58,7 +58,7 @@ const InviteLanding = () => {
               Link de convite inválido ou expirado.
             </p>
             <Button onClick={() => navigate("/")} variant="outline" className="w-full">
-              Ir para o FitPulse
+              Ir para o Fit-Unitrix
             </Button>
           </>
         )}

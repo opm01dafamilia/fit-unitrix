@@ -36,7 +36,7 @@ const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Personal = lazy(() => import("./pages/Personal"));
-const SobreFitPulse = lazy(() => import("./pages/SobreFitPulse"));
+const SobreFit-Unitrix = lazy(() => import("./pages/SobreFit-Unitrix"));
 const Planos = lazy(() => import("./pages/Planos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));
@@ -253,7 +253,7 @@ const App = () => (
                 <Route path="configuracoes" element={<S><Configuracoes /></S>} />
                 <Route path="score-fitness" element={<S><ScoreFitness /></S>} />
                 <Route path="personal" element={<S><Personal /></S>} />
-                <Route path="sobre" element={<S><SobreFitPulse /></S>} />
+                <Route path="sobre" element={<S><SobreFit-Unitrix /></S>} />
                 <Route path="planos" element={<S><Planos /></S>} />
               </Route>
 

@@ -1,5 +1,5 @@
 import { Dumbbell, UtensilsCrossed, BarChart3, Crosshair, Trophy, Users, TrendingUp, Heart, Sparkles, Info } from "lucide-react";
-import FitPulseLogo from "@/components/FitPulseLogo";
+import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
 
 const features = [
   { icon: Dumbbell, title: "Treinos Personalizados", desc: "Planos de treino gerados de acordo com seu nível, objetivo e dias disponíveis." },
@@ -12,12 +12,12 @@ const features = [
   { icon: Heart, title: "Cardio & Alongamento", desc: "Sessões complementares de cardio e alongamento integradas ao treino." },
 ];
 
-const SobreFitPulse = () => {
+const SobreFit-Unitrix = () => {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <FitPulseLogo size="sm" />
+        <Fit-UnitrixLogo size="sm" />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">Sobre o Fit-Pulse</h1>
           <p className="text-xs text-muted-foreground">Conheça o app e saiba como aproveitá-lo</p>
@@ -97,4 +97,4 @@ const SobreFitPulse = () => {
   );
 };
 
-export default SobreFitPulse;
+export default SobreFit-Unitrix;

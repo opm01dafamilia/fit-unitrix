@@ -23,7 +23,7 @@ const BillingBanner = ({ status }: BillingBannerProps) => {
       icon: "🚫",
     },
     expired: {
-      message: "Sua assinatura expirou. Renove para continuar usando o FitPulse.",
+      message: "Sua assinatura expirou. Renove para continuar usando o Fit-Unitrix.",
       bg: "bg-destructive/10 border-destructive/20",
       text: "text-destructive",
       icon: "⚠️",

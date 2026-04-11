@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Play, Check, Dumbbell, Clock, Flame, ChevronRight, X, CalendarDays } from "lucide-react";
-import FitPulseLogo from "@/components/FitPulseLogo";
+import Fit-UnitrixLogo from "@/components/Fit-UnitrixLogo";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import type { DayIntensity } from "@/lib/workoutGenerator";
@@ -108,7 +108,7 @@ const WeeklyWorkoutFolder = ({
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <FitPulseLogo size="xs" showText />
+            <Fit-UnitrixLogo size="xs" showText />
             <p className="text-sm font-display font-bold text-foreground truncate">{day.dia}</p>
           </div>
           {isTodays && !isCompleted && (

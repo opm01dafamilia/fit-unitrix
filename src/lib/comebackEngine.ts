@@ -1,5 +1,5 @@
 /**
- * Comeback Mode Engine for FitPulse
+ * Comeback Mode Engine for Fit-Unitrix
  * Detects missed workouts and adapts training automatically.
  * Never punishes — only adapts strategy for safe return.
  */

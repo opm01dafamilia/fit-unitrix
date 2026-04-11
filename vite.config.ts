@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => ({
       },
       includeAssets: ["favicon.ico", "pwa-icon-192.png", "pwa-icon-512.png"],
       manifest: {
-        name: "FitPulse — Pro Fitness",
-        short_name: "FitPulse",
+        name: "Fit-Unitrix — Pro Fitness",
+        short_name: "Fit-Unitrix",
         description: "Seu app fitness completo: treino, dieta, metas e evolução.",
         theme_color: "#0a0b0f",
         background_color: "#0a0b0f",
