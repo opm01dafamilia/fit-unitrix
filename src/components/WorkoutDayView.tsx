@@ -172,7 +172,6 @@ const WorkoutDayView = ({
     <div className="space-y-4 animate-slide-up w-full">
       {/* Top Bar */}
       <div className="flex items-center gap-2 flex-wrap">
-        <ThemeToggle />
         {hasCardio && (
           <button
             onClick={() => setPriority(priority === "cardio" ? "treino" : "cardio")}
