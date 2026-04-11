@@ -36,7 +36,7 @@ const EvolucaoAlimentar = lazy(() => import("./pages/EvolucaoAlimentar"));
 const ScoreFitness = lazy(() => import("./pages/ScoreFitness"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Personal = lazy(() => import("./pages/Personal"));
-const SobreFitUnitrix = lazy(() => import("./pages/SobreFitUnitrix"));
+const SobreFitUnitrix = lazy(() => import("./pages/SobreFitPulse"));
 const Planos = lazy(() => import("./pages/Planos"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Login = lazy(() => import("./pages/Login"));

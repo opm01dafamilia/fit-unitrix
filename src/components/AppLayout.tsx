@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { getMenuPreferences, MODULAR_ROUTES } from "@/lib/menuPreferences";
 import NotificationCenter from "@/components/NotificationCenter";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 import BillingBanner from "@/components/BillingBanner";
 import TrialBanner from "@/components/TrialBanner";
 import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";

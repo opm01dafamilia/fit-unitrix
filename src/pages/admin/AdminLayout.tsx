@@ -3,7 +3,7 @@ import { NavLink, Outlet, Navigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, CreditCard, Activity, Settings, LogOut, Shield, Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const allAdminNav = [

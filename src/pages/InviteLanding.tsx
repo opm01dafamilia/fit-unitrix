@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 
 const InviteLanding = () => {
   const { code } = useParams<{ code: string }>();

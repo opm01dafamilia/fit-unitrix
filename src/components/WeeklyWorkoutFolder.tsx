@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Play, Check, Dumbbell, Clock, Flame, ChevronRight, X, CalendarDays } from "lucide-react";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import type { DayIntensity } from "@/lib/workoutGenerator";

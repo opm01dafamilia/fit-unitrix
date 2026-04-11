@@ -1,5 +1,5 @@
 import { Dumbbell, UtensilsCrossed, BarChart3, Crosshair, Trophy, Users, TrendingUp, Heart, Sparkles, Info } from "lucide-react";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 
 const features = [
   { icon: Dumbbell, title: "Treinos Personalizados", desc: "Planos de treino gerados de acordo com seu nível, objetivo e dias disponíveis." },

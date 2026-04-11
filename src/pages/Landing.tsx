@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Dumbbell, Zap, TrendingUp, Shield, Star, ChevronRight, LayoutDashboard, Brain, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import FitUnitrixLogo from "@/components/FitUnitrixLogo";
+import FitUnitrixLogo from "@/components/FitPulseLogo";
 
 import previewDashboard from "@/assets/preview-dashboard.png";
 import previewTreino from "@/assets/preview-treino.png";
