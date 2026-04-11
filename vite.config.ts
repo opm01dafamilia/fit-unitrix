@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: false,
+      },
       includeAssets: ["favicon.ico", "pwa-icon-192.png", "pwa-icon-512.png"],
       manifest: {
         name: "FitPulse — Pro Fitness",
@@ -28,23 +31,11 @@ export default defineConfig(({ mode }) => ({
         orientation: "portrait",
         scope: "/",
         start_url: "/",
+        categories: ["health", "fitness"],
         icons: [
-          {
-            src: "/pwa-icon-192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "/pwa-icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "/pwa-icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
+          { src: "/pwa-icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/pwa-icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "/pwa-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
         ],
       },
       workbox: {
@@ -56,13 +47,8 @@ export default defineConfig(({ mode }) => ({
             handler: "NetworkFirst",
             options: {
               cacheName: "supabase-api",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60, // 1 hour
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
+              expiration: { maxEntries: 100, maxAgeSeconds: 3600 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],

@@ -208,7 +208,7 @@ const S = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="fitpulse-theme">
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="fitpulse-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
