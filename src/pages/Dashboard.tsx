@@ -463,6 +463,48 @@ const Dashboard = () => {
       {/* Level Up Modal */}
       <LevelUpModal level={levelUpData} onClose={() => setLevelUpData(null)} />
 
+      {/* 📊 Daily Summary Card */}
+      {(sessions.length > 0 || dietPlans.length > 0) && (
+        <div className="glass-card p-5 lg:p-6">
+          <h3 className="font-display font-semibold text-base flex items-center gap-2 mb-4">
+            <Star className="w-5 h-5 text-chart-4" />
+            Seu Resumo Hoje
+          </h3>
+          {(() => {
+            const todayStr = format(new Date(), "yyyy-MM-dd");
+            const todayWorkouts = sessions.filter((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === todayStr).length;
+            const todayDietData = dietTracking.find((d: any) => d.tracked_date === todayStr);
+            const todayMealsDone = todayDietData?.meals_done || 0;
+            const todayMealsTotal = todayDietData?.meals_total || 0;
+            const todayAdherence = todayDietData ? Math.round(todayDietData.adherence_pct || 0) : null;
+            return (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">🏋️</span>
+                  <span className="text-lg font-display font-bold">{todayWorkouts}</span>
+                  <span className="text-[9px] text-muted-foreground">Treinos hoje</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-3/5 border border-chart-3/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">🍽️</span>
+                  <span className="text-lg font-display font-bold">{todayMealsTotal > 0 ? `${todayMealsDone}/${todayMealsTotal}` : "—"}</span>
+                  <span className="text-[9px] text-muted-foreground">Refeições</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">📊</span>
+                  <span className="text-lg font-display font-bold">{todayAdherence !== null ? `${todayAdherence}%` : "—"}</span>
+                  <span className="text-[9px] text-muted-foreground">Aderência</span>
+                </div>
+                <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
+                  <span className="text-lg mb-1">✨</span>
+                  <span className="text-lg font-display font-bold">{microProgress.completed}</span>
+                  <span className="text-[9px] text-muted-foreground">Micro-vitórias</span>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Comeback Alert */}
       {comebackAlert && comebackAlert.dashboardAlert && (
         <div className="glass-card p-4 lg:p-5 border border-primary/20 relative overflow-hidden">
@@ -831,72 +873,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      {workoutPlans.length > 0 && (
-        <div className="glass-card p-5 lg:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-semibold text-base">Atividade Recente</h3>
-            <button onClick={() => navigate("/app/historico")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
-              Ver histórico <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {workoutPlans.slice(0, 3).map((wp) => (
-              <div key={wp.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/20">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Dumbbell className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium capitalize truncate">{wp.objective} — {wp.experience_level}</p>
-                  <p className="text-[11px] text-muted-foreground">{new Date(wp.created_at).toLocaleDateString("pt-BR")} • {wp.days_per_week} dias/sem</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 📊 Daily Summary Card */}
-      {(sessions.length > 0 || dietPlans.length > 0) && (
-        <div className="glass-card p-5 lg:p-6">
-          <h3 className="font-display font-semibold text-base flex items-center gap-2 mb-4">
-            <Star className="w-5 h-5 text-chart-4" />
-            Seu Resumo Hoje
-          </h3>
-          {(() => {
-            const todayStr = format(new Date(), "yyyy-MM-dd");
-            const todayWorkouts = sessions.filter((s: any) => format(new Date(s.completed_at), "yyyy-MM-dd") === todayStr).length;
-            const todayDietData = dietTracking.find((d: any) => d.tracked_date === todayStr);
-            const todayMealsDone = todayDietData?.meals_done || 0;
-            const todayMealsTotal = todayDietData?.meals_total || 0;
-            const todayAdherence = todayDietData ? Math.round(todayDietData.adherence_pct || 0) : null;
-            return (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
-                  <span className="text-lg mb-1">🏋️</span>
-                  <span className="text-lg font-display font-bold">{todayWorkouts}</span>
-                  <span className="text-[9px] text-muted-foreground">Treinos hoje</span>
-                </div>
-                <div className="p-3 rounded-xl bg-chart-3/5 border border-chart-3/10 flex flex-col items-center">
-                  <span className="text-lg mb-1">🍽️</span>
-                  <span className="text-lg font-display font-bold">{todayMealsTotal > 0 ? `${todayMealsDone}/${todayMealsTotal}` : "—"}</span>
-                  <span className="text-[9px] text-muted-foreground">Refeições</span>
-                </div>
-                <div className="p-3 rounded-xl bg-chart-2/5 border border-chart-2/10 flex flex-col items-center">
-                  <span className="text-lg mb-1">📊</span>
-                  <span className="text-lg font-display font-bold">{todayAdherence !== null ? `${todayAdherence}%` : "—"}</span>
-                  <span className="text-[9px] text-muted-foreground">Aderência</span>
-                </div>
-                <div className="p-3 rounded-xl bg-chart-4/5 border border-chart-4/10 flex flex-col items-center">
-                  <span className="text-lg mb-1">✨</span>
-                  <span className="text-lg font-display font-bold">{microProgress.completed}</span>
-                  <span className="text-[9px] text-muted-foreground">Micro-vitórias</span>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {!hasData && !showChecklist && (
         <div className="empty-state">
