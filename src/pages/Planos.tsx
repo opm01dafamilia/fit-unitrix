@@ -7,15 +7,15 @@ import { ptBR } from "date-fns/locale";
 
 const plans = [
   {
-    name: "Fit-Unitrix Mensal",
+    name: "Fit Unitrix Mensal",
     highlight: "Primeiro mês: R$ 9,90",
     price: "Depois: R$ 19,90/mês",
     link: "https://pay.kiwify.com.br/gLBLXaS",
     planKey: "mensal",
-    features: ["Treinos personalizados por IA", "Dieta inteligente", "Acompanhamento de evolução", "Comunidade Fit-Unitrix"],
+    features: ["Treinos personalizados por IA", "Dieta inteligente", "Acompanhamento de evolução", "Comunidade Fit Unitrix"],
   },
   {
-    name: "Fit-Unitrix Anual",
+    name: "Fit Unitrix Anual",
     highlight: "12x de R$ 15,20",
     price: "ou R$ 147,00 à vista",
     after: "Depois: R$ 197,00/ano",
@@ -86,7 +86,7 @@ const Planos = () => {
 
             {!isActive && (
               <p className="text-xs text-yellow-400/90 pt-1">
-                ⚠ Seu acesso está limitado. Escolha um plano abaixo para continuar usando o Fit-Unitrix.
+                ⚠ Seu acesso está limitado. Escolha um plano abaixo para continuar usando o Fit Unitrix.
               </p>
             )}
           </CardContent>
