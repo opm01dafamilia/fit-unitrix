@@ -1,5 +1,5 @@
 /**
- * Smart Progression Engine for Fit-Unitrix
+ * Smart Progression Engine for Fit Unitrix
  * Calculates weight recommendations based on exercise history and user level.
  */
 
