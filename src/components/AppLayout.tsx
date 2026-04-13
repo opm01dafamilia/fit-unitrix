@@ -16,6 +16,7 @@ import { usePredictivePrefetch } from "@/hooks/usePredictivePrefetch";
 import { useUserRole } from "@/hooks/useUserRole";
 import { resetBodyScrollLock } from "@/lib/bodyScrollLock";
 import RouteGuide from "@/components/RouteGuide";
+import { getSavedThemeColor, applyThemeColor } from "@/lib/themeColors";
 
 const iconMap: Record<string, any> = {
   Trophy, Crown, Users, Target, Flame, Medal, BookOpen, Activity,
@@ -50,6 +51,12 @@ const AppLayout = () => {
   const { isPersonal, isAdmin, isAdminMaster, isAdminViewer } = useUserRole();
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
+
+  // Apply user's saved theme color inside the app; reset to purple on unmount (public pages)
+  useEffect(() => {
+    applyThemeColor(getSavedThemeColor());
+    return () => { applyThemeColor("purple"); };
+  }, []);
 
   useEffect(() => {
     resetBodyScrollLock();

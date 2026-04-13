@@ -1,9 +1,10 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { initThemeColor } from "./lib/themeColors";
+import { applyThemeColor } from "./lib/themeColors";
 
-initThemeColor();
+// Public pages always use default purple
+applyThemeColor("purple");
 
 // PWA service worker — only register in production, never in iframes/preview
 const isInIframe = (() => {
