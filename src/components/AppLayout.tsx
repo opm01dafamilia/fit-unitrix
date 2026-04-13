@@ -52,6 +52,12 @@ const AppLayout = () => {
   const [pinnedItems, setPinnedItems] = useState<string[]>([]);
   usePredictivePrefetch();
 
+  // Apply user's saved theme color inside the app; reset to purple on unmount (public pages)
+  useEffect(() => {
+    applyThemeColor(getSavedThemeColor());
+    return () => { applyThemeColor("purple"); };
+  }, []);
+
   useEffect(() => {
     resetBodyScrollLock();
   }, [location.pathname]);
