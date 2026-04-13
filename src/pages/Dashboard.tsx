@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame, Dumbbell, Scale, Target, UtensilsCrossed, Activity, ArrowRight, CheckCircle2, Circle, Loader2, Trophy, Zap, BarChart3, Heart, Sparkles, Star, ChevronDown } from "lucide-react";
 import WeeklyAdjustmentCard from "@/components/WeeklyAdjustmentCard";
 import type { WeeklyPerformanceData } from "@/lib/weeklyAutoAdjustEngine";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -36,6 +36,36 @@ const tooltipStyle = {
   color: 'var(--tooltip-color)',
   fontSize: '12px',
   padding: '8px 12px',
+};
+
+/** Collapsible section – starts closed, resets on remount (navigation). */
+const CollapsibleSection = ({ title, icon, badge, headerRight, children }: {
+  title: string;
+  icon?: React.ReactNode;
+  badge?: string;
+  headerRight?: React.ReactNode;
+  children: React.ReactNode;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="glass-card overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between p-5 lg:p-6 text-left"
+      >
+        <h3 className="font-display font-semibold text-base flex items-center gap-2">
+          {icon}
+          {title}
+        </h3>
+        <div className="flex items-center gap-2">
+          {badge && <span className="text-[11px] text-muted-foreground font-medium">{badge}</span>}
+          {headerRight}
+          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </div>
+      </button>
+      {open && <div className="px-5 pb-5 lg:px-6 lg:pb-6">{children}</div>}
+    </div>
+  );
 };
 
 const Dashboard = () => {
@@ -552,22 +582,6 @@ const Dashboard = () => {
       })()}
 
 
-      <div className="glass-card p-4 lg:p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
-          <span className="text-xs font-medium text-primary">{progressItems.filter(p => p.active).length}/{progressItems.length} ativos</span>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {progressItems.map((item) => (
-            <div key={item.label} className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all ${item.active ? "bg-primary/8 border border-primary/15" : "bg-secondary/30 border border-border/30"}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.active ? "bg-primary/15" : "bg-secondary/50"}`}>
-                {item.active ? <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> : <Circle className="w-3.5 h-3.5 text-muted-foreground" />}
-              </div>
-              <span className={`text-[10px] font-medium ${item.active ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Onboarding Checklist */}
       {showChecklist && (
@@ -656,15 +670,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Weekly Summary Card */}
-          <div className="glass-card p-5 lg:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-semibold text-base flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                Resumo Semanal
-              </h3>
-              <span className="text-[11px] text-muted-foreground font-medium">Esta semana</span>
-            </div>
+          {/* Weekly Summary Card — Collapsible */}
+          <CollapsibleSection
+            title="Resumo Semanal"
+            icon={<BarChart3 className="w-5 h-5 text-primary" />}
+            badge="Esta semana"
+          >
             <div className="grid grid-cols-3 gap-3">
               <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center">
                 <Dumbbell className="w-4 h-4 text-primary mb-1.5" />
@@ -682,7 +693,7 @@ const Dashboard = () => {
                 <span className="text-[9px] text-muted-foreground font-medium">Séries</span>
               </div>
             </div>
-          </div>
+          </CollapsibleSection>
         </div>
       )}
 
@@ -737,19 +748,17 @@ const Dashboard = () => {
         return <WeeklyAdjustmentCard data={adjustData} />;
       })()}
 
-      {/* 🏆 Achievements Summary */}
+      {/* 🏆 Achievements Summary — Collapsible */}
       {(unlockedAchievements.length > 0 || nextAchievement) && (
-        <div className="glass-card p-5 lg:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-semibold text-base flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              Conquistas
-            </h3>
+        <CollapsibleSection
+          title="Conquistas"
+          icon={<Trophy className="w-5 h-5 text-yellow-500" />}
+          headerRight={
             <button onClick={() => navigate("/app/conquistas")} className="text-[11px] text-primary font-medium flex items-center gap-1 hover:underline">
               Ver todas <ArrowRight className="w-3 h-3" />
             </button>
-          </div>
-
+          }
+        >
           {/* Unlocked badges */}
           {unlockedAchievements.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
@@ -785,7 +794,7 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-        </div>
+        </CollapsibleSection>
       )}
 
       {weightChartData.length > 1 && (
@@ -855,9 +864,8 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Quick Actions */}
-        <div className="glass-card p-5 lg:p-6">
-          <h3 className="font-display font-semibold text-base mb-4">Ações Rápidas</h3>
+        {/* Quick Actions — Collapsible */}
+        <CollapsibleSection title="Ações Rápidas" icon={<Zap className="w-5 h-5 text-chart-4" />}>
           <div className={`grid ${activeGoals.length > 0 ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-4"} gap-3`}>
             {quickActions.map((action) => (
               <button
@@ -870,7 +878,7 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
-        </div>
+        </CollapsibleSection>
       </div>
 
 

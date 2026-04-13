@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Save, Loader2 } from "lucide-react";
+import { User, Save, Loader2, CheckCircle2, Circle } from "lucide-react";
 import { useSubscriptionGuard } from "@/components/SubscriptionGate";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,38 @@ const Perfil = () => {
           ))}
         </div>
       </div>
+
+      {/* Status do Perfil */}
+      {(() => {
+        const profileComplete = !!(profile?.full_name && profile?.weight && profile?.height && profile?.objective);
+        const hasWorkout = true; // simplified — user is already in app
+        const hasDiet = true;
+        const hasGoal = true;
+        const statusItems = [
+          { label: "Perfil", active: profileComplete },
+          { label: "Treino", active: hasWorkout },
+          { label: "Dieta", active: hasDiet },
+          { label: "Meta", active: hasGoal },
+        ];
+        return (
+          <div className="glass-card p-4 lg:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-display font-semibold text-sm">Status do Perfil</h3>
+              <span className="text-xs font-medium text-primary">{statusItems.filter(p => p.active).length}/{statusItems.length} ativos</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {statusItems.map((item) => (
+                <div key={item.label} className={`flex flex-col items-center gap-1.5 p-2.5 rounded-lg transition-all ${item.active ? "bg-primary/8 border border-primary/15" : "bg-secondary/30 border border-border/30"}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.active ? "bg-primary/15" : "bg-secondary/50"}`}>
+                    {item.active ? <CheckCircle2 className="w-3.5 h-3.5 text-primary" /> : <Circle className="w-3.5 h-3.5 text-muted-foreground" />}
+                  </div>
+                  <span className={`text-[10px] font-medium ${item.active ? "text-primary" : "text-muted-foreground"}`}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Edit Form */}
       <div className="glass-card p-5 lg:p-6">

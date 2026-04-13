@@ -71,7 +71,7 @@ const NotificationCenter = () => {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+          <div className="absolute right-0 lg:right-auto lg:left-0 top-12 z-50 w-80 sm:w-96 max-h-[70vh] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border/50">
               <div className="flex items-center gap-2">
