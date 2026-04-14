@@ -391,31 +391,7 @@ function setCache(cache: GifCache) {
 }
 
 async function fetchFromAPI(searchTerm: string, cacheKey: string): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const response = await fetch(
-      `${EXERCISEDB_API}/exercises/search?q=${encodeURIComponent(searchTerm)}&limit=1`,
-      { signal: controller.signal }
-    );
-    clearTimeout(timeout);
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (!data.success || !data.data?.length) return null;
-    const exercise = data.data[0];
-    const gifUrl = exercise.gifUrl;
-    if (gifUrl) {
-      const cache = getCache();
-      cache[cacheKey] = { gifUrl, exerciseName: exercise.name, timestamp: Date.now() };
-      setCache(cache);
-    }
-    return gifUrl || null;
-  } catch (error) {
-    if ((error as Error).name !== 'AbortError') {
-      console.error(`Failed to fetch GIF for ${cacheKey}:`, error);
-    }
-    return null;
-  }
+  return null;
 }
 
 export async function fetchExerciseGif(exerciseId: string): Promise<string | null> {

@@ -54,6 +54,6 @@ export const TAB_GUIDES: Record<string, GuideStep[]> = {
     { title: "Evolução Alimentar", icon: "🥗", description: "Veja como sua aderência à dieta evoluiu semana a semana." },
   ],
   "sobre": [
-    { title: "Sobre o Fit-Pulse", icon: "ℹ️", description: "Aqui você encontra informações sobre o app, suas funcionalidades e dicas de uso." },
+    { title: "Sobre o Fit-Unitrix", icon: "ℹ️", description: "Aqui você encontra informações sobre o app, suas funcionalidades e dicas de uso." },
   ],
 };

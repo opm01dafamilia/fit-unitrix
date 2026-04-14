@@ -897,7 +897,7 @@ const Treino = () => {
                 <Sparkles className="w-4.5 h-4.5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">Modo Personal Fit-Pulse</p>
+                <p className="text-sm font-semibold text-foreground">Modo Personal Fit-Unitrix</p>
                 <p className="text-[11px] text-muted-foreground">Treinos semanais automáticos com evolução contínua</p>
               </div>
             </div>
@@ -1025,9 +1025,9 @@ const Treino = () => {
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
                 <Sparkles className="w-6 h-6 text-primary" />
               </div>
-              <DialogTitle className="text-center text-lg font-display">Modo Personal Fit-Pulse</DialogTitle>
+              <DialogTitle className="text-center text-lg font-display">Modo Personal Fit-Unitrix</DialogTitle>
               <DialogDescription className="text-center text-sm leading-relaxed mt-2">
-                O modo Personal Fit-Pulse cria automaticamente seus treinos semanais com base no seu desempenho. A cada semana, o sistema ajusta seus treinos para melhorar seus resultados.
+                O modo Personal Fit-Unitrix cria automaticamente seus treinos semanais com base no seu desempenho. A cada semana, o sistema ajusta seus treinos para melhorar seus resultados.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 mt-2">

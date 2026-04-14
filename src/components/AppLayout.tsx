@@ -41,7 +41,7 @@ const secondaryNavItems = [
   { to: "/app/planos", icon: CreditCard, label: "Meu Plano" },
   { to: "/app/perfil", icon: User, label: "Perfil" },
   { to: "/app/configuracoes", icon: Settings, label: "Configurações" },
-  { to: "/app/sobre", icon: Info, label: "Sobre o Fit-Pulse" },
+  { to: "/app/sobre", icon: Info, label: "Sobre o Fit-Unitrix" },
 ];
 
 const AppLayout = () => {

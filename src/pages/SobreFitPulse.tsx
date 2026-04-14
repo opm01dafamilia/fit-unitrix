@@ -19,7 +19,7 @@ const SobreFitPulse = () => {
       <div className="flex items-center gap-3">
         <FitPulseLogo size="sm" />
         <div>
-          <h1 className="font-display text-xl font-bold text-foreground">Sobre o Fit-Pulse</h1>
+          <h1 className="font-display text-xl font-bold text-foreground">Sobre o Fit-Unitrix</h1>
           <p className="text-xs text-muted-foreground">Conheça o app e saiba como aproveitá-lo</p>
         </div>
       </div>
@@ -28,10 +28,10 @@ const SobreFitPulse = () => {
       <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          <h2 className="font-semibold text-sm text-foreground">O que é o Fit-Pulse?</h2>
+          <h2 className="font-semibold text-sm text-foreground">O que é o Fit-Unitrix?</h2>
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          O <span className="text-foreground font-medium">Fit-Pulse</span> é o seu companheiro fitness completo. 
+          O <span className="text-foreground font-medium">Fit-Unitrix</span> é o seu companheiro fitness completo. 
           Ele gera treinos e dietas personalizadas, acompanha sua evolução corporal, mantém você motivado com 
           conquistas e desafios, e conecta você a uma comunidade de pessoas com os mesmos objetivos.
         </p>
@@ -91,7 +91,7 @@ const SobreFitPulse = () => {
 
       {/* Footer */}
       <p className="text-center text-xs text-muted-foreground pb-4">
-        Fit-Pulse · Feito para sua evolução 💚
+        Fit-Unitrix · Feito para sua evolução 💚
       </p>
     </div>
   );
