@@ -6,6 +6,7 @@ interface MuscleBodyMapProps {
   size?: "sm" | "md" | "lg";
   interactive?: boolean;
   onMuscleClick?: (muscleId: MuscleId) => void;
+  view?: "front" | "back" | "both";
 }
 
 // Maps muscle IDs to SVG path definitions (front view body)
