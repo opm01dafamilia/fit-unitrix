@@ -713,34 +713,12 @@ const ExerciseAnimationInner = ({ exercise, className = "", size = "md" }: Exerc
   const sizes = sizeMap[size];
   const px = sizePixels[size];
 
-  // Fetch GIF: try by ID first, then by name as fallback
+  // GIFs disabled — always render the in-app SVG humanoid (no external image fetches)
   useEffect(() => {
-    let cancelled = false;
     setGifLoaded(false);
-    setGifError(false);
+    setGifError(true);
     setGifUrl(null);
     setRetryCount(0);
-
-    const loadGif = async () => {
-      // Try by ID first
-      let url = await fetchExerciseGif(exercise.id);
-      if (!cancelled && url) {
-        setGifUrl(url);
-        return;
-      }
-      // Fallback: try by name
-      url = await fetchExerciseGifByName(exercise.nome);
-      if (!cancelled && url) {
-        setGifUrl(url);
-        return;
-      }
-      if (!cancelled) {
-        setGifError(true);
-      }
-    };
-    loadGif();
-
-    return () => { cancelled = true; };
   }, [exercise.id, exercise.nome]);
 
   const handleGifLoad = useCallback(() => {
