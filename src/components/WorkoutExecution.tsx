@@ -90,12 +90,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
 
-  // Preload GIFs for all exercises in this day
-  useEffect(() => {
-    if (day?.exercicios) {
-      preloadWorkoutDayGifs(day.exercicios.map(ex => ({ nome: ex.nome })));
-    }
-  }, [day]);
+  // GIFs removed — no external preloads needed
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
   const [inputReps, setInputReps] = useState("");
@@ -482,9 +477,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [swapFading, setSwapFading] = useState(false);
 
   const swapExercise = useCallback((newName: string) => {
-    // Preload GIF for new exercise immediately
-    fetchExerciseGifByName(newName);
-    
     // Fade-out animation
     setSwapFading(true);
     
@@ -663,12 +655,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
   
-  // Preload alternative GIFs when alternatives change
-  useEffect(() => {
-    if (alternatives.length > 0) {
-      preloadAlternativeGifs(alternatives.map(a => a.nome));
-    }
-  }, [alternatives]);
+  // GIFs removed — no alternative preloads needed
 
   const toggleRestPause = useCallback(() => {
     setRestPaused(p => {
@@ -1183,34 +1170,31 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
-      {/* ===== EXERCISE HERO ===== */}
-      <div className={`glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden transition-opacity duration-200 ${swapFading ? 'opacity-30 scale-[0.98]' : 'opacity-100 scale-100'}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
-        <div className="relative z-10 flex flex-col items-center w-full">
-          {libraryExercise ? (
-            <ExerciseAnimation key={`anim-${currentExIndex}-${swapKey}`} exercise={libraryExercise} size="lg" className="mb-3" />
-          ) : (
-            <ExerciseAnimation 
-              key={`anim-fallback-${currentExIndex}-${swapKey}`} 
-              exercise={{ 
-                id: `custom-${currentExIndex}`, nome: currentEx.nome, grupo: (day.grupo.toLowerCase() as any) || "peito",
-                grupoLabel: day.grupo, musculos: [day.grupo], musculosDestacados: activeMusclesToShow,
-                instrucoes: [], dicas: [], equipamento: "Variado", dificuldade: "intermediário",
-                tipo: "composto", tipoExercicio: "musculação", alternativas: [],
-                animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(var(--primary))" },
-              }} 
-              size="lg" className="mb-3" 
-            />
-          )}
-          <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
-          {/* Intensity technique badge */}
+      {/* ===== EXERCISE HERO (anatomy + how-to) ===== */}
+      <div
+        key={`hero-${currentExIndex}-${swapKey}`}
+        className={`transition-opacity duration-200 ${swapFading ? "opacity-30 scale-[0.98]" : "opacity-100 scale-100"}`}
+      >
+        <ExerciseVisualCard
+          nome={currentEx.nome}
+          grupoLabel={libraryExercise?.grupoLabel || day.grupo}
+          series={currentEx.series}
+          reps={currentEx.reps}
+          descanso={currentEx.descanso}
+          highlightedMuscles={activeMusclesToShow}
+          musculosPrincipais={libraryExercise?.musculos}
+          instrucoes={libraryExercise?.instrucoes}
+          dicas={libraryExercise?.dicas}
+        />
+        {/* Intensity technique + progression badges */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
           {currentTechnique && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setShowTechniqueInfo(!showTechniqueInfo)}
-                    className={`mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95 ${currentTechnique.technique.badgeClass}`}
+                    className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95 ${currentTechnique.technique.badgeClass}`}
                   >
                     {currentTechnique.technique.emoji} {currentTechnique.technique.shortLabel}
                   </button>
@@ -1221,18 +1205,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               </Tooltip>
             </TooltipProvider>
           )}
-          {libraryExercise && (
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
-              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                <Target className="w-3 h-3" /> {libraryExercise.musculos[0]}
-              </span>
-              {libraryExercise.musculos.slice(1).map((m, i) => (
-                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">{m}</span>
-              ))}
-            </div>
-          )}
           {currentProgression && currentProgression.feedback !== "first_time" && (
-            <div className={`mt-2.5 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
+            <div className={`px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
@@ -1247,6 +1221,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
         </div>
       </div>
+
 
       {/* ===== NEXT EXERCISE BUTTON ===== */}
       {phase === "input" && currentExIndex < totalExercises - 1 && currentSets.length > 0 && (
