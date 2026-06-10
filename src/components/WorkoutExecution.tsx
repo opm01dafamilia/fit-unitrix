@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { validateWorkout, markWorkoutValidatedToday, logValidation, getHonestyMode, checkXPThrottle, recordAchievementUnlock } from "@/lib/antiFakeEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
+import ExerciseVisualCard from "@/components/ExerciseVisualCard";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, getSmartCardio, type CardioRecommendation, type SmartCardioSession } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
@@ -72,51 +73,12 @@ type Props = {
 // === Phase enum for auto-flow ===
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
-// Mini component for alternative exercise GIF preview (by name)
+// GIF-less alternative preview: shows a clean equipment icon instead of fetching an external GIF
 const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
-  const [gifUrl, setGifUrl] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoaded(false);
-    setError(false);
-    setGifUrl(null);
-    fetchExerciseGifByName(name).then(url => {
-      if (!cancelled) {
-        if (url) setGifUrl(url);
-        else setError(true);
-      }
-    });
-    return () => { cancelled = true; };
-  }, [name]);
-
-  if (gifUrl && !error) {
-    return (
-      <div className="relative w-full h-full" style={{ aspectRatio: "1/1" }}>
-        <img
-          src={gifUrl}
-          alt={name}
-          className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px" }}
-          onLoad={() => setLoaded(true)}
-          onError={() => { setGifUrl(null); setError(true); }}
-          loading="lazy"
-          decoding="async"
-        />
-        {!loaded && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center w-full h-full">
       {isHome ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
+      <span className="text-[8px] text-muted-foreground mt-1 px-1 text-center leading-tight line-clamp-1">{name.split(" ")[0]}</span>
     </div>
   );
 };
@@ -128,12 +90,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [exercises, setExercises] = useState<Exercise[]>(day?.exercicios || []);
   const [currentExIndex, setCurrentExIndex] = useState(0);
 
-  // Preload GIFs for all exercises in this day
-  useEffect(() => {
-    if (day?.exercicios) {
-      preloadWorkoutDayGifs(day.exercicios.map(ex => ({ nome: ex.nome })));
-    }
-  }, [day]);
+  // GIFs removed — no external preloads needed
   const [sets, setSets] = useState<Record<number, SetRecord[]>>({});
   const [inputKg, setInputKg] = useState("");
   const [inputReps, setInputReps] = useState("");
@@ -520,9 +477,6 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
   const [swapFading, setSwapFading] = useState(false);
 
   const swapExercise = useCallback((newName: string) => {
-    // Preload GIF for new exercise immediately
-    fetchExerciseGifByName(newName);
-    
     // Fade-out animation
     setSwapFading(true);
     
@@ -701,12 +655,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
 
   const alternatives = useMemo(() => getAlternatives(currentEx.nome, trainingLocation), [currentEx.nome, trainingLocation]);
   
-  // Preload alternative GIFs when alternatives change
-  useEffect(() => {
-    if (alternatives.length > 0) {
-      preloadAlternativeGifs(alternatives.map(a => a.nome));
-    }
-  }, [alternatives]);
+  // GIFs removed — no alternative preloads needed
 
   const toggleRestPause = useCallback(() => {
     setRestPaused(p => {
@@ -1221,34 +1170,31 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
         </div>
       </div>
 
-      {/* ===== EXERCISE HERO ===== */}
-      <div className={`glass-card p-5 flex flex-col items-center justify-center relative overflow-hidden transition-opacity duration-200 ${swapFading ? 'opacity-30 scale-[0.98]' : 'opacity-100 scale-100'}`}>
-        <div className={`absolute inset-0 bg-gradient-to-br ${muscleGroupColors[primaryGroup] || "from-primary/20 to-primary/5"} opacity-50`} />
-        <div className="relative z-10 flex flex-col items-center w-full">
-          {libraryExercise ? (
-            <ExerciseAnimation key={`anim-${currentExIndex}-${swapKey}`} exercise={libraryExercise} size="lg" className="mb-3" />
-          ) : (
-            <ExerciseAnimation 
-              key={`anim-fallback-${currentExIndex}-${swapKey}`} 
-              exercise={{ 
-                id: `custom-${currentExIndex}`, nome: currentEx.nome, grupo: (day.grupo.toLowerCase() as any) || "peito",
-                grupoLabel: day.grupo, musculos: [day.grupo], musculosDestacados: activeMusclesToShow,
-                instrucoes: [], dicas: [], equipamento: "Variado", dificuldade: "intermediário",
-                tipo: "composto", tipoExercicio: "musculação", alternativas: [],
-                animacao: { frames: ["🏋️ ↑", "🏋️ ↓"], cor: "hsl(var(--primary))" },
-              }} 
-              size="lg" className="mb-3" 
-            />
-          )}
-          <h2 className="font-display font-bold text-lg text-center">{currentEx.nome}</h2>
-          {/* Intensity technique badge */}
+      {/* ===== EXERCISE HERO (anatomy + how-to) ===== */}
+      <div
+        key={`hero-${currentExIndex}-${swapKey}`}
+        className={`transition-opacity duration-200 ${swapFading ? "opacity-30 scale-[0.98]" : "opacity-100 scale-100"}`}
+      >
+        <ExerciseVisualCard
+          nome={currentEx.nome}
+          grupoLabel={libraryExercise?.grupoLabel || day.grupo}
+          series={currentEx.series}
+          reps={currentEx.reps}
+          descanso={currentEx.descanso}
+          highlightedMuscles={activeMusclesToShow}
+          musculosPrincipais={libraryExercise?.musculos}
+          instrucoes={libraryExercise?.instrucoes}
+          dicas={libraryExercise?.dicas}
+        />
+        {/* Intensity technique + progression badges */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
           {currentTechnique && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => setShowTechniqueInfo(!showTechniqueInfo)}
-                    className={`mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95 ${currentTechnique.technique.badgeClass}`}
+                    className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95 ${currentTechnique.technique.badgeClass}`}
                   >
                     {currentTechnique.technique.emoji} {currentTechnique.technique.shortLabel}
                   </button>
@@ -1259,18 +1205,8 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
               </Tooltip>
             </TooltipProvider>
           )}
-          {libraryExercise && (
-            <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
-              <span className="flex items-center gap-1 text-[10px] font-semibold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                <Target className="w-3 h-3" /> {libraryExercise.musculos[0]}
-              </span>
-              {libraryExercise.musculos.slice(1).map((m, i) => (
-                <span key={i} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-secondary/60">{m}</span>
-              ))}
-            </div>
-          )}
           {currentProgression && currentProgression.feedback !== "first_time" && (
-            <div className={`mt-2.5 px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
+            <div className={`px-3 py-1 rounded-full text-[11px] font-semibold flex items-center gap-1.5 ${feedbackColor}`}>
               {currentProgression.feedback === "increase" && <TrendingUp className="w-3 h-3" />}
               {currentProgression.feedback === "decrease" && <TrendingDown className="w-3 h-3" />}
               {currentProgression.feedback === "maintain" && <Minus className="w-3 h-3" />}
@@ -1285,6 +1221,7 @@ export default function WorkoutExecution({ plan, dayIndex, userId, experienceLev
           )}
         </div>
       </div>
+
 
       {/* ===== NEXT EXERCISE BUTTON ===== */}
       {phase === "input" && currentExIndex < totalExercises - 1 && currentSets.length > 0 && (

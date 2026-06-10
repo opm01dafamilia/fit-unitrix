@@ -6,6 +6,7 @@ interface MuscleBodyMapProps {
   size?: "sm" | "md" | "lg";
   interactive?: boolean;
   onMuscleClick?: (muscleId: MuscleId) => void;
+  view?: "front" | "back" | "both";
 }
 
 // Maps muscle IDs to SVG path definitions (front view body)
@@ -107,7 +108,7 @@ const musclePaths: Record<string, { d: string; label: string; side: "front" | "b
   },
 };
 
-const MuscleBodyMap = ({ highlightedMuscles, className = "", size = "md", interactive = false, onMuscleClick }: MuscleBodyMapProps) => {
+const MuscleBodyMap = ({ highlightedMuscles, className = "", size = "md", interactive = false, onMuscleClick, view = "both" }: MuscleBodyMapProps) => {
   const isFullBody = highlightedMuscles.includes("corpo-inteiro");
   const primaryMuscle = highlightedMuscles[0];
 
@@ -194,8 +195,8 @@ const MuscleBodyMap = ({ highlightedMuscles, className = "", size = "md", intera
 
   return (
     <div className={`inline-flex ${cfg.gap} items-start justify-center ${className}`}>
-      {renderSvgView("front", "Frente")}
-      {renderSvgView("back", "Costas")}
+      {(view === "front" || view === "both") && renderSvgView("front", "Frente")}
+      {(view === "back" || view === "both") && renderSvgView("back", "Costas")}
     </div>
   );
 };
