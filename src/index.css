@@ -424,12 +424,12 @@
     padding-top: max(env(safe-area-inset-top, 0px), 8px);
   }
 
-  /* Smooth page enter animation */
+  /* Smooth page enter animation — subtle, no opacity flash on tab change */
   .page-enter {
-    animation: pageEnter 0.25s ease-out forwards;
+    animation: pageEnter 0.18s ease-out forwards;
   }
   @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0.85; transform: translateY(2px); }
     to { opacity: 1; transform: translateY(0); }
   }
 

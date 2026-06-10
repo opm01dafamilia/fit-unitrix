@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { lazy, Suspense, useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Lazy load all pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -215,6 +216,7 @@ const App = () => (
         <OfflineBanner />
         <BrowserRouter>
           <AuthProvider>
+            <ScrollToTop />
             <Routes>
               {/* Landing */}
               <Route path="/" element={<LandingRoute />} />
