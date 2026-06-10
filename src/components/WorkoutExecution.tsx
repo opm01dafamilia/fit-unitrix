@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { calculateProgression, type ProgressionResult, type ExerciseHistoryEntry } from "@/lib/progressionEngine";
 import { validateWorkout, markWorkoutValidatedToday, logValidation, getHonestyMode, checkXPThrottle, recordAchievementUnlock } from "@/lib/antiFakeEngine";
 import { fetchExerciseGifByName, preloadAlternativeGifs, preloadWorkoutDayGifs } from "@/lib/exerciseGifs";
+import ExerciseVisualCard from "@/components/ExerciseVisualCard";
 import { getAlternatives, getStretchingForDay, getCardioRecommendation, getSmartCardio, type CardioRecommendation, type SmartCardioSession } from "@/lib/workoutRecommendations";
 import { exerciseLibrary, type ExerciseDetail, type MuscleId } from "@/lib/exerciseLibrary";
 import { type CycleStatus, applyProgressionToExercise } from "@/lib/progressionCycleEngine";
@@ -72,51 +73,12 @@ type Props = {
 // === Phase enum for auto-flow ===
 type WorkoutPhase = "input" | "resting" | "rest-done" | "exercise-done";
 
-// Mini component for alternative exercise GIF preview (by name)
+// GIF-less alternative preview: shows a clean equipment icon instead of fetching an external GIF
 const AltGifPreview = ({ name, isHome }: { name: string; isHome: boolean }) => {
-  const [gifUrl, setGifUrl] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoaded(false);
-    setError(false);
-    setGifUrl(null);
-    fetchExerciseGifByName(name).then(url => {
-      if (!cancelled) {
-        if (url) setGifUrl(url);
-        else setError(true);
-      }
-    });
-    return () => { cancelled = true; };
-  }, [name]);
-
-  if (gifUrl && !error) {
-    return (
-      <div className="relative w-full h-full" style={{ aspectRatio: "1/1" }}>
-        <img
-          src={gifUrl}
-          alt={name}
-          className={`w-full h-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          style={{ objectFit: "contain", padding: "2px" }}
-          onLoad={() => setLoaded(true)}
-          onError={() => { setGifUrl(null); setError(true); }}
-          loading="lazy"
-          decoding="async"
-        />
-        {!loaded && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center w-full h-full">
       {isHome ? <Home className="w-5 h-5 text-amber-500" /> : <Dumbbell className="w-5 h-5 text-primary" />}
+      <span className="text-[8px] text-muted-foreground mt-1 px-1 text-center leading-tight line-clamp-1">{name.split(" ")[0]}</span>
     </div>
   );
 };
